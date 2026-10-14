@@ -48,8 +48,8 @@
 
   /* ---------------- subjects & decks ---------------- */
   const SUBJ = [
-    { id: 'geo', name: 'Geography', hue: 'green', exam: new Date(2026, 9, 26, 9, 0), when: 'Mon 26 Oct · P1–2', format: '45 minutes · 30 multiple choice (25 on geographical tools & skills, 5 on Water in the World) + 3 short answers.', mock: 'geo' },
-    { id: 'maths', name: 'Maths', hue: 'gold', exam: new Date(2026, 9, 29, 11, 0), when: 'Thu 29 Oct · P3–4', format: 'Exam: chapters 8, 9, 10 and 12 · multi-part questions like the Test Yourself pages. Ch 3 and Ch 7 are extra practice.', mock: 'maths' },
+    { id: 'geo', name: 'Geography', hue: 'green', exam: new Date(2026, 9, 26, 9, 0), when: 'Mon 26 Oct, P1–2', format: '45 minutes. 30 multiple choice (25 on geographical tools & skills, 5 on Water in the World) + 3 short answers.', mock: 'geo' },
+    { id: 'maths', name: 'Maths', hue: 'gold', exam: new Date(2026, 9, 29, 11, 0), when: 'Thu 29 Oct, P3–4', format: 'The exam covers chapters 8, 9, 10 and 12, with multi-part questions like the Test Yourself pages. Ch 3 and Ch 7 are extra practice.', mock: 'maths' },
     { id: 'y12', name: 'Year 12 Maths', hue: 'lilac', exam: null, when: '', format: 'HSC Mathematics Extension 2: proof, complex numbers, induction, integration, vectors and mechanics.' },
   ];
   const BUILTIN = [
@@ -81,7 +81,7 @@
   sizeFx(); addEventListener('resize', sizeFx);
   function burst(x, y, n = 70) {
     if (reduce) return;
-    const cols = ['#ff6b5a', '#45d6e6', '#ffc53d', '#a99bff', '#3ddc97', '#ff4f9a', '#eef0ff'];
+    const cols = ['#1D4ED8', '#E2A72E', '#157A40', '#BF2A1E', '#5B45B0', '#0F6E8C'];
     for (let i = 0; i < n; i++) { const a = Math.random() * Math.PI * 2, v = 4 + Math.random() * 9; parts.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 5, r: 3 + Math.random() * 5, c: pick(cols), life: 1, rot: Math.random() * 6, vr: (Math.random() - .5) * .4, sq: Math.random() < .5 }); }
     if (!fxOn) { fxOn = true; requestAnimationFrame(tickFx); }
   }
@@ -131,24 +131,41 @@
     else { n.className = 'ai-note'; t.textContent = AI.reason + ' Without AI, quick mode still makes flashcards from notes written as "term: meaning".'; }
   }
 
-  /* ---------------- countdown, hero board, ticker, week ---------------- */
+  /* ---------------- countdown (calculator LCD), readiness, week ---------------- */
   const pad = (n) => String(n).padStart(2, '0');
   const nextExam = () => SUBJ.filter(s => s.exam && s.exam > Date.now()).sort((a, b) => a.exam - b.exam)[0];
   const daysTo = (d) => Math.max(0, Math.ceil((d - Date.now()) / 864e5));
+  // Seven-segment digits like a Casio screen. Unlit segments stay faintly visible, as on a real LCD.
+  const SEGS = { 0: 'abcdef', 1: 'bc', 2: 'abged', 3: 'abgcd', 4: 'fgbc', 5: 'afgcd', 6: 'afgedc', 7: 'abc', 8: 'abcdefg', 9: 'abcdfg' };
+  const hSeg = (y) => `4,${y} 6,${y - 2} 22,${y - 2} 24,${y} 22,${y + 2} 6,${y + 2}`;
+  const vSeg = (x, y1, y2) => `${x},${y1} ${x + 2},${y1 + 2} ${x + 2},${y2 - 2} ${x},${y2} ${x - 2},${y2 - 2} ${x - 2},${y1 + 2}`;
+  const SEG_PTS = { a: hSeg(3), g: hSeg(25), d: hSeg(47), f: vSeg(3, 4, 24), b: vSeg(25, 4, 24), e: vSeg(3, 26, 46), c: vSeg(25, 26, 46) };
+  function lcdSvg(str, label) {
+    let x = 0, out = '';
+    for (const ch of str) {
+      if (ch === ':') { out += `<rect class="on" x="${x + 3}" y="15" width="4" height="4"/><rect class="on" x="${x + 1}" y="33" width="4" height="4"/>`; x += 11; continue; }
+      const lit = SEGS[ch] || '';
+      out += `<g transform="translate(${x} 0) skewX(-7)">${Object.entries(SEG_PTS).map(([k, pts]) => `<polygon class="${lit.includes(k) ? 'on' : 'off'}" points="${pts}"/>`).join('')}</g>`;
+      x += 33;
+    }
+    return `<svg class="lcd-digits" viewBox="-6 -2 ${x + 6} 54" role="img" aria-label="${esc(label)}">${out}</svg>`;
+  }
   function renderNext() {
     const s = nextExam(), box = $('#next');
-    if (!s) { box.innerHTML = '<div class="lab">Exams are done. Go touch grass.</div>'; $('#heroCtas').innerHTML = ''; return; }
-    box.className = 'next ' + 'c-' + s.hue;
-    box.innerHTML = `<div class="lab">Next up: <b>${esc(s.name)}</b> · ${esc(s.when)}</div>
-      <div class="count">${['d', 'h', 'm', 's'].map((k, i) => `<div class="cell"><div class="num" id="cd-${k}">--</div><div class="unit">${['days', 'hrs', 'min', 'sec'][i]}</div></div>`).join('')}</div>`;
-    $('#heroCtas').innerHTML = `<button class="btn btn-hot" type="button" data-act="mock" data-s="${s.id}">Start ${esc(s.name)} practice exam →</button><button class="btn btn-ghost" type="button" data-act="cards" data-s="${s.id}">Flashcards</button>`;
+    if (!s) { box.innerHTML = `<h1 class="hero-h">Exams are done</h1><div class="calc"><div class="lcd"><div class="lcd-top"><span>Go outside</span></div>${lcdSvg('00:00:00:00', 'No exams left')}</div></div>`; return; }
+    box.innerHTML = `<h1 class="hero-h">${esc(s.name)} exam in</h1>
+      <div class="calc c-${s.hue}">
+        <div class="lcd" id="lcd"><div class="lcd-top"><span>${esc(s.name)}</span><span>${esc(s.when)}</span></div><div id="lcdNum"></div></div>
+        <div class="lcd-units" aria-hidden="true"><span>days</span><span>hours</span><span>min</span><span>sec</span></div>
+        <div class="calc-keys"><button class="ckey ckey-shift" type="button" data-act="mock" data-s="${s.id}">Start a practice exam</button><button class="ckey" type="button" data-act="cards" data-s="${s.id}">Flashcards</button></div>
+      </div>`;
     tickCount();
   }
   function tickCount() {
-    const s = nextExam(); if (!s || !$('#cd-d')) return;
+    const s = nextExam(), el = $('#lcdNum'); if (!s || !el) return;
     let ms = s.exam - Date.now(); if (ms <= 0) { renderNext(); return; }
     const d = Math.floor(ms / 864e5); ms -= d * 864e5; const h = Math.floor(ms / 36e5); ms -= h * 36e5; const m = Math.floor(ms / 6e4); const sec = Math.floor((ms - m * 6e4) / 1e3);
-    $('#cd-d').textContent = d; $('#cd-h').textContent = pad(h); $('#cd-m').textContent = pad(m); $('#cd-s').textContent = pad(sec);
+    el.innerHTML = lcdSvg(`${pad(d)}:${pad(h)}:${pad(m)}:${pad(sec)}`, `${d} days, ${h} hours and ${m} minutes`);
   }
   setInterval(tickCount, 1000);
   function weakest() {
@@ -166,34 +183,24 @@
   function renderBoard() {
     const rows = subjects().map(s => {
       const ds = decksOf(s.id); if (!ds.length) return '';
-      return `<div class="brow"><div class="nm">${esc(s.name)}<small>${s.exam ? (s.exam > Date.now() ? daysTo(s.exam) + ' days left' : 'done') : 'no exam date'}</small></div>
-        <div class="rings">${ds.map(d => { const m = mastery(d.id); return `<div class="rg"><button class="ring ${hue(d)}" type="button" style="--v:0" data-v="${m}" data-open="${esc(d.id)}" title="${esc(d.title)}: ${m}% mastered" aria-label="${esc(d.title)}, ${m}% mastered"><span>${m}%</span></button><small>${esc(ringLabel(d))}</small></div>`; }).join('')}</div></div>`;
+      return `<div class="rsub"><div class="rsub-head"><h3>${esc(s.name)}</h3><span>${s.exam ? (s.exam > Date.now() ? daysTo(s.exam) + ' days to go' : 'Done') : 'No exam date'}</span></div>
+        <ul class="rlist">${ds.map(d => { const m = mastery(d.id); return `<li><button class="rrow ${hue(d)}" type="button" data-open="${esc(d.id)}" aria-label="${esc(d.title)}, ${m}% mastered"><span class="rname">${esc(d.title)}</span><span class="rbar"><i style="width:${m}%"></i></span><span class="rpct">${m}%</span></button></li>`; }).join('')}</ul></div>`;
     }).join('');
     const w = weakest();
-    $('#board').innerHTML = `<div class="row" style="justify-content:space-between"><h2>Exam readiness</h2><span class="eyebrow">tap a ring</span></div><div class="bsub">${rows}</div>
-      <div class="row">${SUBJ.filter(s => s.mock).map(s => `<button class="btn btn-sm btn-ghost" type="button" data-act="mock" data-s="${s.id}">${esc(s.name)} practice exam</button>`).join('')}</div>
-      ${w ? `<div class="weak"><div class="t">${w.acc == null ? 'Not started yet' : 'Weakest topic · ' + Math.round(w.acc * 100) + '%'}<b>${esc(w.sec.code)} ${esc(w.sec.name)}</b></div><button class="btn btn-sm btn-acc ${hue(w.d)}" type="button" data-act="weak" data-d="${esc(w.d.id)}" data-t="${esc(w.sec.code)}">Practise it →</button></div>` : ''}`;
-    $$('.ring[data-v]', $('#board')).forEach(r => {
-      const v = +r.dataset.v;
-      if (hasGsap && !reduce) { const o = { v: 0 }; gsap.to(o, { v, duration: 1.2, ease: 'power3.out', delay: .3, onUpdate: () => r.style.setProperty('--v', o.v) }); } else r.style.setProperty('--v', v);
-    });
-  }
-  const ringLabel = (d) => ({ maps: 'Maps', water: 'Water' }[d.id] || (d.custom ? d.title.split(' ')[0] : d.chapter || d.title)).slice(0, 9);
-  function renderTicker() {
-    const bits = ['<b>BOLTS</b> Border · Orientation · Legend · Title · Scale', '<b>AR</b> = easting then northing, bottom-left corner', '<b>GR</b> 6 figures: across, then up', '<b>P(not A)</b> = 1 − P(A)', '<b>Speed</b> = distance ÷ time', '<b>km/h → m/s</b> ÷ 3.6', '<b>Water cycle</b> evaporation → condensation → precipitation', '<b>SA cylinder</b> = 2πr² + 2πrh', '<b>Scale factor</b> = image ÷ original', '<b>2.5%</b> of Earth\'s water is fresh', '<b>Tully</b> wettest · <b>Kati Thanda</b> driest', '<b>Close contours</b> = steep slope'];
-    $('#ticker').innerHTML = [...bits, ...bits].map(b => `<span>${b.replace(/²/g, '<sup class="pow">2</sup>')}</span>`).join('');
+    $('#board').innerHTML = `<h2>How ready you are</h2>${rows}
+      ${w ? `<div class="weak"><p>${w.acc == null ? 'Not started yet:' : `Weakest topic, ${Math.round(w.acc * 100)}% right:`} <b>${esc(w.sec.code)} ${fm(w.sec.name)}</b></p><button class="btn btn-sm" type="button" data-act="weak" data-d="${esc(w.d.id)}" data-t="${esc(w.sec.code)}">Practise it</button></div>` : ''}`;
   }
   const WEEK = [
-    ['Mon', 26, [['P1–2', 'Geography', 'geo'], ['P3–4', 'Science'], ['P5–6', 'D&T / Visual Arts']]],
-    ['Tue', 27, [['P1–2', 'Supervised study'], ['P3–4', 'Languages'], ['P5–6', 'Sport']]],
-    ['Wed', 28, [['9:15', 'Late start'], ['P3', 'SAGE prep meeting'], ['P5–6', 'English']]],
-    ['Thu', 29, [['P1–2', 'Chinese / Spanish'], ['P3–4', 'Mathematics', 'maths'], ['P5–6', 'Science activity']]],
-    ['Fri', 30, [['P1–2', 'Music']]],
+    ['Monday', 26, [['P1–2', 'Geography', 'geo'], ['P3–4', 'Science'], ['P5–6', 'D&T / Visual Arts']]],
+    ['Tuesday', 27, [['P1–2', 'Supervised study'], ['P3–4', 'Languages'], ['P5–6', 'Sport']]],
+    ['Wednesday', 28, [['9:15', 'Late start'], ['P3', 'SAGE prep meeting'], ['P5–6', 'English']]],
+    ['Thursday', 29, [['P1–2', 'Chinese / Spanish'], ['P3–4', 'Mathematics', 'maths'], ['P5–6', 'Science activity']]],
+    ['Friday', 30, [['P1–2', 'Music']]],
   ];
   function renderWeek() {
     $('#weekGrid').innerHTML = WEEK.map(([d, n, items]) => {
       const hot = items.find(i => i[2]); const past = new Date(2026, 9, n, 23, 59) < new Date(); const hs = hot && SUBJ.find(s => s.id === hot[2]);
-      return `<div class="day ${hot ? 'hot c-' + hs.hue : ''} ${past ? 'past' : ''}"><div class="d">${d} · Oct</div><div class="dn">${n}</div><ul>${items.map(([p, s, k]) => `<li class="${k ? 'hot' : ''}"><span class="p">${p}</span><span>${esc(s)}</span></li>`).join('')}</ul></div>`;
+      return `<div class="day ${hot ? 'hot c-' + hs.hue : ''} ${past ? 'past' : ''}"><div class="d"><b>${n}</b> ${d}</div><ul>${items.map(([p, s, k]) => `<li class="${k ? 'hot' : ''}"><span class="p">${p}</span><span>${esc(s)}</span></li>`).join('')}</ul></div>`;
     }).join('');
   }
 
@@ -203,24 +210,16 @@
   }
   $('#subtabs').addEventListener('click', e => { const b = e.target.closest('[data-subj]'); if (!b) return; S.subj = b.dataset.subj; save(); renderTabs(); renderSubject(); $('#subject').scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' }); });
   function renderSubject() {
-    const s = getSubj(S.subj), ds = decksOf(s.id), el = $('#subject');
+    const s = getSubj(S.subj), ds = decksOf(s.id), el = $('#subject'), nm = mistakesOf(s.id).length;
     el.className = 'wrap section c-' + s.hue;
-    const counts = (d) => `${d.cards?.length || 0} cards · ${(d.bank ? '∞' : (conceptsOf(d).length + shortOf(d).length))} questions`;
-    el.innerHTML = `<div class="subj-head"><div><div class="eyebrow">${s.exam ? 'Exam · ' + esc(s.when) : 'Subject'}</div><h2>${esc(s.name)}<span>.</span></h2><div class="subj-meta">${esc(s.format)}</div>${mistakesOf(s.id).length ? `<button class="linkbtn mist-link" type="button" data-act="mistakes" data-s="${esc(s.id)}">${mistakesOf(s.id).length} mistake${mistakesOf(s.id).length > 1 ? 's' : ''} to fix →</button>` : ''}</div>
-      <div class="subj-actions">${s.mock ? `<button class="btn btn-acc" type="button" data-act="mock" data-s="${s.id}">Practice exam${s.mock === 'geo' ? ' (45 min)' : ''}</button>` : ''}${ds.length ? `<button class="btn btn-ghost" type="button" data-act="cards" data-s="${esc(s.id)}">All flashcards</button>` : ''}<button class="btn btn-ghost" type="button" data-act="upload" data-s="${esc(s.id)}">+ Upload</button></div></div>
-      ${ds.length ? `<div class="decks">${ds.map(d => { const m = mastery(d.id); return `<button class="deck ${hue(d)}" type="button" data-open="${esc(d.id)}">
-          <div class="top"><span class="chip">${esc(d.chapter || 'Your deck')}</span><span class="lvl-chip lvl-${levelOf(d)}" title="Your level: ${LNAME[levelOf(d)]}">${levelOf(d)}</span>${d.custom ? `<span class="chip" style="color:var(--muted)">${d.ai ? 'AI' : 'Quick'}</span>` : ''}</div>
-          <h3>${esc(d.title)}</h3><p>${fm(d.blurb || '')}</p>
-          <div class="foot"><span class="counts">${counts(d)}</span><div class="ring" style="--v:${m}"><span>${m}%</span></div></div></button>`; }).join('')}</div>`
-        : `<div class="empty"><h3>No ${esc(s.name)} decks yet</h3><p>Upload your class notes or textbook pages (even scanned ones) and it builds notes, flashcards and exam questions.</p><button class="btn btn-hot" type="button" data-act="upload" data-s="${esc(s.id)}" style="margin-top:12px">Upload ${esc(s.name)} notes</button></div>`}`;
-    tilt(el);
-  }
-  function tilt(root) {
-    if (reduce || matchMedia('(hover: none)').matches) return;
-    $$('.deck', root).forEach(c => {
-      c.addEventListener('pointermove', e => { const r = c.getBoundingClientRect(); const x = (e.clientX - r.left) / r.width - .5, y = (e.clientY - r.top) / r.height - .5; c.style.transform = `perspective(700px) rotateY(${x * 7}deg) rotateX(${-y * 7}deg) translateY(-3px)`; });
-      c.addEventListener('pointerleave', () => { c.style.transform = ''; });
-    });
+    el.innerHTML = `<div class="subj-head"><div><h2>${esc(s.name)}</h2><p class="subj-meta">${s.exam ? `Exam ${esc(s.when)}. ` : ''}${esc(s.format)}</p>${nm ? `<button class="linkbtn mist-link" type="button" data-act="mistakes" data-s="${esc(s.id)}">${nm} mistake${nm > 1 ? 's' : ''} to fix</button>` : ''}</div>
+      <div class="subj-actions">${s.mock ? `<button class="btn" type="button" data-act="mock" data-s="${s.id}">Practice exam${s.mock === 'geo' ? ', 45 min' : ''}</button>` : ''}${ds.length ? `<button class="btn btn-ghost" type="button" data-act="cards" data-s="${esc(s.id)}">All flashcards</button>` : ''}<button class="btn btn-ghost" type="button" data-act="upload" data-s="${esc(s.id)}">Upload notes</button></div></div>
+      ${ds.length ? `<ol class="decks">${ds.map(d => { const m = mastery(d.id), L = levelOf(d); return `<li><button class="deck ${hue(d)}" type="button" data-open="${esc(d.id)}">
+          <span class="d-ch">${esc(d.chapter || 'Yours')}</span>
+          <span class="d-main"><span class="d-title">${esc(d.title)}${d.custom ? ` <small>${d.ai ? 'made by AI' : 'quick deck'}</small>` : ''}</span><span class="d-blurb">${fm(d.blurb || '')}</span></span>
+          <span class="d-level lvl-${L}" title="Your level">${LNAME[L]}</span>
+          <span class="d-mastery"><span class="rbar"><i style="width:${m}%"></i></span><span class="rpct">${m}%</span></span></button></li>`; }).join('')}</ol>`
+        : `<div class="empty"><h3>No ${esc(s.name)} decks yet</h3><p>Upload class notes or textbook pages (scans work too) and you'll get notes, flashcards and exam questions.</p><button class="btn" type="button" data-act="upload" data-s="${esc(s.id)}">Upload ${esc(s.name)} notes</button></div>`}`;
   }
   document.addEventListener('click', e => {
     const o = e.target.closest('[data-open]'); if (o && !o.closest('#ov')) { openDeck(o.dataset.open); return; }
@@ -277,9 +276,9 @@
     const secs = d.sections || [];
     if (!secs.length) { el.innerHTML = '<p class="note">No notes in this deck yet.</p>'; return; }
     el.innerHTML = secs.map(s => `<div class="sec-card ${s.ex ? '' : 'solo'}"><div>
-        <h3>${s.code ? `<span class="code">${esc(s.code)}</span>` : ''}<span>${fm(s.name)}</span>${s.ext ? '<span class="bonus">YEAR 9 EXTENSION</span>' : ''}</h3>
+        <h3>${s.code ? `<span class="code">${esc(s.code)}</span>` : ''}<span>${fm(s.name)}</span>${s.ext ? '<span class="bonus">Year 9 extension</span>' : ''}</h3>
         <ul>${(s.notes || []).map(n => `<li>${fm(n)}</li>`).join('')}</ul>
-        ${hasPracticeFor(d, s.code) ? `<button class="btn btn-ghost btn-sm" type="button" style="margin-top:12px" data-prac="${esc(s.code)}">Exam questions on this →</button>` : ''}
+        ${hasPracticeFor(d, s.code) ? `<button class="btn btn-ghost btn-sm" type="button" style="margin-top:12px" data-prac="${esc(s.code)}">Practise this topic</button>` : ''}
       </div>${s.ex ? `<div class="worked"><div class="eyebrow" style="margin-bottom:6px">Worked example</div><div class="wq">${fm(s.ex[0])}</div><ol>${s.ex.slice(1).map(x => `<li>${fm(x)}</li>`).join('')}</ol></div>` : ''}</div>`).join('');
     $$('[data-prac]', el).forEach(b => b.onclick = () => { cur.tab = 'practice'; cur.filter = b.dataset.prac; renderDeckOv(); });
   }
@@ -287,7 +286,7 @@
   /* ---------------- flashcards (swipe right = got it, left = still learning) ---------------- */
   function openSubjectCards(sid) {
     const s = getSubj(sid); const cards = decksOf(sid).flatMap(deckCards);
-    cur = { kind: 'cards', tab: null }; const body = ovFrame(`${s.name} · all flashcards`, 'c-' + s.hue, null); viewCards(body, cards); showOv();
+    cur = { kind: 'cards', tab: null }; const body = ovFrame(`All ${s.name} flashcards`, 'c-' + s.hue, null); viewCards(body, cards); showOv();
   }
   function viewCards(el, cards) {
     if (!cards.length) { el.innerHTML = '<p class="note">No flashcards here yet.</p>'; return; }
@@ -295,9 +294,9 @@
     let queue = shuffle(cards.filter(c => !known(c))); let total = cards.length;
     if (!queue.length) queue = shuffle(cards.slice());
     el.innerHTML = `<div class="fc-wrap"><div class="fc-bar"><i id="fcBar"></i></div>
-      <div class="fc" id="fc" tabindex="0" role="button" aria-label="Flashcard. Press space to flip."><div class="fc-in"><div class="fc-face fc-front"><span class="deckname" id="fcDeck"></span><div class="t" id="fcQ"></div><div class="hint">tap to flip · swipe → got it · ← still learning</div></div><div class="fc-face fc-back"><div id="fcA"></div></div></div></div>
-      <div class="fc-ctrl"><button class="btn btn-bad" id="fcAgain" type="button">← Still learning</button><button class="btn btn-good" id="fcGot" type="button">Got it →</button></div>
-      <div class="fc-sub"><span class="mono" style="font-size:13px;color:var(--muted)"><b id="fcK" style="color:var(--chalk)"></b> of ${total} known · <span id="fcLeft"></span> left this round</span><span class="row"><button class="btn btn-ghost btn-sm" id="fcShuf" type="button">Shuffle</button><button class="btn btn-ghost btn-sm" id="fcReset" type="button">Reset</button></span></div></div>`;
+      <div class="fc" id="fc" tabindex="0" role="button" aria-label="Flashcard. Press space to flip."><div class="fc-in"><div class="fc-face fc-front"><span class="deckname" id="fcDeck"></span><div class="t" id="fcQ"></div><div class="hint">Tap to flip. Swipe right if you knew it, left if not.</div></div><div class="fc-face fc-back"><div id="fcA"></div></div></div></div>
+      <div class="fc-ctrl"><button class="btn btn-bad" id="fcAgain" type="button">Still learning</button><button class="btn btn-good" id="fcGot" type="button">Got it</button></div>
+      <div class="fc-sub"><span class="mono" style="font-size:13px;color:var(--muted)"><b id="fcK" style="color:var(--chalk)"></b> of ${total} known, <span id="fcLeft"></span> left this round</span><span class="row"><button class="btn btn-ghost btn-sm" id="fcShuf" type="button">Shuffle</button><button class="btn btn-ghost btn-sm" id="fcReset" type="button">Reset</button></span></div></div>`;
     const fc = $('#fc', el);
     const stats = () => { const k = cards.filter(known).length; $('#fcK', el).textContent = k; $('#fcBar', el).style.width = (k / total * 100) + '%'; $('#fcLeft', el).textContent = queue.length; };
     const show = (dir = 1) => {
@@ -372,7 +371,7 @@
   function renderCard(q, { mode = 'practice', num = null, onPart } = {}) {
     const card = document.createElement('div'); card.className = 'qcard';
     const total = q.parts.reduce((a, p) => a + (p.marks || 1), 0);
-    card.innerHTML = `<div class="qhead">${num != null ? `<span class="qn">Q${num}</span>` : ''}${q.level ? `<span class="lvl lvl-${q.level}">${{ F: 'FOUNDATION', S: 'STANDARD', C: 'COMPLEX' }[q.level]}</span>` : ''}${q.ext ? '<span class="bonus">Y9 EXT</span>' : ''}<span>${esc((q.tags || []).join(' · '))}${q.deckTitle && mode === 'exam' ? '' : ''}</span><span class="mk">${total} mark${total > 1 ? 's' : ''}</span></div>
+    card.innerHTML = `<div class="qhead">${num != null ? `<span class="qn">Q${num}</span>` : ''}${q.level ? `<span class="lvl lvl-${q.level}">${{ F: 'Foundation', S: 'Standard', C: 'Complex' }[q.level]}</span>` : ''}${q.ext ? '<span class="bonus">Year 9 ext.</span>' : ''}<span>${esc((q.tags || []).join(', '))}${q.deckTitle && mode === 'exam' ? '' : ''}</span><span class="mk">${total} mark${total > 1 ? 's' : ''}</span></div>
       ${q.stem ? `<div class="qstem">${fm(q.stem)}</div>` : ''}${V.render(q.visual)}<div class="parts"></div>`;
     const host = $('.parts', card);
     q.parts.forEach(p => host.appendChild(renderPart(p, q, mode, onPart)));
@@ -524,10 +523,10 @@ Award marks only for what the student actually wrote. Write any maths in the fee
     el.innerHTML = `${tags.length ? `<div class="filters" role="group" aria-label="Topic"><button class="fchip" type="button" data-f="all" aria-pressed="${cur.filter === 'all'}">All topics</button>${tags.map(s => `<button class="fchip" type="button" data-f="${esc(s.code)}" aria-pressed="${cur.filter === s.code}">${esc(s.code)} ${esc(s.name)}${s.ext ? ' ★' : ''}</button>`).join('')}</div>` : ''}
       <div class="lvlbar"><div class="lvl-now" id="lvlNow"></div><div class="filters" role="group" aria-label="Level">${[['auto', 'Auto'], ...ls.map(L => [L, LNAME[L]])].map(([k, l]) => `<button class="fchip" type="button" data-l="${k}" aria-pressed="${cur.level === k}">${l}</button>`).join('')}</div></div>
       <div class="session"><span>This session <b id="sGot">0</b>/<b id="sOut">0</b> marks</span>${aiReady() ? '<button class="linkbtn" type="button" id="aiMore">✦ Make new questions with AI</button>' : ''}</div><div id="qHost"></div>
-      <div class="qnav"><button class="btn btn-hot" type="button" id="nextQ">Next question →</button></div>`;
+      <div class="qnav"><button class="btn btn-hot" type="button" id="nextQ">Next question</button></div>`;
     const drawLvl = (pulse) => {
       const auto = cur.level === 'auto', L = auto ? levelOf(d) : cur.level, box = $('#lvlNow', el);
-      box.innerHTML = `<span class="lvl-badge lvl-${L}">${auto ? 'Level' : 'Fixed'} · ${LNAME[L]}</span><span class="lvl-hint">${auto ? esc(lvlHint(d)) : 'Manual level: your level won\'t change'}</span>`;
+      box.innerHTML = `<span class="lvl-badge lvl-${L}">${auto ? 'Level' : 'Fixed at'}: ${LNAME[L]}</span><span class="lvl-hint">${auto ? esc(lvlHint(d)) : 'Manual level: your level won\'t change'}</span>`;
       if (pulse && hasGsap && !reduce) gsap.fromTo($('.lvl-badge', box), { scale: 1.35 }, { scale: 1, duration: .6, ease: 'elastic.out(1, .5)' });
     };
     $$('[data-f]', el).forEach(b => b.onclick = () => { cur.filter = b.dataset.f; $$('[data-f]', el).forEach(x => x.setAttribute('aria-pressed', x === b)); next(); });
@@ -539,8 +538,8 @@ Award marks only for what the student actually wrote. Write any maths in the fee
       noteResult(q, d);
       if (cur.level !== 'auto') return;
       const moved = climb(d, q); drawLvl(!!moved);
-      if (moved === 'up') { toast(`Level up → ${LNAME[levelOf(d)]}`); burst(innerWidth / 2, 140, 110); }
-      if (moved === 'down') toast(`Level down → ${LNAME[levelOf(d)]}. Build it back up.`);
+      if (moved === 'up') { toast(`Level up: you're on ${LNAME[levelOf(d)]} now`); burst(innerWidth / 2, 140, 110); }
+      if (moved === 'down') toast(`Back to ${LNAME[levelOf(d)]} for now. Build it back up.`);
     };
     const next = () => {
       const q = nextQuestion(d, cur.filter, cur.level === 'auto' ? levelOf(d) : cur.level);
@@ -589,8 +588,8 @@ Award marks only for what the student actually wrote. Write any maths in the fee
     if (!mistakesOf().length) { body.innerHTML = `<div class="empty"><h3>No mistakes to fix</h3><p>Anything you get wrong in practice, drills or practice exams lands here. Get it right twice and it's cleared.</p></div>`; return; }
     const groups = {}; list.slice().sort((a, b) => a.at - b.at).forEach(m => (groups[m.deckId] ||= []).push(m));
     body.innerHTML = `<p class="note" style="margin:0 0 12px">Get each one right <b>twice</b> to clear it. <b>Fresh version</b> gives you the same kind of question with new numbers.</p>
-      <div class="filters" role="group" aria-label="Subject"><button class="fchip" type="button" data-ms="" aria-pressed="${!cur.sid}">All · ${mistakesOf().length}</button>${subs.map(s => `<button class="fchip" type="button" data-ms="${esc(s.id)}" aria-pressed="${cur.sid === s.id}">${esc(s.name)} · ${mistakesOf(s.id).length}</button>`).join('')}</div>
-      <div class="row" style="margin:6px 0 16px">${list.length ? `<button class="btn btn-hot" type="button" id="redoAll">Redo all ${list.length} →</button>` : ''}</div>
+      <div class="filters" role="group" aria-label="Subject"><button class="fchip" type="button" data-ms="" aria-pressed="${!cur.sid}">All (${mistakesOf().length})</button>${subs.map(s => `<button class="fchip" type="button" data-ms="${esc(s.id)}" aria-pressed="${cur.sid === s.id}">${esc(s.name)} (${mistakesOf(s.id).length})</button>`).join('')}</div>
+      <div class="row" style="margin:6px 0 16px">${list.length ? `<button class="btn btn-hot" type="button" id="redoAll">Redo all ${list.length}</button>` : ''}</div>
       ${Object.entries(groups).map(([id, ms]) => { const d = getDeck(id); return `<div class="mgroup ${hue(d)}"><h3>${esc(d.title)} <span class="mono">${ms.length}</span></h3>${ms.map(m => `<div class="mrow"><div class="mtxt"><div class="mq">${fm(firstLine(m.q))}</div><div class="mmeta">${m.q.level ? `<span class="lvl-chip lvl-${m.q.level}">${m.q.level}</span>` : ''}${ago(m.at)}${m.fixes ? ' · 1 of 2 fixed' : ''}</div></div><div class="row"><button class="btn btn-sm btn-ghost" type="button" data-redo="${m.id}">Redo</button>${freshQ(m) ? `<button class="btn btn-sm btn-ghost" type="button" data-fresh="${m.id}">Fresh version</button>` : ''}</div></div>`).join('')}</div>`; }).join('')}`;
     $$('[data-ms]', body).forEach(b => b.onclick = () => { cur.sid = b.dataset.ms || null; drawMistakes(); });
     $$('[data-redo]', body).forEach(b => b.onclick = () => redoMistakes([b.dataset.redo], false));
@@ -604,8 +603,8 @@ Award marks only for what the student actually wrote. Write any maths in the fee
       const m = S.mistakes.find(x => x.id === ids[i]);
       if (!m) { if (++i < ids.length) return show(); drawMistakes(); return; }
       const d = getDeck(m.deckId), q = (fresh && freshQ(m)) || JSON.parse(JSON.stringify(m.q));
-      body.innerHTML = `<div class="row" style="justify-content:space-between;margin-bottom:10px"><span class="eyebrow">${esc(d.title)} · ${i + 1} of ${ids.length}${fresh ? ' · fresh version' : ''}</span><button class="linkbtn" type="button" id="mBack">← All mistakes</button></div><div id="qHost"></div>
-        <div class="qnav"><button class="btn btn-hot" type="button" id="mNext">${i + 1 < ids.length ? 'Next mistake →' : 'Done'}</button></div>`;
+      body.innerHTML = `<div class="row" style="justify-content:space-between;margin-bottom:10px"><span class="eyebrow">${esc(d.title)}: ${i + 1} of ${ids.length}${fresh ? ', fresh version' : ''}</span><button class="linkbtn" type="button" id="mBack">← All mistakes</button></div><div id="qHost"></div>
+        <div class="qnav"><button class="btn btn-hot" type="button" id="mNext">${i + 1 < ids.length ? 'Next mistake' : 'Done'}</button></div>`;
       $('#qHost', body).appendChild(renderCard(q, { mode: 'practice', onPart: (p) => { record(d.id, q.tags, p._got || 0, p.marks || 1); if (allDone(q) && !q._counted) { q._counted = true; noteResult(q, d, { id: m.id, fresh }); } } }));
       $('#mBack', body).onclick = drawMistakes;
       $('#mNext', body).onclick = () => { i++; if (i < ids.length) show(); else drawMistakes(); };
@@ -643,7 +642,7 @@ Write 8 mcq (answer = index 0-3 of the correct option, vary its position) and 2 
   }
   function viewDrills(el, d) {
     const sess = { ok: 0, n: 0 };
-    el.innerHTML = `<p class="note" style="margin:0 0 6px">Fast one-step questions to warm up. Exam questions are the main event.</p><div class="session"><span>Session <b id="dOk">0</b>/<b id="dN">0</b></span></div><div id="qHost"></div><div class="qnav"><button class="btn btn-hot" type="button" id="nextQ">Next →</button></div>`;
+    el.innerHTML = `<p class="note" style="margin:0 0 6px">Fast one-step questions to warm up. Exam questions are the main event.</p><div class="session"><span>Session <b id="dOk">0</b>/<b id="dN">0</b></span></div><div id="qHost"></div><div class="qnav"><button class="btn btn-hot" type="button" id="nextQ">Next</button></div>`;
     const host = $('#qHost', el);
     const next = () => {
       const q = drillQ(d, pick(Object.keys(d.drills)));
@@ -723,9 +722,9 @@ Write 8 mcq (answer = index 0-3 of the correct option, vary its position) and 2 
     const msg = pct >= 85 ? 'Exam ready. Ridiculous.' : pct >= 70 ? 'Solid. Fix the red ones below and you\'re there.' : pct >= 50 ? 'Getting there. Practise the topics with the shortest bars.' : 'That\'s what practice exams are for. Start with Learn, then Exam questions.';
     let res = $('#examResult', body);
     if (!res) { res = document.createElement('div'); res.id = 'examResult'; res.className = 'result'; body.prepend(res); }
-    res.innerHTML = `<div class="eyebrow">Your score</div><div class="score">${got}/${out}</div><p style="font-size:18px;font-weight:800;margin:6px 0">${pct}% · ${msg}</p>${pending ? `<p class="note">+ ${pending} marks of short answers still to self-mark below.</p>` : ''}
+    res.innerHTML = `<div class="eyebrow">Your score</div><div class="score">${got}/${out}</div><p style="font-size:18px;font-weight:800;margin:6px 0">${pct}%. ${msg}</p>${pending ? `<p class="note">+ ${pending} marks of short answers still to self-mark below.</p>` : ''}
       <div class="bars">${Object.entries(byDeck).map(([k, [g, o]]) => { const v = o ? g / o : 0; return `<div class="bar"><span>${esc(k)}</span><div class="tr"><i style="width:${v * 100}%;background:${v >= .8 ? 'var(--good)' : v >= .5 ? 'var(--gold)' : 'var(--bad)'}"></i></div><span class="n">${g}/${o}</span></div>`; }).join('')}</div>
-      <div class="row" style="margin-top:16px">${missedN(ex) ? `<button class="btn btn-acc" type="button" id="fixMist">Fix my ${missedN(ex)} mistake${missedN(ex) > 1 ? 's' : ''} →</button>` : ''}<button class="btn btn-hot" type="button" id="again">New practice exam</button></div>`;
+      <div class="row" style="margin-top:16px">${missedN(ex) ? `<button class="btn btn-acc" type="button" id="fixMist">Fix my ${missedN(ex)} mistake${missedN(ex) > 1 ? 's' : ''}</button>` : ''}<button class="btn btn-hot" type="button" id="again">New practice exam</button></div>`;
     const fm = $('#fixMist', res); if (fm) fm.onclick = () => { closeOv(); openMistakes(); };
     $('#again', res).onclick = () => { const sid = ex.title.startsWith('Geo') ? 'geo' : 'maths'; closeOv(); openMock(sid); };
     ov.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
@@ -786,7 +785,7 @@ Write 8 mcq (answer = index 0-3 of the correct option, vary its position) and 2 
       cards: (d.cards || []).filter(c => c && c.q && c.a).slice(0, 150).map(c => ({ q: String(c.q).slice(0, 220), a: String(c.a).slice(0, 500) })),
       concepts: cleanMcq(d.concepts), short: cleanShort(d.short), ai: !!d.ai, source: d.source || '',
     };
-    deck.blurb = `${deck.sections.length} topics · ${deck.cards.length} flashcards · ${deck.concepts.length + deck.short.length} questions`;
+    deck.blurb = `${deck.sections.length} topics, ${deck.cards.length} flashcards, ${deck.concepts.length + deck.short.length} questions`;
     S.custom.push(deck); save(); renderTabs(); renderSubject(); renderBoard(); return deck;
   }
 
@@ -1063,7 +1062,7 @@ Aim for 2-5 sections with 3-6 notes each, 10-20 flashcards (key terms, people, d
     const el = $('#league'); if (!el) return;
     el.hidden = !Cloud.available;
     if (!Cloud.available) return;
-    const head = `<div class="sec-head"><h2>Leaderboard</h2><span class="eyebrow">private groups · just you and your mates</span></div>`;
+    const head = `<div class="sec-head"><h2>Leaderboard</h2><p class="sec-sub">Private groups for you and your mates</p></div>`;
     if (!me) { el.innerHTML = head + `<div class="panel league-teaser"><p class="note" style="margin:0">Sign in to sync your progress and race your mates for XP this week.</p><button class="btn btn-hot btn-sm" type="button" data-lg="signin">Sign in</button></div>`; bindLeague(el); return; }
     if (!S.profile) { el.innerHTML = head + `<div class="panel league-teaser"><p class="note" style="margin:0">Pick a nickname first so your mates know it's you.</p><button class="btn btn-hot btn-sm" type="button" data-lg="profile">Set up profile</button></div>`; bindLeague(el); return; }
     const gs = S.groups; league.tab = Math.min(league.tab, Math.max(0, gs.length - 1));
@@ -1120,19 +1119,16 @@ Aim for 2-5 sections with 3-6 notes each, 10-20 flashcards (key terms, people, d
   }
 
   /* ---------------- intro motion ---------------- */
-  function intro() {
-    if (!hasGsap || reduce) return;
-    const tl = gsap.timeline({ defaults: { ease: 'power4.out' } });
-    tl.from('#h1 .line > span', { yPercent: 105, rotate: 4, duration: 1, stagger: .12 })
-      .from(['#next', '#heroCtas'], { y: 18, opacity: .2, duration: .6, stagger: .08, clearProps: 'transform,opacity' }, '-=.6')
-      .from('#board', { y: 30, opacity: .3, duration: .8, clearProps: 'transform,opacity' }, 0.1)
-      .from('#subject .decks', { y: 30, opacity: .3, duration: .6, clearProps: 'transform,opacity' }, '-=.5');
+  function intro() { // the calculator screen switches on: every segment lights, then settles
+    const l = $('#lcd'); if (!l || reduce) return;
+    l.classList.add('boot'); setTimeout(() => l.classList.remove('boot'), 650);
   }
+
 
   $('#mistBtn').onclick = () => openMistakes();
   $('#acctBtn').onclick = () => (me && !S.profile ? openProfile(true) : openAccount());
   if (!subjects().some(s => s.id === S.subj)) S.subj = 'geo';
-  renderStats(); renderMistakeCount(); renderTabs(); renderNext(); renderBoard(); renderTicker(); renderSubject(); renderWeek(); renderUpSubjects(); renderAiNote(); renderAcct(); renderLeague(); intro();
+  renderStats(); renderMistakeCount(); renderTabs(); renderNext(); renderBoard(); renderSubject(); renderWeek(); renderUpSubjects(); renderAiNote(); renderAcct(); renderLeague(); intro();
   AI.init();
   Cloud.init(onUser);
 })();
