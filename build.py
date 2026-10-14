@@ -1,7 +1,13 @@
 s=open('src/shell.html').read()
-js=[open('src/'+f).read() for f in ['logic.js','content.js','exam.js','geo.js','viz.js','app.js']]
+js=[open('src/'+f).read() for f in ['logic.js','cloud.js','content.js','exam.js','geo.js','viz.js','app.js']]
 libs='<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>\n'
-page=s+'\n'+libs+''.join('<script>\n'+j+'\n</script>\n' for j in js)
-open('lock-in-artifact.html','w').write(page)
+# Firebase (accounts + sync) only goes in the published site, not the Claude artifact.
+FB={'app':'sha384-ZaR6mWzmJtrRibZ1Vm7SoHFr8OXjyAuGAXalGDKqbxFT18oi/z+oZLIRFkpeNor1',
+    'auth':'sha384-I1LYojsZ5RM1cOda44Z2h42Qa6YfsQ1XkXxREnhp4ueYBR/4d1pG1K+NZM537Vsj',
+    'firestore':'sha384-Ke0FJhH7LyRqDxZ0wt+/OXV38yfQVu7g9VPEEGjYmB4RVOY/ta04uecRhsMwT7V3'}
+fb=''.join(f'<script src="https://cdn.jsdelivr.net/npm/firebase@10.14.1/firebase-{m}-compat.js" integrity="{h}" crossorigin="anonymous"></script>\n' for m,h in FB.items())
+body=''.join('<script>\n'+j+'\n</script>\n' for j in js)
+open('lock-in-artifact.html','w').write(s+'\n'+libs+body)
+page=s+'\n'+libs+fb+body
 open('index.html','w').write('<!doctype html>\n<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"></head><body>\n'+page+'</body></html>\n')
 print(len(page))

@@ -1,0 +1,48 @@
+rules_version = '2';
+// Lock In — paste into Firebase console → Firestore Database → Rules → Publish.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    function isMe(uid) { return signedIn() && request.auth.uid == uid; }
+
+    // Each person's saved progress: only they can read or write it.
+    match /users/{uid} {
+      allow get, delete: if isMe(uid);
+      allow create, update: if isMe(uid)
+        && request.resource.data.keys().hasOnly(['nickname', 'avatar', 'state', 'updatedAt'])
+        && request.resource.data.state is string
+        && request.resource.data.nickname is string && request.resource.data.nickname.size() <= 16;
+    }
+
+    // Groups: you can open one only if you know its code (no listing all groups).
+    match /groups/{code} {
+      allow get: if signedIn();
+      allow create: if signedIn()
+        && code.matches('^[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]{6}$')
+        && request.resource.data.keys().hasOnly(['name', 'owner', 'createdAt'])
+        && request.resource.data.owner == request.auth.uid
+        && request.resource.data.name is string
+        && request.resource.data.name.size() >= 1 && request.resource.data.name.size() <= 30;
+      allow update: if signedIn() && resource.data.owner == request.auth.uid
+        && request.resource.data.owner == resource.data.owner
+        && request.resource.data.name is string && request.resource.data.name.size() <= 30;
+      allow delete: if signedIn() && resource.data.owner == request.auth.uid;
+
+      // Leaderboard rows: everyone in the know can read; you can only write your own row.
+      match /members/{uid} {
+        allow read: if signedIn() && exists(/databases/$(database)/documents/groups/$(code));
+        allow create, update: if isMe(uid)
+          && exists(/databases/$(database)/documents/groups/$(code))
+          && request.resource.data.keys().hasOnly(['nickname', 'avatar', 'xp', 'weekXp', 'week', 'streak', 'updatedAt'])
+          && request.resource.data.nickname is string
+          && request.resource.data.nickname.size() >= 2 && request.resource.data.nickname.size() <= 16
+          && request.resource.data.xp is int && request.resource.data.xp >= 0
+          && request.resource.data.weekXp is int && request.resource.data.weekXp >= 0
+          && request.resource.data.streak is int && request.resource.data.streak >= 0
+          && request.resource.data.week is string;
+        allow delete: if isMe(uid)
+          || (signedIn() && get(/databases/$(database)/documents/groups/$(code)).data.owner == request.auth.uid);
+      }
+    }
+  }
+}

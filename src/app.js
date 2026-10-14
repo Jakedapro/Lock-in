@@ -9,11 +9,16 @@
   const check = X.check;
 
   /* ---------------- storage ---------------- */
-  const KEY = 'lockin.v2';
-  let S = { p: {}, xp: 0, streak: { last: '', n: 0 }, custom: [], extra: {}, subj: 'geo' };
-  try { const raw = localStorage.getItem(KEY) || localStorage.getItem('lockin.v1'); if (raw) { const o = JSON.parse(raw); S = Object.assign(S, o); S.custom = (S.custom || []).map(d => ({ subject: 'other', ...d })); } } catch (e) { }
-  S = Logic.defaults(S);
-  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { } };
+  // Each person on this device has their own key: guest = 'lockin.v2', signed in = 'lockin.v2:<uid>'.
+  let KEY = Logic.storageKey(null), me = null;
+  const fresh = () => ({ p: {}, xp: 0, streak: { last: '', n: 0 }, custom: [], extra: {}, subj: 'geo' });
+  function loadLocal(key) {
+    let st = fresh();
+    try { const raw = localStorage.getItem(key) || (key === 'lockin.v2' ? localStorage.getItem('lockin.v1') : null); if (raw) { st = Object.assign(st, JSON.parse(raw)); st.custom = (st.custom || []).map(d => ({ subject: 'other', ...d })); } } catch (e) { }
+    return Logic.defaults(st);
+  }
+  let S = loadLocal(KEY);
+  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { } if (me) queueSync(); };
   const today = () => new Date().toLocaleDateString('en-CA');
   function bumpStreak() { const t = today(); if (S.streak.last === t) return; const y = new Date(Date.now() - 864e5).toLocaleDateString('en-CA'); S.streak.n = S.streak.last === y ? S.streak.n + 1 : 1; S.streak.last = t; }
   const prog = (id) => (S.p[id] ||= { att: 0, cor: 0, tags: {}, known: {} });
@@ -21,8 +26,9 @@
     if (!deckId || !out) return;
     const p = prog(deckId); p.att += out; p.cor += got;
     (tags && tags.length ? tags : ['all']).forEach(t => { const r = (p.tags[t] ||= [0, 0]); r[0] += out; r[1] += got; });
-    S.xp += got * 10 + 2; bumpStreak(); save(); renderStats();
+    addXp(got * 10 + 2); bumpStreak(); save(); renderStats();
   }
+  function addXp(n) { S.xp += n; const wk = Logic.weekStart(new Date()); if (S.week.start !== wk) S.week = { start: wk, xp: 0 }; S.week.xp += n; }
   const mastery = (id) => { const p = S.p[id]; if (!p || !p.att) return 0; return Math.round(p.cor / p.att * Math.min(1, p.att / 30) * 100); };
   function renderStats() { $('#xp').textContent = S.xp; $('#streak').textContent = S.streak.n; }
 
@@ -285,7 +291,7 @@
       $('#fcQ', el).textContent = c.q; $('#fcA', el).textContent = c.a; $('#fcDeck', el).textContent = c.deckTitle || '';
       if (hasGsap && !reduce) gsap.fromTo(fc, { x: 50 * dir, opacity: .2, rotate: 3 * dir }, { x: 0, opacity: 1, rotate: 0, duration: .35, ease: 'back.out(1.6)' });
     };
-    const got = () => { const c = queue.shift(); if (!c) return; prog(c.deckId).known[c.idx] = 1; S.xp += 3; bumpStreak(); save(); renderStats(); xpPop($('#fcGot', el), '+3'); show(1); };
+    const got = () => { const c = queue.shift(); if (!c) return; prog(c.deckId).known[c.idx] = 1; addXp(3); bumpStreak(); save(); renderStats(); xpPop($('#fcGot', el), '+3'); show(1); };
     const again = () => { const c = queue.shift(); if (!c) return; if (S.p[c.deckId]) delete S.p[c.deckId].known[c.idx]; save(); queue.splice(Math.min(queue.length, 3), 0, c); show(-1); };
     $('#fcGot', el).onclick = got; $('#fcAgain', el).onclick = again;
     $('#fcShuf', el).onclick = () => { queue = shuffle(queue); show(); toast('Shuffled'); };
@@ -895,6 +901,101 @@ Aim for 2-5 sections with 3-6 notes each, 10-20 flashcards (key terms, people, d
     finally { btn.disabled = false; setTimeout(() => pw.hidden = true, 1800); }
   };
 
+  /* ---------------- accounts & sync ---------------- */
+  const AVATARS = ['🦊', '🐼', '🐸', '🦉', '🐯', '🐙', '🦄', '🐢', '🐧', '🦖', '🐝', '🐳'];
+  const AV_COLS = ['coral', 'cyan', 'gold', 'lilac', 'pink', 'green'];
+  const sync = { t: null, state: 'idle', at: 0, dropped: false };
+  const avatarHtml = (pr, cls = '') => `<span class="av ${cls} c-${esc(pr?.avatar?.c || 'lilac')}" aria-hidden="true">${esc(pr?.avatar?.e || '🙂')}</span>`;
+  function renderAll() { renderStats(); renderMistakeCount(); renderTabs(); renderNext(); renderBoard(); renderSubject(); renderUpSubjects(); renderAcct(); renderLeague(); }
+  function renderAcct() {
+    const b = $('#acctBtn'); if (!b) return;
+    b.hidden = !Cloud.available;
+    b.innerHTML = me && S.profile ? avatarHtml(S.profile, 'sm') + `<span class="acct-name">${esc(S.profile.nickname)}</span>` : me ? avatarHtml(null, 'sm') : 'Sign in';
+    b.classList.toggle('in', !!me);
+  }
+  function queueSync() { clearTimeout(sync.t); sync.t = setTimeout(pushCloud, 3000); }
+  async function pushCloud() {
+    clearTimeout(sync.t); if (!me) return;
+    const { state, droppedCustom } = Logic.cloudPayload(S); sync.dropped = droppedCustom;
+    sync.state = 'saving'; drawSync();
+    try {
+      await Cloud.save(me, { nickname: S.profile?.nickname || '', avatar: S.profile?.avatar || null, state: JSON.stringify(state) });
+      sync.state = 'saved'; sync.at = Date.now();
+      await pushLeague();
+    } catch (e) { sync.state = 'error'; }
+    drawSync();
+  }
+  function drawSync() {
+    const el = $('#syncState'); if (!el) return;
+    el.textContent = { idle: 'Synced', saving: 'Saving…', saved: 'Synced ' + ago(sync.at), error: 'Offline. Will sync when you\'re back online.' }[sync.state] + (sync.dropped ? ' · Your own decks are too big to sync, so they stay on this device.' : '');
+  }
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden' && sync.t) pushCloud(); });
+
+  async function onUser(u) {
+    if (!u) { // signed out (or never signed in): back to this device's guest progress
+      if (!me) return renderAcct();
+      me = null; KEY = Logic.storageKey(null); S = loadLocal(KEY); closeOvIfOpen(); renderAll(); return;
+    }
+    me = u.uid; KEY = Logic.storageKey(me);
+    let cloud = null;
+    try { const doc = await Cloud.load(me); cloud = doc && doc.state ? JSON.parse(doc.state) : null; } catch (e) { toast('Couldn\'t reach the cloud. Using this device\'s copy for now.'); }
+    S = Logic.mergeState(loadLocal(KEY), cloud);
+    const guest = loadLocal(Logic.storageKey(null)), flag = 'lockin.migrated:' + me;
+    let asked = false; try { asked = !!localStorage.getItem(flag); } catch (e) { }
+    if (!asked && (guest.xp > 0 || guest.custom.length)) { try { localStorage.setItem(flag, '1'); } catch (e) { } offerMigrate(guest); }
+    else if (!S.profile) openProfile(true);
+    save(); renderAll();
+  }
+  const closeOvIfOpen = () => { if (!ov.hidden) closeOv(); };
+  function offerMigrate(guest) {
+    cur = { kind: 'acct', tab: null }; const body = ovFrame('Welcome!', 'c-cyan', null);
+    body.innerHTML = `<div class="sheet"><h3>Bring your progress with you?</h3><p class="note">This device has <b>${guest.xp} XP</b>${guest.custom.length ? ` and <b>${guest.custom.length}</b> of your own deck${guest.custom.length > 1 ? 's' : ''}` : ''} from before you signed in. Move it into your account so it syncs everywhere?</p>
+      <div class="row" style="margin-top:14px"><button class="btn btn-hot" type="button" id="migYes">Move it into my account</button><button class="btn btn-ghost" type="button" id="migNo">No, start fresh</button></div><p class="note" style="font-size:13px;margin-top:10px">Not your progress (shared computer)? Pick "start fresh".</p></div>`;
+    showOv();
+    const done = () => { closeOv(); if (!S.profile) openProfile(true); };
+    $('#migYes').onclick = () => { S = Logic.mergeState(guest, S); save(); renderAll(); toast('Progress moved into your account'); done(); };
+    $('#migNo').onclick = done;
+  }
+  function openProfile(first) {
+    cur = { kind: 'acct', tab: null }; const body = ovFrame(first ? 'Set up your profile' : 'Edit profile', 'c-lilac', null);
+    const pr = S.profile || { nickname: '', avatar: { e: pick(AVATARS), c: pick(AV_COLS) } }; let av = { ...pr.avatar };
+    body.innerHTML = `<div class="sheet"><p class="note">Your mates see only your nickname and avatar. Never your real name or email.</p>
+      <label class="lbl" for="nick">Nickname</label><input class="field" id="nick" maxlength="16" autocomplete="off" value="${esc(pr.nickname)}" placeholder="2–16 letters or numbers" style="max-width:320px">
+      <label class="lbl">Avatar</label><div class="av-grid" id="avE">${AVATARS.map(e => `<button class="av-pick" type="button" data-e="${e}" aria-pressed="${av.e === e}">${e}</button>`).join('')}</div>
+      <label class="lbl">Colour</label><div class="av-grid" id="avC">${AV_COLS.map(c => `<button class="av-col c-${c}" type="button" data-c="${c}" aria-pressed="${av.c === c}" aria-label="${c}"></button>`).join('')}</div>
+      <div class="row" style="margin-top:16px"><div id="avPrev"></div><button class="btn btn-hot" type="button" id="profSave">Save</button></div></div>`;
+    const prev = () => { $('#avPrev').innerHTML = avatarHtml({ avatar: av }, 'lg'); };
+    $$('[data-e]', body).forEach(b => b.onclick = () => { av.e = b.dataset.e; $$('[data-e]', body).forEach(x => x.setAttribute('aria-pressed', x === b)); prev(); });
+    $$('[data-c]', body).forEach(b => b.onclick = () => { av.c = b.dataset.c; $$('[data-c]', body).forEach(x => x.setAttribute('aria-pressed', x === b)); prev(); });
+    $('#profSave').onclick = () => {
+      const n = $('#nick').value.trim().replace(/\s+/g, ' ');
+      if (!Logic.validNickname(n)) { toast('Nickname: 2–16 letters, numbers or spaces'); $('#nick').focus(); return; }
+      S.profile = { nickname: n, avatar: av }; save(); pushCloud(); renderAcct(); closeOv(); toast(first ? `Welcome, ${n}!` : 'Profile saved');
+    };
+    prev(); showOv();
+  }
+  function openAccount() {
+    cur = { kind: 'acct', tab: null }; const body = ovFrame(me ? 'Your account' : 'Sign in', 'c-cyan', null);
+    if (!me) {
+      body.innerHTML = `<div class="sheet"><h3>Lock in with your mates</h3><ul class="note perks"><li>Your XP, levels, mistakes and decks sync between your phone and laptop.</li><li>Make a group and compete on a private leaderboard.</li><li>Only your nickname is shown to others.</li></ul>
+        <div class="row" style="margin-top:14px"><button class="btn btn-hot" type="button" id="gIn"><svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#4285F4" d="M45 24.5c0-1.6-.1-3.1-.4-4.5H24v8.5h11.8c-.5 2.8-2.1 5.1-4.4 6.7v5.5h7.1c4.2-3.8 6.5-9.5 6.5-16.2z"/><path fill="#34A853" d="M24 46c5.9 0 10.9-2 14.5-5.3l-7.1-5.5c-2 1.3-4.5 2.1-7.4 2.1-5.7 0-10.5-3.8-12.2-9H4.5v5.7C8.1 41.1 15.5 46 24 46z"/><path fill="#FBBC05" d="M11.8 28.3c-.4-1.3-.7-2.8-.7-4.3s.3-3 .7-4.3V14H4.5C3 17 2 20.4 2 24s1 7 2.5 10l7.3-5.7z"/><path fill="#EA4335" d="M24 10.7c3.2 0 6.1 1.1 8.4 3.3l6.3-6.3C34.9 4.2 29.9 2 24 2 15.5 2 8.1 6.9 4.5 14l7.3 5.7c1.7-5.2 6.5-9 12.2-9z"/></svg>Sign in with Google</button><button class="btn btn-ghost" type="button" id="guest">Keep going as guest</button></div></div>`;
+      $('#gIn').onclick = async () => { try { await Cloud.signIn(); closeOvIfOpen(); } catch (e) { if (e.code !== 'auth/popup-closed-by-user' && e.code !== 'auth/cancelled-popup-request') toast('Sign-in didn\'t work: ' + (e.message || 'try again')); } };
+      $('#guest').onclick = closeOv;
+    } else {
+      body.innerHTML = `<div class="sheet"><div class="row">${avatarHtml(S.profile, 'lg')}<div><h3>${esc(S.profile?.nickname || 'No nickname yet')}</h3><div class="note mono" id="syncState" style="font-size:12.5px"></div></div></div>
+        <div class="row" style="margin-top:16px"><button class="btn btn-ghost" type="button" id="profEdit">Edit profile</button><button class="btn btn-ghost" type="button" id="syncNow">Sync now</button><button class="btn btn-bad" type="button" id="signOut">Sign out</button></div>
+        <p class="note" style="font-size:13px;margin-top:14px">Sharing this computer? Sign out and the next person can sign in with their own account. Your progress stays in your account.</p></div>`;
+      drawSync();
+      $('#profEdit').onclick = () => openProfile(false);
+      $('#syncNow').onclick = pushCloud;
+      $('#signOut').onclick = async () => { await pushCloud(); await Cloud.signOut(); toast('Signed out'); };
+    }
+    showOv();
+  }
+  // Leaderboards (groups) are added on top of this.
+  function renderLeague() { }
+  async function pushLeague() { }
+
   /* ---------------- intro motion ---------------- */
   function intro() {
     if (!hasGsap || reduce) return;
@@ -906,7 +1007,9 @@ Aim for 2-5 sections with 3-6 notes each, 10-20 flashcards (key terms, people, d
   }
 
   $('#mistBtn').onclick = () => openMistakes();
+  $('#acctBtn').onclick = () => (me && !S.profile ? openProfile(true) : openAccount());
   if (!subjects().some(s => s.id === S.subj)) S.subj = 'geo';
-  renderStats(); renderMistakeCount(); renderTabs(); renderNext(); renderBoard(); renderTicker(); renderSubject(); renderWeek(); renderUpSubjects(); renderAiNote(); intro();
+  renderStats(); renderMistakeCount(); renderTabs(); renderNext(); renderBoard(); renderTicker(); renderSubject(); renderWeek(); renderUpSubjects(); renderAiNote(); renderAcct(); renderLeague(); intro();
   AI.init();
+  Cloud.init(onUser);
 })();
