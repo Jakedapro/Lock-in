@@ -1,2 +1,5 @@
 lock-in-artifact.html
 .superpowers/
+desktop/node_modules/
+desktop/dist/
+desktop/app/

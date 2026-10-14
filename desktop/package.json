@@ -1,0 +1,40 @@
+{
+  "name": "lock-in",
+  "productName": "Lock in",
+  "version": "1.0.0",
+  "description": "Study app for HSC Maths Extension 1 and 2, Physics, and Year 8 exams.",
+  "author": "jamalmusialla81-hub",
+  "license": "UNLICENSED",
+  "private": true,
+  "main": "main.js",
+  "scripts": {
+    "prepare-app": "node prepare.js",
+    "start": "node prepare.js && electron .",
+    "dist": "node prepare.js && electron-builder --win nsis --publish never",
+    "release": "node prepare.js && electron-builder --win nsis --publish always"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@fontsource/atkinson-hyperlegible": "5.1.0",
+    "electron": "33.2.1",
+    "electron-builder": "25.1.8",
+    "gsap": "3.12.5",
+    "mathjax": "3.2.2"
+  },
+  "build": {
+    "appId": "io.github.jamalmusialla81-hub.lockin",
+    "productName": "Lock in",
+    "files": ["main.js", "app/**/*"],
+    "directories": { "buildResources": "build", "output": "dist" },
+    "win": { "target": "nsis", "icon": "build/icon.png" },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Lock in",
+      "artifactName": "Lock-In-Setup.${ext}"
+    },
+    "publish": [{ "provider": "github", "owner": "jamalmusialla81-hub", "repo": "lock-in", "releaseType": "release" }]
+  }
+}
