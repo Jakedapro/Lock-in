@@ -54,6 +54,49 @@ test('weekStart gives the Monday of the week', () => {
   assert.strictEqual(Logic.weekStart(new Date(2026, 9, 19)), '2026-10-19');
 });
 
+/* ---------- mistakes ---------- */
+const mkQ = (stem = 'Q', extra = {}) => ({ stem, level: 'S', parts: [{ label: 'a', q: stem + ' part', marks: 1, _got: 0, _done: true, _finish() { } }], visual: { type: 'topo', map: { contours: [{ h: 60 }] } }, ...extra });
+
+test('serialise drops runtime _fields and keeps diagrams', () => {
+  const s = Logic.serialise(mkQ('Q', { _counted: true }));
+  assert.strictEqual(s._counted, undefined);
+  assert.deepStrictEqual(Object.keys(s.parts[0]).sort(), ['label', 'marks', 'q']);
+  assert.deepStrictEqual(s.visual.map.contours, [{ h: 60 }]);
+});
+test('addMistake dedupes the same deck + generator and resets fixes', () => {
+  let l = Logic.addMistake([], { deckId: 'prob', q: mkQ('one'), gen: 'venn' }, 1);
+  l[0].fixes = 1;
+  l = Logic.addMistake(l, { deckId: 'prob', q: mkQ('two'), gen: 'venn' }, 2);
+  assert.strictEqual(l.length, 1);
+  assert.strictEqual(l[0].fixes, 0);
+  assert.strictEqual(l[0].q.stem, 'two');
+  assert.strictEqual(l[0].at, 2);
+});
+test('addMistake without a generator keys on the first part text', () => {
+  let l = Logic.addMistake([], { deckId: 'water', q: mkQ('a'), gen: null }, 1);
+  l = Logic.addMistake(l, { deckId: 'water', q: mkQ('b'), gen: null }, 2);
+  l = Logic.addMistake(l, { deckId: 'water', q: mkQ('a'), gen: null }, 3);
+  assert.strictEqual(l.length, 2);
+});
+test('addMistake caps at 200, dropping the oldest', () => {
+  let l = [];
+  for (let i = 0; i < 201; i++) l = Logic.addMistake(l, { deckId: 'd', q: mkQ('q' + i), gen: null }, i);
+  assert.strictEqual(l.length, 200);
+  assert.ok(!l.some(m => m.q.stem === 'q0'));
+  assert.ok(l.some(m => m.q.stem === 'q200'));
+});
+test('fixMistake twice removes it', () => {
+  let l = Logic.addMistake([], { deckId: 'd', q: mkQ(), gen: 'g' }, 1); const id = l[0].id;
+  let r = Logic.fixMistake(l, id); assert.strictEqual(r.removed, false); assert.strictEqual(r.list[0].fixes, 1);
+  r = Logic.fixMistake(r.list, id); assert.strictEqual(r.removed, true); assert.strictEqual(r.list.length, 0);
+});
+test('fix, missAgain, fix keeps it in the list', () => {
+  let l = Logic.addMistake([], { deckId: 'd', q: mkQ(), gen: 'g' }, 1); const id = l[0].id;
+  l = Logic.fixMistake(l, id).list; l = Logic.missAgain(l, id);
+  const r = Logic.fixMistake(l, id);
+  assert.strictEqual(r.removed, false); assert.strictEqual(r.list[0].fixes, 1);
+});
+
 let fail = 0;
 for (const [name, fn] of tests) { try { fn(); } catch (e) { fail++; console.log('FAIL', name, '\n ', e.message); } }
 console.log(fail ? `${fail}/${tests.length} failed` : `ok (${tests.length} tests)`);

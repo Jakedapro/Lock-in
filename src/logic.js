@@ -40,6 +40,26 @@ const Logic = (() => {
     return ymd(d);
   }
 
-  return { LEVELS, defaults, classify, ladder, nearestLevel, weekStart };
+  /* ---------- mistakes ---------- */
+  const MAX_MISTAKES = 200, FIXES_TO_CLEAR = 2;
+  const serialise = (q) => JSON.parse(JSON.stringify(q, (k, v) => (k[0] === '_' ? undefined : v)));
+  const keyOf = (deckId, q, gen) => deckId + ':' + (gen || (q.parts && q.parts[0] && q.parts[0].q) || q.stem || '');
+
+  function addMistake(list, { deckId, q, gen }, now) {
+    const key = keyOf(deckId, q, gen), clean = serialise(q);
+    const old = list.find(m => m.key === key);
+    if (old) return list.map(m => (m === old ? { ...m, q: clean, at: now, fixes: 0 } : m));
+    const id = 'm' + now.toString(36) + Math.random().toString(36).slice(2, 6);
+    return [...list, { id, key, deckId, q: clean, gen: gen || null, at: now, fixes: 0 }].slice(-MAX_MISTAKES);
+  }
+  function fixMistake(list, id) {
+    const m = list.find(x => x.id === id);
+    if (!m) return { list, removed: false };
+    if (m.fixes + 1 >= FIXES_TO_CLEAR) return { list: list.filter(x => x !== m), removed: true };
+    return { list: list.map(x => (x === m ? { ...x, fixes: x.fixes + 1 } : x)), removed: false };
+  }
+  const missAgain = (list, id) => list.map(m => (m.id === id ? { ...m, fixes: 0 } : m));
+
+  return { LEVELS, defaults, classify, ladder, nearestLevel, weekStart, serialise, addMistake, fixMistake, missAgain };
 })();
 if (typeof module !== 'undefined') module.exports = Logic;
