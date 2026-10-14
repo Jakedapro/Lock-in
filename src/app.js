@@ -2,6 +2,7 @@
 (() => {
   const $ = (s, el = document) => el.querySelector(s);
   const $$ = (s, el = document) => [...el.querySelectorAll(s)];
+  const fm = Fmt.text; // maths + bold formatting for content text (escapes HTML)
   const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const hasGsap = typeof gsap !== 'undefined';
@@ -165,7 +166,7 @@
   const ringLabel = (d) => ({ maps: 'Maps', water: 'Water' }[d.id] || (d.custom ? d.title.split(' ')[0] : d.chapter || d.title)).slice(0, 9);
   function renderTicker() {
     const bits = ['<b>BOLTS</b> Border · Orientation · Legend · Title · Scale', '<b>AR</b> = easting then northing, bottom-left corner', '<b>GR</b> 6 figures: across, then up', '<b>P(not A)</b> = 1 − P(A)', '<b>Speed</b> = distance ÷ time', '<b>km/h → m/s</b> ÷ 3.6', '<b>Water cycle</b> evaporation → condensation → precipitation', '<b>SA cylinder</b> = 2πr² + 2πrh', '<b>Scale factor</b> = image ÷ original', '<b>2.5%</b> of Earth\'s water is fresh', '<b>Tully</b> wettest · <b>Kati Thanda</b> driest', '<b>Close contours</b> = steep slope'];
-    $('#ticker').innerHTML = [...bits, ...bits].map(b => `<span>${b}</span>`).join('');
+    $('#ticker').innerHTML = [...bits, ...bits].map(b => `<span>${b.replace(/²/g, '<sup class="pow">2</sup>')}</span>`).join('');
   }
   const WEEK = [
     ['Mon', 26, [['P1–2', 'Geography', 'geo'], ['P3–4', 'Science'], ['P5–6', 'D&T / Visual Arts']]],
@@ -194,7 +195,7 @@
       <div class="subj-actions">${s.mock ? `<button class="btn btn-acc" type="button" data-act="mock" data-s="${s.id}">Practice exam${s.mock === 'geo' ? ' (45 min)' : ''}</button>` : ''}${ds.length ? `<button class="btn btn-ghost" type="button" data-act="cards" data-s="${esc(s.id)}">All flashcards</button>` : ''}<button class="btn btn-ghost" type="button" data-act="upload" data-s="${esc(s.id)}">+ Upload</button></div></div>
       ${ds.length ? `<div class="decks">${ds.map(d => { const m = mastery(d.id); return `<button class="deck ${hue(d)}" type="button" data-open="${esc(d.id)}">
           <div class="top"><span class="chip">${esc(d.chapter || 'Your deck')}</span><span class="lvl-chip lvl-${levelOf(d)}" title="Your level: ${LNAME[levelOf(d)]}">${levelOf(d)}</span>${d.custom ? `<span class="chip" style="color:var(--muted)">${d.ai ? 'AI' : 'Quick'}</span>` : ''}</div>
-          <h3>${esc(d.title)}</h3><p>${esc(d.blurb || '')}</p>
+          <h3>${esc(d.title)}</h3><p>${fm(d.blurb || '')}</p>
           <div class="foot"><span class="counts">${counts(d)}</span><div class="ring" style="--v:${m}"><span>${m}%</span></div></div></button>`; }).join('')}</div>`
         : `<div class="empty"><h3>No ${esc(s.name)} decks yet</h3><p>Upload your class notes or textbook pages (even scanned ones) and it builds notes, flashcards and exam questions.</p><button class="btn btn-hot" type="button" data-act="upload" data-s="${esc(s.id)}" style="margin-top:12px">Upload ${esc(s.name)} notes</button></div>`}`;
     tilt(el);
@@ -261,10 +262,10 @@
     const secs = d.sections || [];
     if (!secs.length) { el.innerHTML = '<p class="note">No notes in this deck yet.</p>'; return; }
     el.innerHTML = secs.map(s => `<div class="sec-card ${s.ex ? '' : 'solo'}"><div>
-        <h3>${s.code ? `<span class="code">${esc(s.code)}</span>` : ''}${esc(s.name)}${s.ext ? '<span class="bonus">YEAR 9 EXTENSION</span>' : ''}</h3>
-        <ul>${(s.notes || []).map(n => `<li>${esc(n)}</li>`).join('')}</ul>
+        <h3>${s.code ? `<span class="code">${esc(s.code)}</span>` : ''}<span>${fm(s.name)}</span>${s.ext ? '<span class="bonus">YEAR 9 EXTENSION</span>' : ''}</h3>
+        <ul>${(s.notes || []).map(n => `<li>${fm(n)}</li>`).join('')}</ul>
         ${hasPracticeFor(d, s.code) ? `<button class="btn btn-ghost btn-sm" type="button" style="margin-top:12px" data-prac="${esc(s.code)}">Exam questions on this →</button>` : ''}
-      </div>${s.ex ? `<div class="worked"><div class="eyebrow" style="margin-bottom:6px">Worked example</div><div class="wq">${esc(s.ex[0])}</div><ol>${s.ex.slice(1).map(x => `<li>${esc(x)}</li>`).join('')}</ol></div>` : ''}</div>`).join('');
+      </div>${s.ex ? `<div class="worked"><div class="eyebrow" style="margin-bottom:6px">Worked example</div><div class="wq">${fm(s.ex[0])}</div><ol>${s.ex.slice(1).map(x => `<li>${fm(x)}</li>`).join('')}</ol></div>` : ''}</div>`).join('');
     $$('[data-prac]', el).forEach(b => b.onclick = () => { cur.tab = 'practice'; cur.filter = b.dataset.prac; renderDeckOv(); });
   }
 
@@ -288,7 +289,7 @@
       stats();
       if (!queue.length) { fc.outerHTML = `<div class="empty" style="height:320px;display:grid;place-content:center"><h3>All cards known</h3><p>Hit Reset to go again, or try the exam questions.</p></div>`; $('.fc-ctrl', el).hidden = true; const r = el.getBoundingClientRect(); burst(r.left + r.width / 2, r.top + 150, 120); return; }
       const c = queue[0]; fc.classList.remove('flip'); fc.style.transform = '';
-      $('#fcQ', el).textContent = c.q; $('#fcA', el).textContent = c.a; $('#fcDeck', el).textContent = c.deckTitle || '';
+      $('#fcQ', el).innerHTML = fm(c.q); $('#fcA', el).innerHTML = fm(c.a); $('#fcDeck', el).textContent = c.deckTitle || '';
       if (hasGsap && !reduce) gsap.fromTo(fc, { x: 50 * dir, opacity: .2, rotate: 3 * dir }, { x: 0, opacity: 1, rotate: 0, duration: .35, ease: 'back.out(1.6)' });
     };
     const got = () => { const c = queue.shift(); if (!c) return; prog(c.deckId).known[c.idx] = 1; addXp(3); bumpStreak(); save(); renderStats(); xpPop($('#fcGot', el), '+3'); show(1); };
@@ -357,7 +358,7 @@
     const card = document.createElement('div'); card.className = 'qcard';
     const total = q.parts.reduce((a, p) => a + (p.marks || 1), 0);
     card.innerHTML = `<div class="qhead">${num != null ? `<span class="qn">Q${num}</span>` : ''}${q.level ? `<span class="lvl lvl-${q.level}">${{ F: 'FOUNDATION', S: 'STANDARD', C: 'COMPLEX' }[q.level]}</span>` : ''}${q.ext ? '<span class="bonus">Y9 EXT</span>' : ''}<span>${esc((q.tags || []).join(' · '))}${q.deckTitle && mode === 'exam' ? '' : ''}</span><span class="mk">${total} mark${total > 1 ? 's' : ''}</span></div>
-      ${q.stem ? `<div class="qstem">${esc(q.stem)}</div>` : ''}${V.render(q.visual)}<div class="parts"></div>`;
+      ${q.stem ? `<div class="qstem">${fm(q.stem)}</div>` : ''}${V.render(q.visual)}<div class="parts"></div>`;
     const host = $('.parts', card);
     q.parts.forEach(p => host.appendChild(renderPart(p, q, mode, onPart)));
     return card;
@@ -367,10 +368,10 @@
     p._got = null; p._ans = null; p._done = false;
     const mk = (p.marks || 1) > 1 ? `<span class="pm">[${p.marks} marks]</span>` : '';
     let body = '';
-    if (p.type === 'choice') body = `<div class="choices">${p.choices.map((c, i) => `<button class="choice" type="button" data-i="${i}">${esc(c)}</button>`).join('')}</div>`;
+    if (p.type === 'choice') body = `<div class="choices">${p.choices.map((c, i) => `<button class="choice" type="button" data-i="${i}">${fm(c)}</button>`).join('')}</div>`;
     else if (p.type === 'short') body = `<textarea class="field sa" placeholder="Write your answer like you would in the exam…" aria-label="Your answer"></textarea>${mode === 'practice' ? `<div class="row">${aiReady() ? '<button class="btn btn-hot btn-sm" type="button" data-k="ai">Mark it with AI</button>' : ''}<button class="btn btn-ghost btn-sm" type="button" data-k="self">${aiReady() ? 'Mark it myself' : 'Show marking guide'}</button></div>` : ''}`;
-    else body = `<div class="ans"><input class="field" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" inputmode="${p.type === 'ratio' || p.type === 'pm' ? 'text' : 'decimal'}" placeholder="${p.type === 'ratio' ? 'e.g. 3:4' : p.type === 'pm' ? 'e.g. ±5' : p.type === 'pct' ? 'e.g. 25%' : 'Answer (fractions OK, e.g. 3/8)'}" aria-label="Answer for part ${esc(p.label || '')}">${mode === 'practice' ? '<button class="btn btn-hot" type="button" data-k="check">Check</button><button class="btn btn-ghost" type="button" data-k="show">Show me</button>' : ''}</div>${p.hint ? `<div class="note" style="font-size:13px">${esc(p.hint)}</div>` : ''}`;
-    el.innerHTML = `${p.label ? `<div class="pl">${esc(p.label)}</div>` : ''}<div class="pbody"><div class="pq">${esc(p.q)}${mk}</div>${body}<div class="pfb"></div></div>`;
+    else body = `<div class="ans"><input class="field" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" inputmode="${p.type === 'ratio' || p.type === 'pm' ? 'text' : 'decimal'}" placeholder="${p.type === 'ratio' ? 'e.g. 3:4' : p.type === 'pm' ? 'e.g. ±5' : p.type === 'pct' ? 'e.g. 25%' : 'Answer (fractions OK, e.g. 3/8)'}" aria-label="Answer for part ${esc(p.label || '')}">${mode === 'practice' ? '<button class="btn btn-hot" type="button" data-k="check">Check</button><button class="btn btn-ghost" type="button" data-k="show">Show me</button>' : ''}</div>${p.hint ? `<div class="note" style="font-size:13px">${fm(p.hint)}</div>` : ''}`;
+    el.innerHTML = `${p.label ? `<div class="pl">${esc(p.label)}</div>` : ''}<div class="pbody"><div class="pq">${fm(p.q)}${mk}</div>${body}<div class="pfb"></div></div>`;
     const fb = $('.pfb', el);
     const finish = (ok, given) => {
       if (p._done) return; p._done = true; p._ans = given;
@@ -406,26 +407,26 @@
     return el;
   }
   function showFeedback(fb, p, q, ok, given) {
-    const steps = p.steps?.length ? `<ol class="steps">${p.steps.map(s => `<li>${esc(s)}</li>`).join('')}</ol>` : '';
-    const head = ok ? pick(['Locked in.', 'Correct!', 'Clean.', 'Yep.', 'Too easy.']) : given == null || given === '' ? `Answer: ${esc(p.show)}` : `Not quite. Answer: ${esc(p.show)}`;
+    const steps = p.steps?.length ? `<ol class="steps">${p.steps.map(s => `<li>${fm(s)}</li>`).join('')}</ol>` : '';
+    const head = ok ? pick(['Locked in.', 'Correct!', 'Clean.', 'Yep.', 'Too easy.']) : given == null || given === '' ? `Answer: ${fm(p.show)}` : `Not quite. Answer: ${fm(p.show)}`;
     fb.innerHTML = `<div class="fb ${ok ? 'good' : given == null || given === '' ? 'info' : 'bad'}"><b>${head}</b>${steps}${!ok && aiReady() && given != null && given !== '' ? `<div style="margin-top:8px"><button class="linkbtn" type="button">Explain my mistake (AI)</button></div><div class="ai" hidden></div>` : ''}</div>`;
     const lb = $('.linkbtn', fb); if (lb) lb.onclick = () => explainMistake(p, q, given, $('.ai', fb), lb);
   }
   async function explainMistake(p, q, given, box, btn) {
     btn.disabled = true; box.hidden = false; box.textContent = 'Thinking…';
     const ans = p.type === 'choice' ? p.choices[given] : given;
-    const prompt = `You are a friendly, encouraging tutor for a Year 8 student in NSW, Australia. They got an exam question wrong. In under 120 words, explain the most likely mistake in their thinking and how to get the right answer. Use simple language and show the key working. No greeting.
+    const prompt = `You are a friendly, encouraging tutor for a Year 8 student in NSW, Australia. They got an exam question wrong. In under 120 words, explain the most likely mistake in their thinking and how to get the right answer. Use simple language and show the key working. No greeting. Formatting: use **double asterisks** for key words, write powers like x^2 and fractions like 3/4, and never use LaTeX.
 
 Question: ${q.stem || ''} ${p.q}
 Correct answer: ${p.show}
 Worked solution: ${(p.steps || []).join(' | ')}
 Student's answer: ${ans}`;
-    try { await AI.fn(prompt, { modelTier: 'quick', onText: ({ text }) => { box.textContent = text; } }); }
+    try { await AI.fn(prompt, { modelTier: 'quick', onText: ({ text }) => { box.innerHTML = Fmt.rich(text); } }); }
     catch (e) { box.textContent = e?.text || AI.msg(e); }
     finally { btn.remove(); }
   }
   function critList(p, met) {
-    return `<ul class="crit">${p.criteria.map((c, i) => met ? `<li class="${met[i] ? 'met' : 'miss'}">${met[i] ? '✓' : '✗'} ${esc(c)}</li>` : `<li><label><input type="checkbox" data-c="${i}"> <span>${esc(c)}</span></label></li>`).join('')}</ul>`;
+    return `<ul class="crit">${p.criteria.map((c, i) => met ? `<li class="${met[i] ? 'met' : 'miss'}">${met[i] ? '✓' : '✗'} ${fm(c)}</li>` : `<li><label><input type="checkbox" data-c="${i}"> <span>${fm(c)}</span></label></li>`).join('')}</ul>`;
   }
   async function markShortAI(p, q, answer, fb, el, onPart) {
     $$('button[data-k]', el).forEach(b => b.disabled = true); $('textarea', el).readOnly = true;
@@ -459,11 +460,11 @@ Award marks only for what the student actually wrote. Reply with ONLY this JSON:
     } catch (e) { return { ok: false, err: AI.msg(e) }; }
   }
   function renderShortResult(fb, p, r) {
-    fb.innerHTML = `<div class="fb ${r.marks === p.marks ? 'good' : r.marks ? 'info' : 'bad'}"><b>${r.marks}/${p.marks} marks</b>${r.feedback ? `<div style="margin-top:6px">${esc(r.feedback)}</div>` : ''}${p.criteria.length ? critList(p, r.met) : ''}
-      ${p.model ? `<details style="margin-top:10px"><summary class="linkbtn" style="cursor:pointer">See a full-marks answer</summary><div style="margin-top:8px">${esc(p.model)}</div></details>` : ''}</div>`;
+    fb.innerHTML = `<div class="fb ${r.marks === p.marks ? 'good' : r.marks ? 'info' : 'bad'}"><b>${r.marks}/${p.marks} marks</b>${r.feedback ? `<div style="margin-top:6px">${Fmt.rich(r.feedback)}</div>` : ''}${p.criteria.length ? critList(p, r.met) : ''}
+      ${p.model ? `<details style="margin-top:10px"><summary class="linkbtn" style="cursor:pointer">See a full-marks answer</summary><div style="margin-top:8px">${fm(p.model)}</div></details>` : ''}</div>`;
   }
   function selfMark(p, q, answer, fb, el, onPart) {
-    fb.innerHTML = `<div class="fb info"><b>Marking guide: tick each point your answer covers</b>${critList(p, null)}${p.model ? `<div style="margin-top:10px"><span class="eyebrow">Full-marks answer</span><div style="margin-top:4px">${esc(p.model)}</div></div>` : ''}<div class="row" style="margin-top:10px"><button class="btn btn-sm btn-acc" type="button" data-k2="save">Save my mark</button></div></div>`;
+    fb.innerHTML = `<div class="fb info"><b>Marking guide: tick each point your answer covers</b>${critList(p, null)}${p.model ? `<div style="margin-top:10px"><span class="eyebrow">Full-marks answer</span><div style="margin-top:4px">${fm(p.model)}</div></div>` : ''}<div class="row" style="margin-top:10px"><button class="btn btn-sm btn-acc" type="button" data-k2="save">Save my mark</button></div></div>`;
     $('[data-k2=save]', fb).onclick = () => {
       const got = Math.min(p.marks, $$('input[data-c]:checked', fb).length);
       p._done = true; p._got = got; p._ans = answer;
@@ -565,7 +566,7 @@ Award marks only for what the student actually wrote. Reply with ONLY this JSON:
     body.innerHTML = `<p class="note" style="margin:0 0 12px">Get each one right <b>twice</b> to clear it. <b>Fresh version</b> gives you the same kind of question with new numbers.</p>
       <div class="filters" role="group" aria-label="Subject"><button class="fchip" type="button" data-ms="" aria-pressed="${!cur.sid}">All · ${mistakesOf().length}</button>${subs.map(s => `<button class="fchip" type="button" data-ms="${esc(s.id)}" aria-pressed="${cur.sid === s.id}">${esc(s.name)} · ${mistakesOf(s.id).length}</button>`).join('')}</div>
       <div class="row" style="margin:6px 0 16px">${list.length ? `<button class="btn btn-hot" type="button" id="redoAll">Redo all ${list.length} →</button>` : ''}</div>
-      ${Object.entries(groups).map(([id, ms]) => { const d = getDeck(id); return `<div class="mgroup ${hue(d)}"><h3>${esc(d.title)} <span class="mono">${ms.length}</span></h3>${ms.map(m => `<div class="mrow"><div class="mtxt"><div class="mq">${esc(firstLine(m.q))}</div><div class="mmeta">${m.q.level ? `<span class="lvl-chip lvl-${m.q.level}">${m.q.level}</span>` : ''}${ago(m.at)}${m.fixes ? ' · 1 of 2 fixed' : ''}</div></div><div class="row"><button class="btn btn-sm btn-ghost" type="button" data-redo="${m.id}">Redo</button>${freshQ(m) ? `<button class="btn btn-sm btn-ghost" type="button" data-fresh="${m.id}">Fresh version</button>` : ''}</div></div>`).join('')}</div>`; }).join('')}`;
+      ${Object.entries(groups).map(([id, ms]) => { const d = getDeck(id); return `<div class="mgroup ${hue(d)}"><h3>${esc(d.title)} <span class="mono">${ms.length}</span></h3>${ms.map(m => `<div class="mrow"><div class="mtxt"><div class="mq">${fm(firstLine(m.q))}</div><div class="mmeta">${m.q.level ? `<span class="lvl-chip lvl-${m.q.level}">${m.q.level}</span>` : ''}${ago(m.at)}${m.fixes ? ' · 1 of 2 fixed' : ''}</div></div><div class="row"><button class="btn btn-sm btn-ghost" type="button" data-redo="${m.id}">Redo</button>${freshQ(m) ? `<button class="btn btn-sm btn-ghost" type="button" data-fresh="${m.id}">Fresh version</button>` : ''}</div></div>`).join('')}</div>`; }).join('')}`;
     $$('[data-ms]', body).forEach(b => b.onclick = () => { cur.sid = b.dataset.ms || null; drawMistakes(); });
     $$('[data-redo]', body).forEach(b => b.onclick = () => redoMistakes([b.dataset.redo], false));
     $$('[data-fresh]', body).forEach(b => b.onclick = () => redoMistakes([b.dataset.fresh], true));
@@ -681,7 +682,7 @@ Write 8 mcq (answer = index 0-3 of the correct option, vary its position) and 2 
     });
     for (const s of shorts) {
       const ans = $('textarea', s.el).value.trim(); $('textarea', s.el).readOnly = true; const fb = $('.pfb', s.el);
-      if (!ans) { s.p._got = 0; s.p._done = true; fb.innerHTML = `<div class="fb bad"><b>No answer (0/${s.p.marks})</b>${critList(s.p, s.p.criteria.map(() => false))}${s.p.model ? `<div style="margin-top:8px">${esc(s.p.model)}</div>` : ''}</div>`; continue; }
+      if (!ans) { s.p._got = 0; s.p._done = true; fb.innerHTML = `<div class="fb bad"><b>No answer (0/${s.p.marks})</b>${critList(s.p, s.p.criteria.map(() => false))}${s.p.model ? `<div style="margin-top:8px">${fm(s.p.model)}</div>` : ''}</div>`; continue; }
       if (aiReady()) { fb.innerHTML = '<div class="fb info"><b>Marking with AI…</b></div>'; const r = await aiMark(s.p, s.q, ans); if (r.ok) { s.p._got = r.marks; s.p._done = true; renderShortResult(fb, s.p, r); continue; } }
       s.p._got = null; selfMark(s.p, s.q, ans, fb, s.el, () => showResults(body));
     }
@@ -719,14 +720,14 @@ Write 8 mcq (answer = index 0-3 of the correct option, vary its position) and 2 
     el.innerHTML = `<div class="chat" id="chat"></div><div class="ans" style="max-width:760px;margin-top:12px"><input class="field" id="askIn" placeholder="Ask anything about ${esc(d.title)}…" autocomplete="off" aria-label="Your question" style="font-family:var(--f-body);font-size:16px"><button class="btn btn-hot" type="button" id="askGo">Ask</button></div>
       <div class="row" style="margin-top:10px">${['Explain this topic like I\'m 10', 'Quiz me with 3 questions', 'What will probably be on the exam?'].map(s => `<button class="pill" type="button" data-sug="${esc(s)}">${esc(s)}</button>`).join('')}</div>`;
     const chat = $('#chat', el);
-    const draw = () => { chat.innerHTML = hist.length ? hist.map(m => `<div class="msg ${m.role === 'user' ? 'me' : 'bot'}">${esc(m.content)}</div>`).join('') : `<p class="note">Ask anything about <b>${esc(d.title)}</b>. It knows your notes for this deck.</p>`; };
+    const draw = () => { chat.innerHTML = hist.length ? hist.map(m => `<div class="msg ${m.role === 'user' ? 'me' : 'bot'}">${m.role === 'user' ? esc(m.content) : Fmt.rich(m.content)}</div>`).join('') : `<p class="note">Ask anything about <b>${esc(d.title)}</b>. It knows your notes for this deck.</p>`; };
     draw();
     const send = async (text) => {
       const q = (text || $('#askIn', el).value).trim(); if (!q) return; $('#askIn', el).value = '';
       hist.push({ role: 'user', content: q }); draw(); const bot = document.createElement('div'); bot.className = 'msg bot'; bot.textContent = 'Thinking…'; chat.appendChild(bot);
-      const rules = `You are a friendly, patient tutor for a Year 8 student in NSW, Australia, revising "${d.title}" (${getSubj(d.subject).name}) for an exam. Keep answers short and clear, use Australian spelling, show working for maths, and use these notes when relevant:\n\n${deckContext(d)}`;
+      const rules = `You are a friendly, patient tutor for a Year 8 student in NSW, Australia, revising "${d.title}" (${getSubj(d.subject).name}) for an exam. Keep answers short and clear, use Australian spelling, show working for maths, formatting: use **double asterisks** for key words, write powers like x^2 and fractions like 3/4, and never use LaTeX, and use these notes when relevant:\n\n${deckContext(d)}`;
       const turns = [{ role: 'user', content: rules }, ...hist.slice(-10)];
-      try { const { text: out } = await AI.fn(turns, { cache: false, modelTier: 'quick', onText: ({ text: t }) => { bot.textContent = t; } }); hist.push({ role: 'assistant', content: out }); }
+      try { const { text: out } = await AI.fn(turns, { cache: false, modelTier: 'quick', onText: ({ text: t }) => { bot.innerHTML = Fmt.rich(t); } }); hist.push({ role: 'assistant', content: out }); }
       catch (e) { bot.textContent = e?.text || AI.msg(e); hist.pop(); }
     };
     $('#askGo', el).onclick = () => send();

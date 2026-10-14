@@ -234,10 +234,19 @@ textarea.field { min-height: 100px; resize: vertical; }
 .lb .st, .lb .xp { font-family: var(--f-mono); font-size: 13px; white-space: nowrap; }
 .lb .xp { font-weight: 700; }
 .league-forms { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; margin-top: 14px; border-top: 1px dashed var(--line); padding-top: 14px; }
+/* maths + rich text */
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+sup.pow { font-size: .74em; font-weight: 700; vertical-align: .5em; line-height: 0; margin-left: .03em; }
+.frac { display: inline-flex; flex-direction: column; align-items: stretch; vertical-align: middle; font-size: .88em; line-height: 1.1; text-align: center; margin: 0 .12em; font-variant-numeric: tabular-nums; }
+.frac .num { border-bottom: .09em solid currentColor; padding: 0 .18em .06em; }
+.frac .den { padding: .06em .18em 0; }
+.li::before { content: "• "; color: var(--acc, var(--cyan)); font-weight: 800; }
+b.h { font-size: 1.05em; }
+.msg b, .ai b, .fb b, .fc-face b { font-weight: 800; }
 .sec-card ul { margin: 10px 0 0; padding-left: 18px; display: grid; gap: 6px; font-size: 15px; }
 .worked { background: var(--ink); border: 1px dashed var(--line); border-radius: 14px; padding: 14px; font-size: 14.5px; align-self: start; }
 .worked .wq { font-weight: 700; margin-bottom: 8px; }
-.worked ol { margin: 0; padding-left: 20px; display: grid; gap: 4px; font-family: var(--f-mono); font-size: 13.5px; }
+.worked ol { margin: 0; padding-left: 20px; display: grid; gap: 5px; font-size: 14.5px; font-weight: 600; font-variant-numeric: tabular-nums; }
 .worked ol li:last-child { color: var(--acc); font-weight: 700; }
 @media (max-width: 760px) { .sec-card { grid-template-columns: 1fr; } }
 
@@ -293,7 +302,7 @@ textarea.sa { min-height: 140px; font-family: var(--f-body); font-size: 15px; }
 .fb.good { background: rgba(61,220,151,.1); border: 1px solid rgba(61,220,151,.38); }
 .fb.bad { background: rgba(255,93,122,.08); border: 1px solid rgba(255,93,122,.33); }
 .fb.info { background: var(--ink); border: 1px solid var(--line); }
-.fb .steps { margin: 8px 0 0; padding-left: 20px; font-family: var(--f-mono); font-size: 13px; display: grid; gap: 3px; }
+.fb .steps { margin: 8px 0 0; padding-left: 20px; font-size: 14.5px; font-variant-numeric: tabular-nums; display: grid; gap: 4px; }
 .fb .ai { margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--line); white-space: pre-wrap; }
 .crit { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 6px; }
 .crit label { display: flex; gap: 8px; align-items: start; font-size: 14px; cursor: pointer; }
