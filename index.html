@@ -7370,7 +7370,13 @@ Aim for 2-5 sections with 3-6 notes each, 10-20 flashcards (key terms, people, d
     const draw = () => { const nm = $('#shName', body)?.value.trim(); const keep = S.profile; if (nm && !S.profile) S.profile = { nickname: nm }; let c; try { c = shareCanvas(); } finally { S.profile = keep; } img.src = c.toDataURL('image/png'); return c; };
     let c; (document.fonts?.ready || Promise.resolve()).then(() => { c = draw(); });
     const nm = $('#shName', body); if (nm) nm.oninput = () => { kset('lockin.shareName', nm.value); c = draw(); };
-    $('#shSave', body).onclick = () => { if (!c) return; const a = document.createElement('a'); a.href = img.src; a.download = 'lock-in-stats.png'; a.click(); toast('Saved'); };
+    $('#shSave', body).onclick = async () => {
+      if (!c) return;
+      // Inside Claude the page can't download directly: ask the viewer through the downloads capability.
+      const dl = window.claude?.use ? await window.claude.use('downloads').catch(() => null) : null;
+      if (dl) { c.toBlob(async (blob) => { try { await dl.save({ filename: 'lock-in-stats.png', data: blob }); toast('Saved'); } catch (e) { if (e?.code !== 'declined') toast('Couldn\'t save here. Long-press or right-click the picture to save it.'); } }); return; }
+      const a = document.createElement('a'); a.href = img.src; a.download = 'lock-in-stats.png'; a.click(); toast('Saved');
+    };
     const sb = $('#shSend', body); if (sb) sb.onclick = () => c && c.toBlob(async (b) => { const f = new File([b], 'lock-in-stats.png', { type: 'image/png' }); try { if (navigator.canShare({ files: [f] })) await navigator.share({ files: [f], title: 'Lock in' }); else toast('Sharing pictures isn\'t supported here. Use Save picture.'); } catch (e) { } });
     showOv();
   }
