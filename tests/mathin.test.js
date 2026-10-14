@@ -40,6 +40,17 @@ test('checker accepts expressions for numeric answers', () => {
   assert.ok(X.check({ type: 'num', value: 1.5 }, '1 1/2'));
 });
 
+test('scientific notation', () => {
+  near(MathIn.evaluate('3.2e4'), 32000);
+  near(MathIn.evaluate('6.63e-34'), 6.63e-34);
+  near(MathIn.evaluate('3.2×10^4'), 32000);
+  near(MathIn.evaluate('3.2 x 10^-3'), 0.0032);
+  near(MathIn.evaluate('2e'), 2 * Math.E);
+  assert.ok(X.check({ type: 'num', value: 4.07e-19, tol: 0.01 }, '4.07 x 10^-19'));
+  assert.ok(X.check({ type: 'num', value: 4.07e-19, tol: 0.01 }, '4.1e-19'));
+  assert.ok(!X.check({ type: 'num', value: 4.07e-19, tol: 0.01 }, '4.07e-18'));
+});
+
 let fail = 0;
 for (const [name, fn] of tests) { try { fn(); } catch (e) { fail++; console.log('FAIL', name, '\n ', e.message); } }
 console.log(fail ? `${fail}/${tests.length} failed` : `ok (${tests.length} tests)`);

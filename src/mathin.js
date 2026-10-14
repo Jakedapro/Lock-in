@@ -2,12 +2,14 @@
    A small parser (no eval): numbers, + − × ÷ * / ^, brackets, √/sqrt, π/pi, e, implicit ×. */
 const MathIn = (() => {
   function tokens(s) {
-    const t = [], src = String(s).replace(/[−–]/g, '-').replace(/×/g, '*').replace(/÷/g, '/').replace(/\s+/g, '').toLowerCase();
+    const t = [], src = String(s).replace(/[−–]/g, '-').replace(/×/g, '*').replace(/÷/g, '/').replace(/\s+/g, '').toLowerCase()
+      .replace(/(\d)x(10)/g, '$1*$2'); // "3.2 x 10^4"
+
     let i = 0;
     while (i < src.length) {
       const c = src[i], rest = src.slice(i);
       let m;
-      if ((m = rest.match(/^\d+(\.\d+)?|^\.\d+/))) { t.push({ k: 'n', v: parseFloat(m[0]) }); i += m[0].length; }
+      if ((m = rest.match(/^(\d+(\.\d+)?|\.\d+)(e[-+]?\d+)?/))) { t.push({ k: 'n', v: parseFloat(m[0]) }); i += m[0].length; } // 6.63e-34
       else if (rest.startsWith('sqrt')) { t.push({ k: 'sqrt' }); i += 4; }
       else if (rest.startsWith('pi')) { t.push({ k: 'n', v: Math.PI }); i += 2; }
       else if (c === 'π') { t.push({ k: 'n', v: Math.PI }); i++; }

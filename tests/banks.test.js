@@ -62,6 +62,17 @@ test('Year 12 has the six Extension 2 decks', () => assert.deepStrictEqual(E2().
 for (const id of ['e2proof', 'e2complex', 'e2induction', 'e2integration', 'e2vectors', 'e2mechanics'])
   test(`Year 12 deck ${id}`, () => { const d = E2().DECKS.find(x => x.id === id); assert.strictEqual(d.subject, 'y12'); checkDeck(d); });
 
+const E1 = () => require('../src/e1.js'), PH = () => require('../src/physics.js');
+const E1_IDS = ['e1poly', 'e1trig', 'e1comb', 'e1calc', 'e1vec', 'e1stats', 'e1proof'], PH_IDS = ['phm5', 'phm6', 'phm7', 'phm8'];
+test('Extension 1 has its seven decks', () => assert.deepStrictEqual(E1().DECKS.map(d => d.id), E1_IDS));
+for (const id of E1_IDS) test(`Extension 1 deck ${id}`, () => { const d = E1().DECKS.find(x => x.id === id); assert.strictEqual(d.subject, 'e1'); checkDeck(d); });
+test('Physics has the four HSC modules', () => assert.deepStrictEqual(PH().DECKS.map(d => d.id), PH_IDS));
+for (const id of PH_IDS) test(`Physics deck ${id}`, () => {
+  const d = PH().DECKS.find(x => x.id === id); assert.strictEqual(d.subject, 'phys'); checkDeck(d);
+  assert.ok((d.short || []).length >= 2, id + ' has extended-response questions');
+  d.short.forEach(q => assert.ok(q.criteria.length >= 2 && q.model && q.marks >= 2, id + ' short answer has criteria and a model answer'));
+});
+
 let fail = 0;
 for (const [name, fn] of tests) { try { fn(); } catch (e) { fail++; console.log('FAIL', name, '\n ', e.message); } }
 console.log(fail ? `${fail}/${tests.length} failed` : `ok (${tests.length} tests)`);

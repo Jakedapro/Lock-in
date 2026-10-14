@@ -66,13 +66,12 @@ button { cursor: pointer; }
 .acct { border: 1.5px solid var(--pen); background: none; color: var(--pen); font-weight: 700; font-size: 14.5px; padding: 6px 13px; border-radius: 999px; display: flex; align-items: center; gap: 7px; white-space: nowrap; }
 .acct.in { border-color: var(--rule); color: var(--ink); padding: 3px 12px 3px 3px; }
 .acct-name { max-width: 110px; overflow: hidden; text-overflow: ellipsis; }
-@media (max-width: 680px) {
+@media (max-width: 980px) {
   .nav .wrap { flex-wrap: wrap; gap: 4px 14px; padding-block: 8px 0; }
   .logo { margin-right: auto; }
   .subtabs { order: 5; flex-basis: 100%; min-height: 44px; }
-  .nav .xp-stat, .acct-name { display: none; }
-  .acct.in { padding: 3px; }
 }
+@media (max-width: 680px) { .nav .xp-stat, .acct-name { display: none; } .acct.in { padding: 3px; } }
 
 /* hero: what's next, and a ruler of every exam */
 .hero { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr); gap: 40px; align-items: start; padding-block: 44px 24px; }
@@ -552,12 +551,14 @@ if (typeof module !== 'undefined') module.exports = Fmt;
    A small parser (no eval): numbers, + − × ÷ * / ^, brackets, √/sqrt, π/pi, e, implicit ×. */
 const MathIn = (() => {
   function tokens(s) {
-    const t = [], src = String(s).replace(/[−–]/g, '-').replace(/×/g, '*').replace(/÷/g, '/').replace(/\s+/g, '').toLowerCase();
+    const t = [], src = String(s).replace(/[−–]/g, '-').replace(/×/g, '*').replace(/÷/g, '/').replace(/\s+/g, '').toLowerCase()
+      .replace(/(\d)x(10)/g, '$1*$2'); // "3.2 x 10^4"
+
     let i = 0;
     while (i < src.length) {
       const c = src[i], rest = src.slice(i);
       let m;
-      if ((m = rest.match(/^\d+(\.\d+)?|^\.\d+/))) { t.push({ k: 'n', v: parseFloat(m[0]) }); i += m[0].length; }
+      if ((m = rest.match(/^(\d+(\.\d+)?|\.\d+)(e[-+]?\d+)?/))) { t.push({ k: 'n', v: parseFloat(m[0]) }); i += m[0].length; } // 6.63e-34
       else if (rest.startsWith('sqrt')) { t.push({ k: 'sqrt' }); i += 4; }
       else if (rest.startsWith('pi')) { t.push({ k: 'n', v: Math.PI }); i += 2; }
       else if (c === 'π') { t.push({ k: 'n', v: Math.PI }); i++; }
@@ -1915,7 +1916,7 @@ const X = (() => {
       const v = MI ? MI.evaluate(raw.replace(/^\s*[a-z]\s*=\s*/i, '')) : NaN;
       if (!isFinite(v)) return false;
       const T = Math.abs(part.value) || 1, tol = Math.max(1e-6 * T, part.round != null ? 0.5 * 10 ** -(part.round + (part.type === 'pct' ? 2 : 0)) : 0, part.tol ? part.tol * T : 0);
-      return Math.abs(v - part.value) <= tol + 1e-12 || (part.type === 'pct' && Math.abs(v / 100 - part.value) <= tol + 1e-12);
+      return Math.abs(v - part.value) <= tol * (1 + 1e-9) || (part.type === 'pct' && Math.abs(v / 100 - part.value) <= tol * (1 + 1e-9));
     }
     if (part.type === 'pct') {
       const cands = p.percent ? [p.v] : [p.v / 100, p.v]; // "25" in a % question means 25%; also accept 0.25
@@ -2769,6 +2770,43 @@ if (typeof module !== 'undefined') module.exports = Y8;
 
 </script>
 <script>
+/* ===== Lock In — shared helpers for generated questions (random numbers, parts, TeX) ===== */
+const TK = (() => {
+  const ri = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+  const rnz = (a, b) => { let v; do { v = ri(a, b); } while (v === 0); return v; };
+  const pick = (a) => a[Math.floor(Math.random() * a.length)];
+  const shuffle = (arr) => { const a = arr.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+  const gcd = (a, b) => { a = Math.abs(a); b = Math.abs(b); while (b) [a, b] = [b, a % b]; return a || 1; };
+  const rnd = (x, dp) => Math.round(x * 10 ** dp) / 10 ** dp;
+  const fact = (n) => (n <= 1 ? 1 : n * fact(n - 1));
+  const nCr = (n, r) => (r < 0 || r > n ? 0 : Math.round(fact(n) / (fact(r) * fact(n - r))));
+  const P = (label, q, type, value, show, steps, marks = 1, extra = {}) => ({ label, q, type, value, show, steps, marks, ...extra });
+  // Multiple-choice part: wrong answers are de-duplicated and never equal the right one.
+  function CH(label, q, right, wrongs, steps, marks = 1, extra = {}) {
+    const opts = [String(right), ...[...new Set(wrongs.map(String))].filter(w => w !== String(right))].slice(0, 4);
+    const choices = shuffle(opts);
+    return { label, q, type: 'choice', choices, value: choices.indexOf(String(right)), show: String(right), steps, marks, ...extra };
+  }
+  const finish = (d) => { d.cards = d.cards.map(([q, a]) => ({ q, a })); d.concepts = d.concepts.map(([q, options, answer, why]) => ({ q, options, answer, why })); return d; };
+  // TeX builders: m() wraps TeX in $ signs for the formatter.
+  const m = (t) => `$${t}$`;
+  const dec = (x, dp = 3) => String(rnd(x, dp));
+  const tf = (n, d) => { if (d < 0) { n = -n; d = -d; } const g = gcd(n, d); n /= g; d /= g; return d === 1 ? String(n) : n < 0 ? `-\\frac{${-n}}{${d}}` : `\\frac{${n}}{${d}}`; };
+  const tlin = (c, v = 'x') => (c === 0 ? v : c < 0 ? `${v} - ${-c}` : `${v} + ${c}`);
+  // Number to sf significant figures; scientific notation outside 0.01 – 100 000.
+  function sci(x, sf = 3) {
+    if (x === 0) return '0';
+    const e = Math.floor(Math.log10(Math.abs(x)));
+    if (e >= -2 && e < 5) return String(Number(x.toPrecision(sf)));
+    const mant = Number((x / 10 ** e).toPrecision(sf));
+    return mant === 10 ? `1 \\times 10^{${e + 1}}` : `${mant} \\times 10^{${e}}`;
+  }
+  return { ri, rnz, pick, shuffle, gcd, rnd, fact, nCr, P, CH, finish, m, dec, tf, tlin, sci };
+})();
+if (typeof module !== 'undefined') module.exports = TK;
+
+</script>
+<script>
 /* ===== Lock In — Year 12 Mathematics Extension 2 =====
    Topics follow the NSW Extension 2 syllabus. All notes and questions are original;
    every generated question carries its exact answer and working. Maths is written as
@@ -3392,6 +3430,827 @@ if (typeof module !== 'undefined') module.exports = E2;
 
 </script>
 <script>
+/* ===== Lock In — HSC Mathematics Extension 1 =====
+   Modelled on the style of recent HSC papers (Section I multiple choice, Section II multi-part
+   questions). All notes and questions are original; answers and working are computed. */
+
+const E1 = (() => {
+  const T = typeof TK !== 'undefined' ? TK : require('./texkit.js');
+  const E2x = typeof E2 !== 'undefined' ? E2 : require('./ext2.js');
+  const { ri, rnz, pick, shuffle, gcd, rnd, fact, nCr, P, CH, finish, m, dec, tf, tlin } = T;
+  const SUBJECT = 'e1';
+
+  /* ================= POLYNOMIALS ================= */
+  const poly = finish({
+    id: 'e1poly', subject: SUBJECT, title: 'Polynomials', chapter: 'Ext 1 · Y11', hue: 'cyan',
+    blurb: 'Remainder and factor theorems, sums and products of roots, multiplicity and graphs.',
+    sections: [
+      { code: 'P1', name: 'Remainder and factor theorems', notes: ['When $P(x)$ is divided by $(x - a)$, the remainder is $P(a)$.', 'So $(x - a)$ is a factor of $P(x)$ exactly when $P(a) = 0$.', 'Use it to find unknown coefficients: substitute the root and solve.'], ex: ['Remainder when $x^3 - 2x + 5$ is divided by $x - 2$', '$P(2) = 8 - 4 + 5$', '$= 9$'] },
+      { code: 'P2', name: 'Sums and products of roots', notes: ['For $ax^2 + bx + c$: $\\alpha + \\beta = -\\frac{b}{a}$, $\\alpha\\beta = \\frac{c}{a}$.', 'For $ax^3 + bx^2 + cx + d$: $\\sum\\alpha = -\\frac{b}{a}$, $\\sum\\alpha\\beta = \\frac{c}{a}$, $\\alpha\\beta\\gamma = -\\frac{d}{a}$.', '$\\alpha^2 + \\beta^2 + \\gamma^2 = (\\sum\\alpha)^2 - 2\\sum\\alpha\\beta$.'], ex: ['$2x^3 - 6x^2 + x + 4 = 0$', '$\\sum\\alpha = 3$, $\\sum\\alpha\\beta = \\frac{1}{2}$', '$\\sum\\alpha^2 = 9 - 1 = 8$'] },
+      { code: 'P3', name: 'Multiplicity and graphs', notes: ['A root of multiplicity 1 crosses the $x$-axis; multiplicity 2 touches it (turning point); multiplicity 3 crosses with a horizontal point of inflection.', 'The leading term decides the behaviour as $x \\to \\pm\\infty$.', 'A double root of $P$ is also a root of $P\'(x)$.'], ex: ['$P(x) = (x - 1)^2(x + 2)$ at $x = 1$', 'Multiplicity 2', 'The graph touches the axis at $x = 1$'] },
+    ],
+    cards: [
+      ['Remainder theorem', 'Dividing $P(x)$ by $x - a$ leaves remainder $P(a)$'], ['Factor theorem', '$x - a$ is a factor $\\Leftrightarrow P(a) = 0$'], ['Quadratic: $\\alpha + \\beta$', '$-\\frac{b}{a}$'], ['Quadratic: $\\alpha\\beta$', '$\\frac{c}{a}$'],
+      ['Cubic: $\\alpha\\beta\\gamma$', '$-\\frac{d}{a}$'], ['Cubic: $\\sum\\alpha\\beta$', '$\\frac{c}{a}$'], ['$\\sum\\alpha^2$', '$(\\sum\\alpha)^2 - 2\\sum\\alpha\\beta$'], ['Double root', 'Graph touches the axis; also a root of $P\'(x)$'], ['Triple root', 'Crosses with a horizontal point of inflection'],
+    ],
+    concepts: [
+      ['The remainder when $x^3 + 1$ is divided by $x + 1$ is…', ['0', '2', '1', '−2'], 0, '$P(-1) = -1 + 1 = 0$.'],
+      ['For $x^3 - 4x^2 + x + 6 = 0$, $\\alpha\\beta\\gamma = $', ['$-6$', '$6$', '$4$', '$1$'], 0, '$-\\frac{d}{a} = -6$.'],
+      ['At a root of multiplicity 2, the graph…', ['Touches the axis', 'Crosses the axis', 'Has a vertical asymptote', 'Is undefined'], 0, ''],
+      ['$P(x) = x^4 - \\dots$ as $x \\to -\\infty$', ['$P(x) \\to \\infty$', '$P(x) \\to -\\infty$', '$P(x) \\to 0$', '$P(x) \\to 1$'], 0, 'Even degree, positive leading coefficient.'],
+      ['If $(x - 2)$ is a factor of $P(x)$ then…', ['$P(2) = 0$', '$P(-2) = 0$', '$P(0) = 2$', '$P(2) = 2$'], 0, ''],
+      ['For $3x^2 + 5x - 2$, $\\alpha + \\beta = $', ['$-\\frac{5}{3}$', '$\\frac{5}{3}$', '$-\\frac{2}{3}$', '$-5$'], 0, ''],
+    ],
+  });
+  const cubic = (r) => { const [a, b, c] = r; return [1, -(a + b + c), a * b + b * c + c * a, -a * b * c]; }; // x^3 + Bx^2 + Cx + D
+  const polyTeX = (co) => co.map((c, i) => [c, 3 - i]).filter(([c]) => c !== 0).map(([c, p], i) => { const v = p === 0 ? '' : p === 1 ? 'x' : `x^${p}`, a = Math.abs(c), coef = a === 1 && p > 0 ? '' : a; return `${i === 0 ? (c < 0 ? '-' : '') : c < 0 ? ' - ' : ' + '}${coef}${v}`; }).join('');
+  poly.bank = [
+    function remainder() {
+      const co = [1, rnz(-5, 5), ri(-9, 9), ri(-9, 9)], k = rnz(-3, 3), val = co.reduce((acc, c) => acc * k + c, 0);
+      return {
+        level: 'F', tags: ['P1'], stem: `Let ${m(`P(x) = ${polyTeX(co)}`)}.`,
+        parts: [
+          P('a', `Find the remainder when ${m('P(x)')} is divided by ${m(tlin(-k))}.`, 'num', val, String(val), [`By the remainder theorem it is ${m(`P(${k})`)}`, m(`P(${k}) = ${val}`)]),
+          CH('b', `Is ${m(tlin(-k))} a factor of ${m('P(x)')}?`, val === 0 ? 'Yes' : 'No', [val === 0 ? 'No' : 'Yes'], [val === 0 ? 'The remainder is 0' : 'The remainder is not 0']),
+        ],
+      };
+    },
+    function unknownCoefficient() {
+      const r = [rnz(-4, 4), rnz(-4, 4), rnz(-4, 4)], co = cubic(r);
+      const shown = `x^3 + ax^2 ${co[2] < 0 ? '-' : '+'} ${Math.abs(co[2])}x ${co[3] < 0 ? '-' : '+'} ${Math.abs(co[3])}`;
+      return {
+        level: 'S', tags: ['P1', 'P2'], stem: `${m(`P(x) = ${shown}`)} has a factor ${m(tlin(-r[0]))}.`,
+        parts: [
+          P('a', 'Find $a$.', 'num', co[1], String(co[1]), [`${m(`P(${r[0]}) = 0`)}: ${m(`${r[0] ** 3} + ${r[0] ** 2}a ${co[2] * r[0] < 0 ? '-' : '+'} ${Math.abs(co[2] * r[0])} ${co[3] < 0 ? '-' : '+'} ${Math.abs(co[3])} = 0`)}`, m(`a = ${co[1]}`)], 2),
+          P('b', 'Find the product of the three roots.', 'num', -co[3], String(-co[3]), [m(`\\alpha\\beta\\gamma = -\\frac{d}{a} = ${-co[3]}`)]),
+          P('c', 'Find the sum of the other two roots.', 'num', r[1] + r[2], String(r[1] + r[2]), [m(`\\sum\\alpha = -a = ${-co[1]}`), m(`${-co[1]} - (${r[0]}) = ${r[1] + r[2]}`)]),
+        ],
+      };
+    },
+    function rootSums() {
+      const a = pick([1, 2, 3]), b = rnz(-6, 6), c = rnz(-6, 6), d = rnz(-9, 9);
+      const s1 = [-b, a], s2 = [c, a], s3 = [-d, a], sq = [b * b - 2 * a * c, a * a];
+      return {
+        level: 'S', tags: ['P2'], stem: `${m('\\alpha, \\beta, \\gamma')} are the roots of ${m(`${cterm(a, 'x^3', true)}${cterm(b, 'x^2')}${cterm(c, 'x')}${cterm(d, '')} = 0`)}.`,
+        parts: [
+          P('a', `Find ${m('\\alpha + \\beta + \\gamma')}.`, 'num', s1[0] / s1[1], m(tf(...s1)), [m(`-\\frac{b}{a} = ${tf(...s1)}`)]),
+          P('b', `Find ${m('\\alpha\\beta\\gamma')}.`, 'num', s3[0] / s3[1], m(tf(...s3)), [m(`-\\frac{d}{a} = ${tf(...s3)}`)]),
+          P('c', `Find ${m('\\alpha^2 + \\beta^2 + \\gamma^2')}.`, 'num', sq[0] / sq[1], m(tf(...sq)), [m('(\\sum\\alpha)^2 - 2\\sum\\alpha\\beta'), m(`= \\left(${tf(...s1)}\\right)^2 - 2\\left(${tf(...s2)}\\right) = ${tf(...sq)}`)], 2),
+        ],
+      };
+    },
+    function multiplicity() {
+      let p, q; do { p = rnz(-4, 4); q = rnz(-4, 4); } while (p === q);
+      return {
+        level: 'C', tags: ['P3', 'P1'], stem: `Let ${m(`P(x) = (${tlin(-p)})^2(${tlin(-q)})`)}.`,
+        parts: [
+          CH('a', `What happens to the graph at ${m(`x = ${p}`)}?`, 'It touches the $x$-axis and turns', ['It crosses the $x$-axis', 'It has a horizontal point of inflection', 'It has a vertical asymptote'], ['Root of multiplicity 2']),
+          P('b', 'Find the $y$-intercept.', 'num', p * p * -q, String(p * p * -q), [m(`P(0) = (${-p})^2(${-q}) = ${p * p * -q}`)]),
+          P('c', `Find ${m(`P'(${p})`)}.`, 'num', 0, '0', ['A double root of $P$ is also a root of $P\'$']),
+        ],
+      };
+    },
+  ];
+
+  /* ================= TRIGONOMETRY ================= */
+  const trig = finish({
+    id: 'e1trig', subject: SUBJECT, title: 'Trigonometry', chapter: 'Ext 1 · Y11–12', hue: 'gold',
+    blurb: 'Inverse trig functions, compound angles, the auxiliary angle method and trig equations.',
+    sections: [
+      { code: 'T1', name: 'Inverse trig functions', notes: ['$\\sin^{-1}x$: domain $[-1, 1]$, range $\\left[-\\frac{\\pi}{2}, \\frac{\\pi}{2}\\right]$.', '$\\cos^{-1}x$: domain $[-1, 1]$, range $[0, \\pi]$.', '$\\tan^{-1}x$: domain all reals, range $\\left(-\\frac{\\pi}{2}, \\frac{\\pi}{2}\\right)$.', '$\\sin^{-1}(-x) = -\\sin^{-1}x$, $\\cos^{-1}(-x) = \\pi - \\cos^{-1}x$.'], ex: ['$\\cos^{-1}\\left(-\\frac{1}{2}\\right)$', '$= \\pi - \\cos^{-1}\\frac{1}{2}$', '$= \\pi - \\frac{\\pi}{3} = \\frac{2\\pi}{3}$'] },
+      { code: 'T2', name: 'Compound and double angles', notes: ['$\\sin(A \\pm B) = \\sin A\\cos B \\pm \\cos A\\sin B$', '$\\cos(A \\pm B) = \\cos A\\cos B \\mp \\sin A\\sin B$', '$\\sin 2A = 2\\sin A\\cos A$, $\\cos 2A = \\cos^2 A - \\sin^2 A$', '$t$-formulas with $t = \\tan\\frac{\\theta}{2}$: $\\sin\\theta = \\frac{2t}{1+t^2}$, $\\cos\\theta = \\frac{1-t^2}{1+t^2}$.'], ex: ['$\\sin 75^\\circ$', '$= \\sin 45^\\circ\\cos 30^\\circ + \\cos 45^\\circ\\sin 30^\\circ$', '$= \\frac{\\sqrt{6} + \\sqrt{2}}{4}$'] },
+      { code: 'T3', name: 'Auxiliary angle method', notes: ['$a\\sin x + b\\cos x = R\\sin(x + \\alpha)$ with $R = \\sqrt{a^2 + b^2}$ and $\\tan\\alpha = \\frac{b}{a}$.', 'The maximum value is $R$ and the minimum is $-R$.', 'Use it to solve equations like $\\sqrt{3}\\sin x + \\cos x = 1$.'], ex: ['$\\sqrt{3}\\sin x + \\cos x$', '$R = 2$, $\\tan\\alpha = \\frac{1}{\\sqrt{3}}$', '$= 2\\sin\\left(x + \\frac{\\pi}{6}\\right)$'] },
+      { code: 'T4', name: 'Trig equations', notes: ['Find the related acute angle, then use the quadrants (ASTC) for every solution in the domain.', 'Check the domain: $0 \\le x \\le 2\\pi$ usually gives two solutions per basic equation.', 'For multiple angles like $\\sin 2x$, widen the domain first ($0 \\le 2x \\le 4\\pi$).'], ex: ['$2\\cos x = -1$, $0 \\le x \\le 2\\pi$', '$\\cos x = -\\frac{1}{2}$: quadrants 2 and 3, related angle $\\frac{\\pi}{3}$', '$x = \\frac{2\\pi}{3}, \\frac{4\\pi}{3}$'] },
+    ],
+    cards: [
+      ['Range of $\\sin^{-1}x$', '$\\left[-\\frac{\\pi}{2}, \\frac{\\pi}{2}\\right]$'], ['Range of $\\cos^{-1}x$', '$[0, \\pi]$'], ['Range of $\\tan^{-1}x$', '$\\left(-\\frac{\\pi}{2}, \\frac{\\pi}{2}\\right)$'], ['$\\cos^{-1}(-x)$', '$\\pi - \\cos^{-1}x$'],
+      ['$\\sin(A + B)$', '$\\sin A\\cos B + \\cos A\\sin B$'], ['$\\cos(A - B)$', '$\\cos A\\cos B + \\sin A\\sin B$'], ['$\\cos 2A$ (three forms)', '$\\cos^2 A - \\sin^2 A = 2\\cos^2 A - 1 = 1 - 2\\sin^2 A$'], ['$R$ in $a\\sin x + b\\cos x$', '$\\sqrt{a^2 + b^2}$'], ['$t$-formula for $\\tan\\theta$', '$\\frac{2t}{1 - t^2}$'],
+    ],
+    concepts: [
+      ['$\\sin^{-1}\\left(\\sin\\frac{5\\pi}{6}\\right) = $', ['$\\frac{\\pi}{6}$', '$\\frac{5\\pi}{6}$', '$-\\frac{\\pi}{6}$', '$\\frac{\\pi}{3}$'], 0, 'The range of $\\sin^{-1}$ is $[-\\frac{\\pi}{2}, \\frac{\\pi}{2}]$.'],
+      ['The maximum of $3\\sin x + 4\\cos x$ is…', ['5', '7', '4', '1'], 0, '$R = \\sqrt{9 + 16} = 5$.'],
+      ['$\\cos 2A = $', ['$1 - 2\\sin^2 A$', '$2\\sin A\\cos A$', '$1 + 2\\sin^2 A$', '$\\sin^2 A - \\cos^2 A$'], 0, ''],
+      ['The domain of $\\cos^{-1}x$ is…', ['$-1 \\le x \\le 1$', '$0 \\le x \\le \\pi$', 'all real $x$', '$x > 0$'], 0, ''],
+      ['How many solutions does $\\sin 2x = \\frac{1}{2}$ have for $0 \\le x \\le 2\\pi$?', ['4', '2', '1', '8'], 0, '$2x$ runs over $[0, 4\\pi]$: two turns, two solutions each.'],
+      ['$\\tan^{-1}(-1) = $', ['$-\\frac{\\pi}{4}$', '$\\frac{3\\pi}{4}$', '$\\frac{\\pi}{4}$', '$-\\frac{3\\pi}{4}$'], 0, ''],
+    ],
+  });
+  const INV = [
+    ['\\sin^{-1}\\left(\\frac{1}{2}\\right)', '\\frac{\\pi}{6}'], ['\\sin^{-1}\\left(\\frac{\\sqrt{3}}{2}\\right)', '\\frac{\\pi}{3}'], ['\\sin^{-1}\\left(-\\frac{1}{2}\\right)', '-\\frac{\\pi}{6}'], ['\\sin^{-1}\\left(-\\frac{\\sqrt{2}}{2}\\right)', '-\\frac{\\pi}{4}'],
+    ['\\cos^{-1}\\left(\\frac{1}{2}\\right)', '\\frac{\\pi}{3}'], ['\\cos^{-1}\\left(-\\frac{1}{2}\\right)', '\\frac{2\\pi}{3}'], ['\\cos^{-1}\\left(-\\frac{\\sqrt{3}}{2}\\right)', '\\frac{5\\pi}{6}'], ['\\cos^{-1}(0)', '\\frac{\\pi}{2}'], ['\\cos^{-1}(-1)', '\\pi'],
+    ['\\tan^{-1}(1)', '\\frac{\\pi}{4}'], ['\\tan^{-1}(\\sqrt{3})', '\\frac{\\pi}{3}'], ['\\tan^{-1}(-1)', '-\\frac{\\pi}{4}'], ['\\tan^{-1}\\left(\\frac{1}{\\sqrt{3}}\\right)', '\\frac{\\pi}{6}'],
+  ];
+  const ANGLE_POOL = ['\\frac{\\pi}{6}', '\\frac{\\pi}{3}', '\\frac{\\pi}{4}', '\\frac{2\\pi}{3}', '\\frac{5\\pi}{6}', '-\\frac{\\pi}{6}', '-\\frac{\\pi}{3}', '-\\frac{\\pi}{4}', '\\frac{\\pi}{2}', '\\frac{3\\pi}{4}', '\\pi'];
+  const TEQ = [
+    ['\\sin x = \\frac{1}{2}', '\\frac{\\pi}{6}, \\frac{5\\pi}{6}'], ['\\sin x = \\frac{\\sqrt{3}}{2}', '\\frac{\\pi}{3}, \\frac{2\\pi}{3}'], ['\\sin x = -\\frac{1}{2}', '\\frac{7\\pi}{6}, \\frac{11\\pi}{6}'], ['\\sin x = -\\frac{\\sqrt{3}}{2}', '\\frac{4\\pi}{3}, \\frac{5\\pi}{3}'],
+    ['\\cos x = \\frac{1}{2}', '\\frac{\\pi}{3}, \\frac{5\\pi}{3}'], ['\\cos x = -\\frac{1}{2}', '\\frac{2\\pi}{3}, \\frac{4\\pi}{3}'], ['\\cos x = \\frac{\\sqrt{3}}{2}', '\\frac{\\pi}{6}, \\frac{11\\pi}{6}'],
+    ['\\tan x = 1', '\\frac{\\pi}{4}, \\frac{5\\pi}{4}'], ['\\tan x = -1', '\\frac{3\\pi}{4}, \\frac{7\\pi}{4}'], ['\\tan x = \\sqrt{3}', '\\frac{\\pi}{3}, \\frac{4\\pi}{3}'],
+  ];
+  const TRIP = [[3, 4, 5], [5, 12, 13], [8, 15, 17], [7, 24, 25]];
+  trig.bank = [
+    function inverseValues() {
+      const [a, b] = shuffle(INV).slice(0, 2);
+      return {
+        level: 'F', tags: ['T1'], stem: 'Find the exact value of each.',
+        parts: [a, b].map(([q, ans], i) => CH('ab'[i], m(q), m(ans), shuffle(ANGLE_POOL.filter(x => x !== ans)).slice(0, 3).map(m), [`Use the range of the inverse function and the exact values, giving ${m(ans)}`])),
+      };
+    },
+    function compound() {
+      const [t1, t2] = shuffle(TRIP).slice(0, 2), [a1, b1, c1] = t1, [a2, b2, c2] = t2; // sin A = a1/c1, cos A = b1/c1 (acute)
+      const sApB = [a1 * b2 + b1 * a2, c1 * c2], cAmB = [b1 * b2 + a1 * a2, c1 * c2];
+      return {
+        level: 'S', tags: ['T2'], stem: `${m('A')} and ${m('B')} are acute, with ${m(`\\sin A = \\frac{${a1}}{${c1}}`)} and ${m(`\\cos B = \\frac{${b2}}{${c2}}`)}.`,
+        parts: [
+          P('a', `Find ${m('\\cos A')}.`, 'num', b1 / c1, m(tf(b1, c1)), [m(`\\cos A = \\sqrt{1 - \\frac{${a1 * a1}}{${c1 * c1}}} = \\frac{${b1}}{${c1}}`)]),
+          P('b', `Find the exact value of ${m('\\sin(A + B)')}.`, 'num', sApB[0] / sApB[1], m(tf(...sApB)), [m(`\\sin B = \\frac{${a2}}{${c2}}`), m(`\\sin A\\cos B + \\cos A\\sin B = \\frac{${a1}}{${c1}} \\cdot \\frac{${b2}}{${c2}} + \\frac{${b1}}{${c1}} \\cdot \\frac{${a2}}{${c2}} = ${tf(...sApB)}`)], 2),
+          P('c', `Find the exact value of ${m('\\cos(A - B)')}.`, 'num', cAmB[0] / cAmB[1], m(tf(...cAmB)), [m(`\\cos A\\cos B + \\sin A\\sin B = ${tf(...cAmB)}`)], 2),
+        ],
+      };
+    },
+    function auxiliary() {
+      const [a, b, R] = pick(TRIP), k = ri(1, 4), alpha = Math.atan(b / a);
+      return {
+        level: 'S', tags: ['T3'], stem: `Write ${m(`${a}\\sin x + ${b}\\cos x`)} in the form ${m('R\\sin(x + \\alpha)')}, with ${m('R > 0')} and ${m('0 < \\alpha < \\frac{\\pi}{2}')}.`,
+        parts: [
+          P('a', 'Find $R$.', 'num', R, String(R), [m(`R = \\sqrt{${a}^2 + ${b}^2} = ${R}`)]),
+          P('b', `Find ${m('\\alpha')} in radians, correct to 2 decimal places.`, 'num', rnd(alpha, 2), dec(alpha, 2), [m(`\\tan\\alpha = \\frac{${b}}{${a}}`), m(`\\alpha = \\tan^{-1}\\frac{${b}}{${a}} \\approx ${dec(alpha, 2)}`)], 1, { round: 2 }),
+          P('c', `Find the maximum value of ${m(`${k} + ${a}\\sin x + ${b}\\cos x`)}.`, 'num', k + R, String(k + R), [`The maximum of ${m('R\\sin(x + \\alpha)')} is ${m('R')}`, m(`${k} + ${R} = ${k + R}`)]),
+        ],
+      };
+    },
+    function trigEquation() {
+      const [eq, sol] = pick(TEQ), fn = eq.slice(1, 4);
+      return {
+        level: 'C', tags: ['T4'], stem: `Solve ${m(eq)} for ${m('0 \\le x \\le 2\\pi')}.`,
+        parts: [CH('a', 'Which is the full solution set?', m(`x = ${sol}`), shuffle(TEQ.filter(([e, s]) => e.slice(1, 4) === fn && s !== sol)).slice(0, 3).map(([, s]) => m(`x = ${s}`)).concat(m(`x = ${sol.split(', ')[0]}`)), ['Find the related angle, then every quadrant where the sign matches', m(`x = ${sol}`)], 2)],
+      };
+    },
+  ];
+
+  /* ================= COMBINATORICS ================= */
+  const comb = finish({
+    id: 'e1comb', subject: SUBJECT, title: 'Combinatorics', chapter: 'Ext 1 · Y11', hue: 'pink',
+    blurb: 'Permutations, combinations, the pigeonhole principle and the binomial theorem.',
+    sections: [
+      { code: 'C1', name: 'Permutations', notes: ['Arrangements of $n$ different objects: $n!$. Choosing and ordering $r$ of them: $^nP_r = \\frac{n!}{(n-r)!}$.', 'With repeated items, divide by the factorial of each repeat: $\\frac{n!}{a!\\,b!\\cdots}$.', 'Around a circle there is no first seat: $(n-1)!$ arrangements.'], ex: ['Arrangements of BANANA', '$\\frac{6!}{3!\\,2!}$', '$= 60$'] },
+      { code: 'C2', name: 'Combinations', notes: ['Choosing $r$ from $n$ when order doesn\'t matter: $\\binom{n}{r} = \\frac{n!}{r!(n-r)!}$.', '"At least one" is usually total minus "none".', 'Multiply choices for independent stages; add for separate cases.'], ex: ['Committee of 3 from 5 men, 4 women, at least one woman', '$\\binom{9}{3} - \\binom{5}{3}$', '$= 84 - 10 = 74$'] },
+      { code: 'C3', name: 'Pigeonhole principle', notes: ['If more than $n$ items go into $n$ boxes, some box holds at least 2.', 'Generalised: $nk + 1$ items in $n$ boxes forces some box to hold at least $k + 1$.', 'Identify the boxes (the categories) carefully.'], ex: ['How many socks from 4 colours guarantee 3 of one colour?', '$4 \\times 2 + 1$', '9 socks'] },
+      { code: 'C4', name: 'Binomial theorem', notes: ['$(a + b)^n = \\sum_{r=0}^{n} \\binom{n}{r} a^{n-r} b^r$.', 'The general term is $T_{r+1} = \\binom{n}{r} a^{n-r} b^r$.', 'For a constant term, set the total power of $x$ to zero and solve for $r$.'], ex: ['Coefficient of $x^2$ in $(1 + 2x)^5$', '$\\binom{5}{2}(2)^2$', '$= 40$'] },
+    ],
+    cards: [
+      ['$^nP_r$', '$\\frac{n!}{(n-r)!}$'], ['$\\binom{n}{r}$', '$\\frac{n!}{r!(n-r)!}$'], ['Circular arrangements of $n$', '$(n-1)!$'], ['Repeated letters', 'Divide $n!$ by each repeat\'s factorial'], ['"At least one"', 'Total minus none'],
+      ['Pigeonhole principle', 'More than $n$ items in $n$ boxes: some box has 2+'], ['General term of $(a+b)^n$', '$\\binom{n}{r}a^{n-r}b^r$'], ['$\\binom{n}{r} = \\binom{n}{n-r}$', 'Choosing $r$ to keep is choosing $n - r$ to leave'], ['Pascal\'s rule', '$\\binom{n}{r} = \\binom{n-1}{r-1} + \\binom{n-1}{r}$'],
+    ],
+    concepts: [
+      ['How many ways can 5 people sit around a round table?', ['24', '120', '60', '5'], 0, '$(5 - 1)! = 24$.'],
+      ['$\\binom{7}{2} = $', ['21', '42', '14', '35'], 0, ''],
+      ['Arrangements of the letters of LEVEL', ['30', '120', '60', '20'], 0, '$\\frac{5!}{2!\\,2!} = 30$.'],
+      ['The number of terms in $(a + b)^{10}$ is…', ['11', '10', '20', '12'], 0, ''],
+      ['Minimum people to guarantee two share a birth month', ['13', '12', '24', '2'], 0, '12 months, so 13 people.'],
+      ['$\\binom{n}{0} = $', ['1', '0', '$n$', '$n!$'], 0, ''],
+    ],
+  });
+  const WORDS = ['BANANA', 'LETTER', 'TOMATO', 'COFFEE', 'ALGEBRA', 'CALCULUS', 'STATISTICS', 'PARALLEL', 'BOOKKEEPER'];
+  const wordArr = (w) => { const cnt = {}; [...w].forEach(c => (cnt[c] = (cnt[c] || 0) + 1)); const reps = Object.values(cnt).filter(v => v > 1); return { n: fact(w.length) / reps.reduce((a, r) => a * fact(r), 1), reps }; };
+  comb.bank = [
+    function arrangements() {
+      const w = pick(WORDS), { n, reps } = wordArr(w), L = w.length;
+      return {
+        level: 'F', tags: ['C1'], stem: `Consider the letters of the word ${w}.`,
+        parts: [
+          P('a', 'How many different arrangements are there?', 'num', n, String(n), [m(`\\frac{${L}!}{${reps.map(r => r + '!').join('\\,')}}`), m(`= ${n}`)], 2),
+          P('b', `If the letters were all different, how many arrangements would there be?`, 'num', fact(L), String(fact(L)), [m(`${L}! = ${fact(L)}`)]),
+        ],
+      };
+    },
+    function committee() {
+      const M = ri(4, 8), W = ri(3, 7), k = ri(3, 5), tot = nCr(M + W, k), j = ri(1, Math.min(W, k - 1));
+      return {
+        level: 'S', tags: ['C2'], stem: `A committee of ${k} is chosen from ${M} men and ${W} women.`,
+        parts: [
+          P('a', 'How many committees are possible?', 'num', tot, String(tot), [m(`\\binom{${M + W}}{${k}} = ${tot}`)]),
+          P('b', 'How many include at least one woman?', 'num', tot - nCr(M, k), String(tot - nCr(M, k)), [m(`\\binom{${M + W}}{${k}} - \\binom{${M}}{${k}} = ${tot} - ${nCr(M, k)}`), m(`= ${tot - nCr(M, k)}`)], 2),
+          P('c', `How many have exactly ${j} woman${j > 1 ? 'en' : ''}?`.replace('womanen', 'women'), 'num', nCr(W, j) * nCr(M, k - j), String(nCr(W, j) * nCr(M, k - j)), [m(`\\binom{${W}}{${j}}\\binom{${M}}{${k - j}} = ${nCr(W, j)} \\times ${nCr(M, k - j)} = ${nCr(W, j) * nCr(M, k - j)}`)]),
+        ],
+      };
+    },
+    function circular() {
+      const n = ri(5, 9);
+      return {
+        level: 'S', tags: ['C1'], stem: `${n} friends sit around a circular table.`,
+        parts: [
+          P('a', 'How many seating arrangements are there?', 'num', fact(n - 1), String(fact(n - 1)), [m(`(${n} - 1)! = ${fact(n - 1)}`)]),
+          P('b', 'In how many do Ari and Bea sit together?', 'num', 2 * fact(n - 2), String(2 * fact(n - 2)), ['Treat Ari and Bea as one unit: ' + m(`(${n - 1} - 1)! = ${fact(n - 2)}`), 'They can swap: ' + m(`2 \\times ${fact(n - 2)} = ${2 * fact(n - 2)}`)], 2),
+          P('c', 'In how many are they apart?', 'num', fact(n - 1) - 2 * fact(n - 2), String(fact(n - 1) - 2 * fact(n - 2)), [m(`${fact(n - 1)} - ${2 * fact(n - 2)} = ${fact(n - 1) - 2 * fact(n - 2)}`)]),
+        ],
+      };
+    },
+    function pigeonhole() {
+      const n = ri(3, 7), k = ri(2, 5);
+      return {
+        level: 'F', tags: ['C3'], stem: `A drawer has socks in ${n} colours.`,
+        parts: [P('a', `How many socks must you take (without looking) to be sure of getting ${k} of the same colour?`, 'num', n * (k - 1) + 1, String(n * (k - 1) + 1), [`Worst case: ${k - 1} of every colour, ${m(`${n} \\times ${k - 1} = ${n * (k - 1)}`)}`, 'One more forces a match: ' + m(String(n * (k - 1) + 1))], 2)],
+      };
+    },
+    function binomial() {
+      const n = ri(4, 8), a = ri(1, 3), b = rnz(-3, 3), r = ri(1, n - 1), coef = nCr(n, r) * a ** (n - r) * b ** r;
+      const k = ri(1, 3), n2 = pick([4, 6, 8]), cterm = nCr(n2, n2 / 2) * k ** (n2 / 2);
+      return {
+        level: 'C', tags: ['C4'], stem: 'The binomial theorem.',
+        parts: [
+          P('a', `Find the coefficient of ${m(`x^{${r}}`)} in ${m(`(${a} ${b < 0 ? '-' : '+'} ${Math.abs(b) === 1 ? '' : Math.abs(b)}x)^{${n}}`)}.`, 'num', coef, String(coef), [m(`T_{r+1} = \\binom{${n}}{r}(${a})^{${n}-r}(${b}x)^r`), `With ${m(`r = ${r}`)}: ${m(`\\binom{${n}}{${r}}(${a})^{${n - r}}(${b})^{${r}} = ${coef}`)}`], 2),
+          P('b', `Find the term independent of $x$ in ${m(`\\left(x + \\frac{${k}}{x}\\right)^{${n2}}`)}.`, 'num', cterm, String(cterm), [m(`T_{r+1} = \\binom{${n2}}{r}x^{${n2} - r}\\left(\\frac{${k}}{x}\\right)^r = \\binom{${n2}}{r}${k}^r x^{${n2} - 2r}`), `${m(`${n2} - 2r = 0`)} gives ${m(`r = ${n2 / 2}`)}`, m(`\\binom{${n2}}{${n2 / 2}}${k}^{${n2 / 2}} = ${cterm}`)], 2),
+        ],
+      };
+    },
+  ];
+
+  /* ================= CALCULUS ================= */
+  const calc = finish({
+    id: 'e1calc', subject: SUBJECT, title: 'Calculus', chapter: 'Ext 1 · Y11–12', hue: 'lilac',
+    blurb: 'Related rates, inverse trig calculus, substitution, volumes of solids of revolution and differential equations.',
+    sections: [
+      { code: 'D1', name: 'Related rates', notes: ['Link the rates with the chain rule: $\\frac{dV}{dt} = \\frac{dV}{dr} \\cdot \\frac{dr}{dt}$.', 'Write a formula connecting the quantities first, then differentiate.', 'Substitute the given values only after differentiating.'], ex: ['Sphere, $\\frac{dr}{dt} = 2$, find $\\frac{dV}{dt}$ at $r = 3$', '$\\frac{dV}{dt} = 4\\pi r^2 \\frac{dr}{dt}$', '$= 4\\pi(9)(2) = 72\\pi$'] },
+      { code: 'D2', name: 'Inverse trig calculus', notes: ['$\\frac{d}{dx}\\sin^{-1}\\frac{x}{a} = \\frac{1}{\\sqrt{a^2 - x^2}}$', '$\\frac{d}{dx}\\cos^{-1}\\frac{x}{a} = -\\frac{1}{\\sqrt{a^2 - x^2}}$', '$\\frac{d}{dx}\\tan^{-1}\\frac{x}{a} = \\frac{a}{a^2 + x^2}$'], ex: ['$\\frac{d}{dx}\\tan^{-1}(3x)$', 'Chain rule: $\\frac{1}{1 + 9x^2} \\cdot 3$', '$= \\frac{3}{1 + 9x^2}$'] },
+      { code: 'D3', name: 'Substitution and trig integrals', notes: ['Choose $u$ so its derivative appears in the integrand; change the limits.', '$\\sin^2 x = \\frac{1}{2}(1 - \\cos 2x)$ and $\\cos^2 x = \\frac{1}{2}(1 + \\cos 2x)$.', '$\\int \\sin^2 x\\,dx = \\frac{x}{2} - \\frac{\\sin 2x}{4} + C$'], ex: ['$\\int_0^1 2x(x^2 + 1)^3 dx$', '$u = x^2 + 1$: $\\int_1^2 u^3 du$', '$= \\frac{16 - 1}{4} = \\frac{15}{4}$'] },
+      { code: 'D4', name: 'Volumes of revolution', notes: ['About the $x$-axis: $V = \\pi\\int_a^b y^2\\,dx$.', 'About the $y$-axis: $V = \\pi\\int_c^d x^2\\,dy$.', 'A cone is $y = kx$ rotated about the $x$-axis.'], ex: ['$y = \\sqrt{x}$, $0 \\le x \\le 4$, about the $x$-axis', '$\\pi\\int_0^4 x\\,dx$', '$= 8\\pi$'] },
+      { code: 'D5', name: 'Differential equations', notes: ['Separable: $\\frac{dy}{dx} = f(x)g(y)$, so $\\int \\frac{dy}{g(y)} = \\int f(x)dx$.', 'Newton\'s cooling: $\\frac{dT}{dt} = -k(T - A)$ gives $T = A + (T_0 - A)e^{-kt}$.', 'A slope field shows the gradient at each point; solution curves follow it.', 'Logistic growth: $\\frac{dP}{dt} = kP\\left(1 - \\frac{P}{N}\\right)$ levels off at $N$.'], ex: ['$\\frac{dy}{dx} = 2xy$, $y(0) = 3$', '$\\ln|y| = x^2 + C$', '$y = 3e^{x^2}$'] },
+    ],
+    cards: [
+      ['Chain rule for rates', '$\\frac{dV}{dt} = \\frac{dV}{dr}\\cdot\\frac{dr}{dt}$'], ['$\\frac{d}{dx}\\sin^{-1}x$', '$\\frac{1}{\\sqrt{1 - x^2}}$'], ['$\\frac{d}{dx}\\tan^{-1}x$', '$\\frac{1}{1 + x^2}$'], ['$\\int \\frac{dx}{\\sqrt{a^2 - x^2}}$', '$\\sin^{-1}\\frac{x}{a} + C$'],
+      ['Volume about the $x$-axis', '$\\pi\\int y^2\\,dx$'], ['$\\int\\cos^2 x\\,dx$', '$\\frac{x}{2} + \\frac{\\sin 2x}{4} + C$'], ['Newton\'s law of cooling', '$T = A + (T_0 - A)e^{-kt}$'], ['Separable DE', 'Get all $y$ on one side, all $x$ on the other, integrate'], ['Logistic equation limit', 'The carrying capacity $N$'],
+    ],
+    concepts: [
+      ['$\\frac{d}{dx}\\cos^{-1}x = $', ['$-\\frac{1}{\\sqrt{1 - x^2}}$', '$\\frac{1}{\\sqrt{1 - x^2}}$', '$\\frac{1}{1 + x^2}$', '$-\\sin^{-1}x$'], 0, ''],
+      ['Volume when $y = 2x$, $0 \\le x \\le 3$ is rotated about the $x$-axis', ['$36\\pi$', '$9\\pi$', '$12\\pi$', '$18\\pi$'], 0, '$\\pi\\int_0^3 4x^2dx = 36\\pi$.'],
+      ['Which substitution suits $\\int x e^{x^2}dx$?', ['$u = x^2$', '$u = e^x$', '$u = x$', '$u = \\ln x$'], 0, ''],
+      ['The solution of $\\frac{dy}{dx} = 3y$ is…', ['$y = Ce^{3x}$', '$y = 3e^x$', '$y = Ce^{x/3}$', '$y = \\frac{3}{2}y^2$'], 0, ''],
+      ['In $\\frac{dP}{dt} = 0.2P\\left(1 - \\frac{P}{500}\\right)$, $P$ approaches…', ['500', '0.2', '100', '$\\infty$'], 0, ''],
+      ['$\\int_0^{\\pi}\\sin^2 x\\,dx = $', ['$\\frac{\\pi}{2}$', '$\\pi$', '$0$', '$1$'], 0, ''],
+    ],
+  });
+  calc.bank = [
+    function relatedRates() {
+      const R = ri(2, 10), c = ri(1, 5), Q = ri(20, 200), grow = Math.random() < 0.5;
+      return grow ? {
+        level: 'S', tags: ['D1'], stem: `The radius of a spherical balloon increases at ${c} cm/s.`,
+        parts: [P('a', `How fast is the volume increasing when the radius is ${R} cm? (2 decimal places)`, 'num', rnd(4 * Math.PI * R * R * c, 2), `${dec(4 * Math.PI * R * R * c, 2)} cm³/s`, [m('V = \\frac{4}{3}\\pi r^3 \\Rightarrow \\frac{dV}{dt} = 4\\pi r^2\\frac{dr}{dt}'), m(`= 4\\pi(${R})^2(${c}) = ${4 * R * R * c}\\pi \\approx ${dec(4 * Math.PI * R * R * c, 2)}`)], 2, { round: 2 })],
+      } : {
+        level: 'S', tags: ['D1'], stem: `Air is pumped into a spherical balloon at ${Q} cm³/s.`,
+        parts: [P('a', `How fast is the radius increasing when it is ${R} cm? (3 decimal places)`, 'num', rnd(Q / (4 * Math.PI * R * R), 3), `${dec(Q / (4 * Math.PI * R * R), 3)} cm/s`, [m('\\frac{dV}{dt} = 4\\pi r^2\\frac{dr}{dt}'), m(`\\frac{dr}{dt} = \\frac{${Q}}{4\\pi(${R})^2} \\approx ${dec(Q / (4 * Math.PI * R * R), 3)}`)], 2, { round: 3 })],
+      };
+    },
+    function inverseTrigCalc() {
+      const k = ri(2, 6), a = ri(2, 5);
+      return {
+        level: 'F', tags: ['D2'], stem: 'Inverse trig calculus.',
+        parts: [
+          CH('a', m(`\\frac{d}{dx}\\tan^{-1}(${k}x)`), m(`\\frac{${k}}{1 + ${k * k}x^2}`), [m(`\\frac{1}{1 + ${k * k}x^2}`), m(`\\frac{${k}}{1 + ${k}x^2}`), m(`\\frac{${k}}{\\sqrt{1 - ${k * k}x^2}}`)], ['Chain rule: ' + m(`\\frac{1}{1 + (${k}x)^2} \\cdot ${k}`)]),
+          CH('b', m(`\\displaystyle\\int \\frac{dx}{\\sqrt{${a * a} - x^2}}`), m(`\\sin^{-1}\\frac{x}{${a}} + C`), [m(`\\frac{1}{${a}}\\sin^{-1}\\frac{x}{${a}} + C`), m(`\\cos^{-1}\\frac{x}{${a}} + C`), m(`\\frac{1}{${a}}\\tan^{-1}\\frac{x}{${a}} + C`)], ['Standard integral']),
+          P('c', `Evaluate ${m(`\\displaystyle\\int_0^{${a}} \\frac{dx}{\\sqrt{${a * a} - x^2}}`)}, correct to 3 decimal places.`, 'num', rnd(Math.PI / 2, 3), dec(Math.PI / 2), [m(`\\left[\\sin^{-1}\\frac{x}{${a}}\\right]_0^{${a}} = \\frac{\\pi}{2} \\approx 1.571`)], 1, { round: 3 }),
+        ],
+      };
+    },
+    function substitution() {
+      const c = ri(1, 3), n = ri(2, 3), top = (1 + c) ** (n + 1) - c ** (n + 1);
+      return {
+        level: 'S', tags: ['D3'], stem: `Use the substitution ${m(`u = x^2 + ${c}`)} to evaluate ${m(`\\displaystyle\\int_0^1 2x(x^2 + ${c})^{${n}}\\,dx`)}.`,
+        parts: [
+          CH('a', 'What are the new limits?', m(`u = ${c}\\text{ to }u = ${1 + c}`), [m(`u = 0\\text{ to }u = 1`), m(`u = ${c}\\text{ to }u = ${2 + c}`), m(`u = 1\\text{ to }u = ${1 + c}`)], [m(`x = 0 \\Rightarrow u = ${c}`), m(`x = 1 \\Rightarrow u = ${1 + c}`)]),
+          P('b', 'Evaluate the integral (a fraction is fine).', 'num', top / (n + 1), m(tf(top, n + 1)), [m(`\\int_{${c}}^{${1 + c}} u^{${n}}\\,du = \\left[\\frac{u^{${n + 1}}}{${n + 1}}\\right]_{${c}}^{${1 + c}}`), m(`= \\frac{${(1 + c) ** (n + 1)} - ${c ** (n + 1)}}{${n + 1}} = ${tf(top, n + 1)}`)], 2),
+        ],
+      };
+    },
+    function volume() {
+      const k = ri(1, 4), h = ri(2, 6), a = ri(1, 4), V1 = Math.PI * k * k * h ** 3 / 3, V2 = Math.PI * a ** 5 / 5;
+      return {
+        level: 'S', tags: ['D4'], stem: 'Volumes of solids of revolution. Give answers to 2 decimal places.',
+        parts: [
+          P('a', `The region under ${m(`y = ${k === 1 ? '' : k}x`)} from ${m('x = 0')} to ${m(`x = ${h}`)} is rotated about the $x$-axis. Find the volume.`, 'num', rnd(V1, 2), dec(V1, 2), [m(`V = \\pi\\int_0^{${h}} ${k * k}x^2\\,dx = \\pi\\left[\\frac{${k * k}x^3}{3}\\right]_0^{${h}} = ${tf(k * k * h ** 3, 3)}\\pi`), m(`\\approx ${dec(V1, 2)}`)], 2, { round: 2 }),
+          P('b', `The region under ${m('y = x^2')} from ${m('x = 0')} to ${m(`x = ${a}`)} is rotated about the $x$-axis. Find the volume.`, 'num', rnd(V2, 2), dec(V2, 2), [m(`V = \\pi\\int_0^{${a}} x^4\\,dx = \\frac{${a ** 5}\\pi}{5} \\approx ${dec(V2, 2)}`)], 2, { round: 2 }),
+        ],
+      };
+    },
+    function cooling() {
+      const A = pick([18, 20, 22, 25]), T0 = ri(80, 98), k = pick([0.05, 0.08, 0.1, 0.12]), t = ri(5, 15), Tt = A + (T0 - A) * Math.exp(-k * t), target = A + ri(10, 25), tt = Math.log((T0 - A) / (target - A)) / k;
+      return {
+        level: 'C', tags: ['D5'], stem: `A cup of tea at ${T0}°C cools in a ${A}°C room according to ${m(`\\frac{dT}{dt} = -${k}(T - ${A})`)}, with $t$ in minutes.`,
+        parts: [
+          CH('a', 'Which is the solution?', m(`T = ${A} + ${T0 - A}e^{-${k}t}`), [m(`T = ${T0} + ${A}e^{-${k}t}`), m(`T = ${A}e^{-${k}t}`), m(`T = ${T0 - A} + ${A}e^{${k}t}`)], ['Separate: ' + m(`\\int\\frac{dT}{T - ${A}} = -${k}\\int dt`), m(`T - ${A} = Ce^{-${k}t}`) + ', and at $t = 0$, ' + m(`C = ${T0 - A}`)]),
+          P('b', `Find the temperature after ${t} minutes (1 decimal place).`, 'num', rnd(Tt, 1), `${dec(Tt, 1)}°C`, [m(`T = ${A} + ${T0 - A}e^{-${dec(k * t, 2)}} \\approx ${dec(Tt, 1)}`)], 1, { round: 1 }),
+          P('c', `When does it reach ${target}°C? (2 decimal places)`, 'num', rnd(tt, 2), `${dec(tt, 2)} min`, [m(`${target - A} = ${T0 - A}e^{-${k}t}`), m(`t = \\frac{1}{${k}}\\ln\\frac{${T0 - A}}{${target - A}} \\approx ${dec(tt, 2)}`)], 2, { round: 2 }),
+        ],
+      };
+    },
+  ];
+
+  /* ================= VECTORS (2D) ================= */
+  const vec = finish({
+    id: 'e1vec', subject: SUBJECT, title: 'Vectors', chapter: 'Ext 1 · Y12', hue: 'green',
+    blurb: 'Vectors in two dimensions, dot product, projections and projectile motion.',
+    sections: [
+      { code: 'V1', name: 'Vectors in 2D', notes: ['$\\mathbf{a} = x\\mathbf{i} + y\\mathbf{j}$, with $|\\mathbf{a}| = \\sqrt{x^2 + y^2}$.', 'Add component by component; scalar multiples stretch a vector.', 'A unit vector has length 1: $\\hat{\\mathbf{a}} = \\frac{\\mathbf{a}}{|\\mathbf{a}|}$.'], ex: ['$|3\\mathbf{i} - 4\\mathbf{j}|$', '$\\sqrt{9 + 16}$', '$= 5$'] },
+      { code: 'V2', name: 'Dot product and projections', notes: ['$\\mathbf{a}\\cdot\\mathbf{b} = x_1x_2 + y_1y_2 = |\\mathbf{a}||\\mathbf{b}|\\cos\\theta$', 'Perpendicular vectors have dot product 0.', 'The projection of $\\mathbf{a}$ onto $\\mathbf{b}$ is $\\frac{\\mathbf{a}\\cdot\\mathbf{b}}{\\mathbf{b}\\cdot\\mathbf{b}}\\mathbf{b}$.'], ex: ['Project $(2, 3)$ onto $(1, 1)$', '$\\frac{5}{2}(1, 1)$', '$= (2.5, 2.5)$'] },
+      { code: 'V3', name: 'Projectile motion', notes: ['Velocity $\\mathbf{v}(0) = V\\cos\\theta\\,\\mathbf{i} + V\\sin\\theta\\,\\mathbf{j}$, acceleration $-g\\,\\mathbf{j}$.', 'Integrate: $x = Vt\\cos\\theta$, $y = h + Vt\\sin\\theta - \\frac{1}{2}gt^2$.', 'Maximum height when $\\dot{y} = 0$; it lands when $y = 0$.'], ex: ['$V = 20$, $\\theta = 30^\\circ$, $g = 10$: time to top', '$\\dot{y} = 10 - 10t = 0$', '$t = 1$ s'] },
+    ],
+    cards: [
+      ['$|x\\mathbf{i} + y\\mathbf{j}|$', '$\\sqrt{x^2 + y^2}$'], ['$\\mathbf{a}\\cdot\\mathbf{b}$', '$x_1x_2 + y_1y_2$'], ['Angle between vectors', '$\\cos\\theta = \\frac{\\mathbf{a}\\cdot\\mathbf{b}}{|\\mathbf{a}||\\mathbf{b}|}$'], ['Projection of $\\mathbf{a}$ on $\\mathbf{b}$', '$\\frac{\\mathbf{a}\\cdot\\mathbf{b}}{\\mathbf{b}\\cdot\\mathbf{b}}\\mathbf{b}$'],
+      ['Projectile $x(t)$', '$Vt\\cos\\theta$'], ['Projectile $y(t)$', '$h + Vt\\sin\\theta - \\frac{1}{2}gt^2$'], ['At the top', '$\\dot{y} = 0$'], ['Perpendicular', '$\\mathbf{a}\\cdot\\mathbf{b} = 0$'],
+    ],
+    concepts: [
+      ['$(2\\mathbf{i} + \\mathbf{j})\\cdot(\\mathbf{i} - 3\\mathbf{j}) = $', ['$-1$', '$5$', '$-5$', '$1$'], 0, '$2 - 3 = -1$.'],
+      ['Which is perpendicular to $3\\mathbf{i} + 4\\mathbf{j}$?', ['$4\\mathbf{i} - 3\\mathbf{j}$', '$3\\mathbf{i} - 4\\mathbf{j}$', '$6\\mathbf{i} + 8\\mathbf{j}$', '$\\mathbf{i} + \\mathbf{j}$'], 0, ''],
+      ['A projectile\'s horizontal velocity…', ['Stays constant', 'Decreases', 'Increases', 'Is zero at the top'], 0, 'No horizontal force (no air resistance).'],
+      ['At maximum height, a projectile\'s velocity is…', ['Horizontal', 'Zero', 'Vertical', 'Downward'], 0, ''],
+      ['The unit vector of $6\\mathbf{i} - 8\\mathbf{j}$ is…', ['$0.6\\mathbf{i} - 0.8\\mathbf{j}$', '$6\\mathbf{i} - 8\\mathbf{j}$', '$\\frac{1}{14}(6\\mathbf{i} - 8\\mathbf{j})$', '$0.8\\mathbf{i} - 0.6\\mathbf{j}$'], 0, ''],
+      ['Range on level ground is greatest at…', ['$45^\\circ$', '$30^\\circ$', '$60^\\circ$', '$90^\\circ$'], 0, ''],
+    ],
+  });
+  vec.bank = [
+    function components() {
+      const [p, q, r] = pick(TRIP), a = [p * pick([1, -1]), q * pick([1, -1])], b = [rnz(-5, 5), rnz(-5, 5)], d = a[0] * b[0] + a[1] * b[1], bb = b[0] * b[0] + b[1] * b[1];
+      return {
+        level: 'F', tags: ['V1', 'V2'], stem: `Let ${m(`\\mathbf{a} = ${cterm(a[0], '\\mathbf{i}', true)}${cterm(a[1], '\\mathbf{j}')}`)} and ${m(`\\mathbf{b} = ${cterm(b[0], '\\mathbf{i}', true)}${cterm(b[1], '\\mathbf{j}')}`)}.`,
+        parts: [
+          P('a', 'Find $|\\mathbf{a}|$.', 'num', r, String(r), [m(`\\sqrt{${a[0] ** 2} + ${a[1] ** 2}} = ${r}`)]),
+          P('b', 'Find $\\mathbf{a}\\cdot\\mathbf{b}$.', 'num', d, String(d), [m(`(${a[0]})(${b[0]}) + (${a[1]})(${b[1]}) = ${d}`)]),
+          P('c', `The projection of $\\mathbf{a}$ onto $\\mathbf{b}$ is ${m('k\\mathbf{b}')}. Find $k$ (a fraction is fine).`, 'num', d / bb, m(tf(d, bb)), [m(`k = \\frac{\\mathbf{a}\\cdot\\mathbf{b}}{\\mathbf{b}\\cdot\\mathbf{b}} = \\frac{${d}}{${bb}} = ${tf(d, bb)}`)], 2),
+        ],
+      };
+    },
+    function cliffProjectile() {
+      const h = pick([20, 30, 40, 45, 60, 80]), V = pick([10, 20, 30]), th = pick([30, 45, 60]), g = 10, s = Math.sin(th * Math.PI / 180), c = Math.cos(th * Math.PI / 180);
+      const tTop = V * s / g, H = h + V * V * s * s / (2 * g), tLand = (V * s + Math.sqrt(V * V * s * s + 2 * g * h)) / g, range = V * c * tLand;
+      return {
+        level: 'C', tags: ['V3'], stem: `A ball is thrown from the top of a ${h} m cliff at ${V} m/s, ${m(`${th}^\\circ`)} above the horizontal. Take ${m('g = 10')} and give answers to 2 decimal places.`,
+        parts: [
+          P('a', 'How long until it reaches its highest point?', 'num', rnd(tTop, 2), `${dec(tTop, 2)} s`, [m(`\\dot{y} = ${V}\\sin ${th}^\\circ - 10t = 0`), m(`t \\approx ${dec(tTop, 2)}`)], 1, { round: 2 }),
+          P('b', 'How high above the sea does it get?', 'num', rnd(H, 2), `${dec(H, 2)} m`, [m(`y = ${h} + ${V}t\\sin ${th}^\\circ - 5t^2`) + ' at the top', m(`\\approx ${dec(H, 2)}`)], 2, { round: 2 }),
+          P('c', 'How far from the base of the cliff does it land?', 'num', rnd(range, 2), `${dec(range, 2)} m`, [`Solve ${m(`${h} + ${dec(V * s, 3)}t - 5t^2 = 0`)}: ${m(`t \\approx ${dec(tLand, 3)}`)}`, m(`x = ${V}t\\cos ${th}^\\circ \\approx ${dec(range, 2)}`)], 3, { round: 2 }),
+        ],
+      };
+    },
+  ];
+
+  /* ================= STATISTICS ================= */
+  const stats = finish({
+    id: 'e1stats', subject: SUBJECT, title: 'Statistical Analysis', chapter: 'Ext 1 · Y12', hue: 'coral',
+    blurb: 'Bernoulli and binomial distributions, and the normal approximation for sample proportions.',
+    sections: [
+      { code: 'S1', name: 'Binomial distribution', notes: ['$X \\sim \\text{Bin}(n, p)$ counts successes in $n$ independent trials.', '$P(X = r) = \\binom{n}{r}p^r(1 - p)^{n - r}$', '$E(X) = np$ and $\\text{Var}(X) = np(1 - p)$.', '"At least one": $1 - P(X = 0) = 1 - (1 - p)^n$.'], ex: ['$X \\sim \\text{Bin}(4, 0.3)$, $P(X = 2)$', '$\\binom{4}{2}(0.3)^2(0.7)^2$', '$= 0.2646$'] },
+      { code: 'S2', name: 'Sample proportions', notes: ['$\\hat{p}$ is the proportion of successes in a sample of size $n$.', 'For large $n$, $\\hat{p}$ is approximately normal with mean $p$ and standard deviation $\\sqrt{\\frac{p(1-p)}{n}}$.', 'Standardise with $z = \\frac{\\hat{p} - p}{\\sigma}$; about 68%, 95%, 99.7% lie within 1, 2, 3 standard deviations.'], ex: ['$p = 0.4$, $n = 100$', '$\\sigma = \\sqrt{\\frac{0.4 \\times 0.6}{100}}$', '$\\approx 0.049$'] },
+      { code: 'S3', name: 'Using the normal approximation', notes: ['The approximation is good when $np \\ge 10$ and $n(1 - p) \\ge 10$ (roughly).', 'To find a probability, convert to a $z$-score and use the empirical rule or the table on the reference sheet.', 'A sample proportion more than 2 standard deviations from $p$ is unusual (about a 5% chance).'], ex: ['$p = 0.5$, $n = 100$, $\\hat{p} = 0.6$: unusual?', '$\\sigma = 0.05$, so $z = \\frac{0.6 - 0.5}{0.05} = 2$', 'On the edge of unusual: about 2.5% of samples are this high'] },
+    ],
+    cards: [
+      ['$P(X = r)$, binomial', '$\\binom{n}{r}p^r(1-p)^{n-r}$'], ['Binomial mean', '$np$'], ['Binomial variance', '$np(1 - p)$'], ['At least one success', '$1 - (1 - p)^n$'],
+      ['Mean of $\\hat{p}$', '$p$'], ['Standard deviation of $\\hat{p}$', '$\\sqrt{\\frac{p(1-p)}{n}}$'], ['$z$-score', '$\\frac{x - \\mu}{\\sigma}$'], ['Empirical rule', '68%, 95%, 99.7% within 1, 2, 3 standard deviations'],
+    ],
+    concepts: [
+      ['$X \\sim \\text{Bin}(20, 0.25)$. $E(X) = $', ['5', '15', '3.75', '20'], 0, ''],
+      ['The variance of $\\text{Bin}(10, 0.5)$ is…', ['2.5', '5', '0.25', '1.58'], 0, '$10 \\times 0.5 \\times 0.5$.'],
+      ['Which is NOT needed for a binomial distribution?', ['Trials depend on each other', 'Fixed number of trials', 'Two outcomes per trial', 'Constant probability of success'], 0, 'Trials must be independent.'],
+      ['As $n$ increases, the spread of $\\hat{p}$…', ['Decreases', 'Increases', 'Stays the same', 'Becomes 1'], 0, '$\\sigma \\propto \\frac{1}{\\sqrt{n}}$.'],
+      ['About what percentage of a normal distribution lies within 2 standard deviations?', ['95%', '68%', '99.7%', '50%'], 0, ''],
+      ['$P(X \\ge 1)$ for $\\text{Bin}(3, 0.5)$', ['$\\frac{7}{8}$', '$\\frac{1}{8}$', '$\\frac{3}{8}$', '$\\frac{1}{2}$'], 0, '$1 - 0.5^3$.'],
+    ],
+  });
+  stats.bank = [
+    function binomialProb() {
+      const n = ri(5, 10), p = pick([0.1, 0.2, 0.25, 0.3, 0.4, 0.5, 0.6]), k = ri(1, n - 1), pk = nCr(n, k) * p ** k * (1 - p) ** (n - k);
+      return {
+        level: 'S', tags: ['S1'], stem: `${m(`X \\sim \\text{Bin}(${n}, ${p})`)}. Give probabilities to 4 decimal places.`,
+        parts: [
+          P('a', `Find ${m(`P(X = ${k})`)}.`, 'num', rnd(pk, 4), dec(pk, 4), [m(`\\binom{${n}}{${k}}(${p})^{${k}}(${rnd(1 - p, 2)})^{${n - k}} \\approx ${dec(pk, 4)}`)], 2, { round: 4 }),
+          P('b', 'Find $E(X)$.', 'num', rnd(n * p, 4), dec(n * p, 4), [m(`np = ${n} \\times ${p} = ${dec(n * p, 4)}`)]),
+          P('c', 'Find $\\text{Var}(X)$.', 'num', rnd(n * p * (1 - p), 4), dec(n * p * (1 - p), 4), [m(`np(1 - p) = ${dec(n * p * (1 - p), 4)}`)], 1, { round: 4 }),
+        ],
+      };
+    },
+    function atLeastOne() {
+      const n = ri(3, 8), p = pick([0.05, 0.1, 0.15, 0.2, 0.3]), q = 1 - p, a1 = 1 - q ** n, le1 = q ** n + n * p * q ** (n - 1);
+      return {
+        level: 'F', tags: ['S1'], stem: `Each light in a string of ${n} fails independently with probability ${p}. Give answers to 4 decimal places.`,
+        parts: [
+          P('a', 'Find the probability that at least one light fails.', 'num', rnd(a1, 4), dec(a1, 4), [m(`1 - (${rnd(q, 2)})^{${n}} \\approx ${dec(a1, 4)}`)], 1, { round: 4 }),
+          P('b', 'Find the probability that at most one fails.', 'num', rnd(le1, 4), dec(le1, 4), [m(`(${rnd(q, 2)})^{${n}} + ${n}(${p})(${rnd(q, 2)})^{${n - 1}} \\approx ${dec(le1, 4)}`)], 2, { round: 4 }),
+        ],
+      };
+    },
+    function sampleProportion() {
+      const p = pick([0.2, 0.3, 0.4, 0.5, 0.6]), n = pick([100, 200, 400, 600]), sd = Math.sqrt(p * (1 - p) / n), ph = rnd(p + pick([-2, -1, 1, 2]) * sd, 3), z = (ph - p) / sd;
+      return {
+        level: 'C', tags: ['S2'], stem: `In a large town ${p * 100}% of people own a dog. Random samples of ${n} people are taken.`,
+        parts: [
+          P('a', `Find the standard deviation of ${m('\\hat{p}')} (4 decimal places).`, 'num', rnd(sd, 4), dec(sd, 4), [m(`\\sqrt{\\frac{${p}(${rnd(1 - p, 2)})}{${n}}} \\approx ${dec(sd, 4)}`)], 1, { round: 4 }),
+          P('b', `Find the $z$-score of a sample with ${m(`\\hat{p} = ${ph}`)} (2 decimal places).`, 'num', rnd(z, 2), dec(z, 2), [m(`z = \\frac{${ph} - ${p}}{${dec(sd, 4)}} \\approx ${dec(z, 2)}`)], 1, { round: 2 }),
+          CH('c', `About what percentage of samples have ${m('\\hat{p}')} within one standard deviation of ${p}?`, '68%', ['95%', '99.7%', '50%'], ['Empirical rule']),
+        ],
+      };
+    },
+  ];
+
+  /* ================= PROOF BY INDUCTION ================= */
+  const proof = finish({
+    id: 'e1proof', subject: SUBJECT, title: 'Proof by Induction', chapter: 'Ext 1 · Y12', hue: 'lilac',
+    blurb: 'Induction for sums and divisibility, in the Extension 1 style.',
+    sections: [
+      { code: 'I1', name: 'Induction for sums', notes: ['Show it is true for $n = 1$.', 'Assume true for $n = k$; add the $(k + 1)$th term to both sides.', 'Rearrange to the formula with $n = k + 1$, then conclude.'], ex: ['$1 + 2 + \\dots + n = \\frac{n(n+1)}{2}$', 'Assume for $k$, add $k + 1$', '$\\frac{k(k+1)}{2} + (k + 1) = \\frac{(k+1)(k+2)}{2}$'] },
+      { code: 'I2', name: 'Induction for divisibility', notes: ['Write the assumption as $\\text{expression} = dM$ with $M$ an integer.', 'Rewrite the $k + 1$ expression in terms of the assumed one.', 'Factor out $d$ and state the result is divisible.'], ex: ['$4^n - 1$ divisible by 3', '$4^{k+1} - 1 = 4(4^k - 1) + 3$', '$= 4(3M) + 3 = 3(4M + 1)$'] },
+      { code: 'I3', name: 'Writing it up for full marks', notes: ['Show the base case with both sides worked out, not just "true".', 'State the assumption clearly: "Assume true for $n = k$, i.e. …".', 'In the $k + 1$ step, say exactly where you use the assumption.', 'Finish with: "Hence true for all integers $n \\ge 1$ by mathematical induction."'], ex: ['Common mistake', 'Writing the $k + 1$ statement and "proving" it by assuming it', 'Start from one side of the $k + 1$ statement and work to the other'] },
+    ],
+    cards: [
+      ['Step 1', 'Prove the base case'], ['Step 2', 'Assume true for $n = k$'], ['Step 3', 'Prove true for $n = k + 1$'], ['Conclusion', 'True for all $n \\ge 1$ by induction'],
+      ['$\\sum_{r=1}^{n} r$', '$\\frac{n(n+1)}{2}$'], ['$\\sum_{r=1}^{n} r^2$', '$\\frac{n(n+1)(2n+1)}{6}$'], ['Divisibility assumption', '$\\text{expression} = dM$, $M \\in \\mathbb{Z}$'], ['$5^{k+1} - 1$ rewritten', '$5(5^k - 1) + 4$'],
+    ],
+    concepts: [
+      ['The inductive hypothesis assumes the result for…', ['$n = k$', '$n = k + 1$', '$n = 1$', 'all $n$'], 0, ''],
+      ['For $\\sum_{r=1}^{n} r^2$, the term added in the $k + 1$ step is…', ['$(k + 1)^2$', '$k^2$', '$k + 1$', '$2k + 1$'], 0, ''],
+      ['$6^{k+1} - 1 = $', ['$6(6^k - 1) + 5$', '$6(6^k - 1) - 5$', '$6^k - 1 + 6$', '$(6^k - 1)^2$'], 0, ''],
+      ['A proof by induction must end with…', ['A conclusion statement', 'A counterexample', 'A diagram', 'A guess'], 0, ''],
+      ['To start, you check $n = 1$ because…', ['It is the first value the claim covers', 'It is always true', 'It makes $k$ zero', 'Induction needs negative numbers'], 0, ''],
+      ['Which can induction prove?', ['A statement for all positive integers', 'A statement for all real numbers', 'Only finite sums', 'Only inequalities'], 0, ''],
+    ],
+  });
+  // "3x", "x", "-x": a term with its coefficient, leaving out a 1
+  const cterm = (c, v, first) => `${first ? (c < 0 ? '-' : '') : c < 0 ? ' - ' : ' + '}${Math.abs(c) === 1 && v ? '' : Math.abs(c)}${v}`;
+  const wrap = (fn, tags) => ({ [fn.name]: (L) => ({ ...fn(L), tags }) })[fn.name];
+  const E2ind = E2x.DECKS.find(d => d.id === 'e2induction').bank;
+  proof.bank = [
+    function baseCase() {
+      const n = ri(2, 9), S = pick([['r', 'n(n+1)', 2, (k) => k * (k + 1) / 2], ['r^2', 'n(n+1)(2n+1)', 6, (k) => k * (k + 1) * (2 * k + 1) / 6]]);
+      return {
+        level: 'F', tags: ['I1'], stem: `Consider ${m(`\\displaystyle\\sum_{r=1}^{n} ${S[0]} = \\frac{${S[1]}}{${S[2]}}`)}.`,
+        parts: [
+          P('a', 'Find the value of the right-hand side when $n = 1$.', 'num', 1, '1', ['Substitute $n = 1$: both sides equal 1, so the base case holds']),
+          P('b', `Check the formula for ${m(`n = ${n}`)}: what is the sum?`, 'num', S[3](n), String(S[3](n)), [`Formula with ${m(`n = ${n}`)}: ${m(String(S[3](n)))}`]),
+        ],
+      };
+    },
+    wrap(E2ind.find(f => f.name === 'series'), ['I1']),
+    wrap(E2ind.find(f => f.name === 'divisibility'), ['I2']),
+  ];
+
+  return { DECKS: [poly, trig, comb, calc, vec, stats, proof] };
+})();
+if (typeof module !== 'undefined') module.exports = E1;
+
+</script>
+<script>
+/* ===== Lock In — HSC Physics (Year 12 modules 5–8) =====
+   Modelled on the style of recent HSC papers: calculations with data-sheet constants and
+   extended-response questions with marking criteria. All questions are original. */
+
+const PH = (() => {
+  const T = typeof TK !== 'undefined' ? TK : require('./texkit.js');
+  const { ri, pick, rnd, P, CH, finish, m, sci } = T;
+  const SUBJECT = 'phys';
+  // HSC data sheet values
+  const g = 9.8, G = 6.67e-11, c = 3.0e8, h = 6.626e-34, e = 1.602e-19, me = 9.109e-31, mp = 1.673e-27, ME = 6.0e24, RE = 6.371e6, b = 2.898e-3, Ryd = 1.097e7;
+  const TOL = { tol: 0.01 }; // answers accepted within 1% (3 significant figures)
+  const deg = (x) => x * Math.PI / 180;
+  const S3 = (x, unit = '') => `${m(sci(x))}${unit ? ' ' + unit : ''}`;
+
+  /* ================= MODULE 5: ADVANCED MECHANICS ================= */
+  const m5 = finish({
+    id: 'phm5', subject: SUBJECT, title: 'Advanced Mechanics', chapter: 'Module 5', hue: 'coral',
+    blurb: 'Projectile motion, circular motion, and motion in gravitational fields.',
+    sections: [
+      { code: '5.1', name: 'Projectile motion', notes: ['Treat horizontal and vertical motion separately. Horizontal velocity $u_x = u\\cos\\theta$ is constant (no air resistance).', 'Vertically: $v_y = u_y - gt$, $\\Delta y = u_yt - \\frac{1}{2}gt^2$, with $g = 9.8\\text{ m s}^{-2}$.', 'Time of flight on level ground $t = \\frac{2u\\sin\\theta}{g}$; maximum height $\\frac{u^2\\sin^2\\theta}{2g}$; range $\\frac{u^2\\sin 2\\theta}{g}$.'], ex: ['$u = 20$ m/s at $30^\\circ$: maximum height', '$u_y = 10$ m/s; $v_y^2 = u_y^2 - 2g\\Delta y$ with $v_y = 0$', '$\\Delta y = \\frac{100}{19.6} \\approx 5.1$ m'] },
+      { code: '5.2', name: 'Circular motion', notes: ['Uniform circular motion needs a net force towards the centre: $F_c = \\frac{mv^2}{r}$, $a_c = \\frac{v^2}{r}$.', '$v = \\frac{2\\pi r}{T}$ and $\\omega = \\frac{\\Delta\\theta}{t}$, with $v = \\omega r$.', 'On a banked track with no friction, the design speed satisfies $\\tan\\theta = \\frac{v^2}{rg}$.', 'Torque $\\tau = r_{\\perp}F = rF\\sin\\theta$.'], ex: ['1.2 kg ball, $r = 0.8$ m, $v = 4$ m/s', '$F_c = \\frac{1.2 \\times 16}{0.8}$', '$= 24$ N towards the centre'] },
+      { code: '5.3', name: 'Gravitational fields and orbits', notes: ['$g = \\frac{GM}{r^2}$ and $F = \\frac{GMm}{r^2}$, where $r$ is measured from the centre of the planet.', 'For a circular orbit, gravity provides the centripetal force: $v = \\sqrt{\\frac{GM}{r}}$.', 'Kepler\'s third law: $\\frac{r^3}{T^2} = \\frac{GM}{4\\pi^2}$. Geostationary orbits have $T = 24$ h.', 'Gravitational potential energy $U = -\\frac{GMm}{r}$; the total energy of an orbit is $-\\frac{GMm}{2r}$.'], ex: ['Orbit 400 km above Earth: speed', '$r = 6.371 \\times 10^6 + 4 \\times 10^5$ m', '$v = \\sqrt{\\frac{GM}{r}} \\approx 7.69 \\times 10^3$ m/s'] },
+    ],
+    cards: [
+      ['Horizontal velocity of a projectile', 'Constant: $u\\cos\\theta$'], ['Range on level ground', '$\\frac{u^2\\sin 2\\theta}{g}$'], ['Centripetal force', '$F_c = \\frac{mv^2}{r}$, towards the centre'], ['$v$ in terms of period', '$v = \\frac{2\\pi r}{T}$'],
+      ['Banked track design speed', '$\\tan\\theta = \\frac{v^2}{rg}$'], ['Field strength at distance $r$', '$g = \\frac{GM}{r^2}$'], ['Orbital speed', '$v = \\sqrt{\\frac{GM}{r}}$'], ['Kepler\'s third law', '$\\frac{r^3}{T^2} = \\frac{GM}{4\\pi^2}$'],
+      ['Gravitational potential energy', '$U = -\\frac{GMm}{r}$'], ['Geostationary orbit', 'Period 24 h, above the equator, about 36 000 km up'],
+    ],
+    concepts: [
+      ['At the highest point of a projectile\'s path, its acceleration is…', ['$9.8\\text{ m s}^{-2}$ downwards', 'zero', 'horizontal', 'upwards'], 0, 'Gravity acts the whole time.'],
+      ['For a car turning on a flat road, the centripetal force comes from…', ['Friction between tyres and road', 'The engine', 'Gravity', 'The normal force'], 0, ''],
+      ['If a satellite moves to a higher circular orbit, its speed…', ['Decreases', 'Increases', 'Stays the same', 'Becomes zero'], 0, '$v = \\sqrt{GM/r}$.'],
+      ['Doubling the radius of an orbit multiplies the period by…', ['$2\\sqrt{2}$', '2', '4', '$\\sqrt{2}$'], 0, '$T^2 \\propto r^3$.'],
+      ['Doubling speed in circular motion (same radius) multiplies the centripetal force by…', ['4', '2', '$\\frac{1}{2}$', '8'], 0, '$F \\propto v^2$.'],
+      ['Gravitational potential energy is negative because…', ['Zero is defined at infinite separation', 'Mass can be negative', 'Gravity repels', 'Energy is lost to heat'], 0, ''],
+    ],
+    short: [
+      { q: 'An astronaut on the International Space Station feels weightless, even though gravity there is about 90% of its value at Earth\'s surface. Explain why.', marks: 3, tags: ['5.3'], criteria: ['The station and astronaut are both in free fall (in orbit) around Earth', 'Gravity provides the centripetal force for both, so they accelerate together at the same rate', 'So there is no normal (contact) force on the astronaut, which is what we feel as weight'], model: 'The space station and the astronaut are both in orbit, which means they are in free fall towards Earth while also moving sideways fast enough to keep missing it. Gravity provides the centripetal force for both of them, so they accelerate at the same rate. Because the astronaut and the floor fall together, the floor exerts no normal force on the astronaut, and the absence of that contact force is what we experience as weightlessness.' },
+      { q: 'A ball rolls off a horizontal table. Describe the horizontal and vertical components of its motion, and explain why they are independent.', marks: 4, tags: ['5.1'], criteria: ['Horizontal velocity stays constant (no horizontal force, ignoring air resistance)', 'Vertical velocity starts at zero and increases at $9.8\\text{ m s}^{-2}$ downwards', 'The path is a parabola', 'They are independent because gravity only acts vertically, so it cannot change the horizontal velocity'], model: 'Horizontally, no force acts on the ball once it leaves the table (ignoring air resistance), so its horizontal velocity stays constant and it covers equal horizontal distances in equal times. Vertically, it starts with zero vertical velocity and accelerates downwards at 9.8 m s⁻² because of gravity, so it falls faster and faster. Combining the two gives a parabolic path. The components are independent because the only force, gravity, acts vertically and therefore cannot change the horizontal component.' },
+      { q: 'Explain how the orbital speed, period and total energy of a satellite change if it is moved to a higher circular orbit.', marks: 3, tags: ['5.3'], criteria: ['Speed decreases because $v = \\sqrt{GM/r}$', 'Period increases (Kepler\'s third law, $T^2 \\propto r^3$)', 'Total energy $-\\frac{GMm}{2r}$ increases (becomes less negative), so work must be done to raise it'], model: 'In a circular orbit gravity provides the centripetal force, giving $v = \\sqrt{GM/r}$, so a larger radius means a lower orbital speed. By Kepler\'s third law $r^3/T^2$ is constant, so the period increases. The total energy of the orbit is $-\\frac{GMm}{2r}$, which becomes less negative as $r$ increases, so the satellite has more total energy and work (from its rockets) is needed to move it up.' },
+    ],
+  });
+  m5.bank = [
+    function projectile() {
+      const u = pick([12, 15, 18, 20, 25, 30]), th = pick([25, 30, 35, 40, 45, 50, 60]), s = Math.sin(deg(th));
+      const t = 2 * u * s / g, H = (u * s) ** 2 / (2 * g), R = u * u * Math.sin(deg(2 * th)) / g;
+      return {
+        level: 'S', tags: ['5.1'], stem: `A ball is launched from level ground at ${u} m/s, ${m(`${th}^\\circ`)} above the horizontal. Ignore air resistance.`,
+        parts: [
+          P('a', 'Find the time of flight (s).', 'num', t, S3(t, 's'), [m(`t = \\frac{2u\\sin\\theta}{g} = \\frac{2(${u})\\sin ${th}^\\circ}{9.8}`), m(`\\approx ${sci(t)}`)], 2, TOL),
+          P('b', 'Find the maximum height (m).', 'num', H, S3(H, 'm'), [m(`H = \\frac{(u\\sin\\theta)^2}{2g} = \\frac{(${rnd(u * s, 2)})^2}{19.6}`), m(`\\approx ${sci(H)}`)], 2, TOL),
+          P('c', 'Find the range (m).', 'num', R, S3(R, 'm'), [m(`R = u\\cos\\theta \\times t = ${rnd(u * Math.cos(deg(th)), 2)} \\times ${rnd(t, 3)}`), m(`\\approx ${sci(R)}`)], 2, TOL),
+        ],
+      };
+    },
+    function circular() {
+      const mass = pick([0.2, 0.5, 0.8, 1.2, 1.5, 2.0]), r = pick([0.5, 0.8, 1.0, 1.5, 2.0, 2.5]), v = ri(2, 9), F = mass * v * v / r, Tp = 2 * Math.PI * r / v;
+      return {
+        level: 'F', tags: ['5.2'], stem: `A ${mass} kg mass moves in a horizontal circle of radius ${r} m at ${v} m/s.`,
+        parts: [
+          P('a', 'Find the centripetal force (N).', 'num', F, S3(F, 'N'), [m(`F_c = \\frac{mv^2}{r} = \\frac{${mass} \\times ${v * v}}{${r}}`), m(`\\approx ${sci(F)}`)], 1, TOL),
+          P('b', 'Find the period (s).', 'num', Tp, S3(Tp, 's'), [m(`T = \\frac{2\\pi r}{v} = \\frac{2\\pi(${r})}{${v}} \\approx ${sci(Tp)}`)], 1, TOL),
+          CH('c', 'Which way does the net force point?', 'Towards the centre of the circle', ['Along the direction of motion', 'Away from the centre', 'Vertically upwards'], ['Centripetal means centre-seeking']),
+        ],
+      };
+    },
+    function banked() {
+      const kmh = pick([50, 60, 72, 80, 90, 100]), v = kmh / 3.6, r = pick([60, 80, 100, 120, 150, 200]), th = Math.atan(v * v / (r * g)) * 180 / Math.PI;
+      return {
+        level: 'C', tags: ['5.2'], stem: `A curve of radius ${r} m is banked so cars can take it at ${kmh} km/h with no sideways friction.`,
+        parts: [
+          P('a', 'Convert the speed to m/s.', 'num', v, S3(v, 'm/s'), [m(`${kmh} \\div 3.6 \\approx ${sci(v)}`)], 1, TOL),
+          P('b', 'Find the banking angle (degrees).', 'num', th, m(`${sci(th)}^\\circ`), [m(`\\tan\\theta = \\frac{v^2}{rg} = \\frac{(${rnd(v, 2)})^2}{${r} \\times 9.8}`), m(`\\theta \\approx ${sci(th)}^\\circ`)], 2, TOL),
+        ],
+      };
+    },
+    function orbit() {
+      const hkm = pick([300, 400, 550, 800, 1200, 2000, 20200, 35800]), r = RE + hkm * 1e3, v = Math.sqrt(G * ME / r), Th = 2 * Math.PI * Math.sqrt(r ** 3 / (G * ME)) / 3600;
+      return {
+        level: 'C', tags: ['5.3'], stem: `A satellite is in a circular orbit ${hkm} km above Earth's surface. (${m('M_E = 6.0 \\times 10^{24}')} kg, ${m('r_E = 6.371 \\times 10^{6}')} m)`,
+        parts: [
+          P('a', 'Find its orbital speed (m/s).', 'num', v, S3(v, 'm/s'), [m(`r = 6.371 \\times 10^6 + ${sci(hkm * 1e3)} = ${sci(r, 4)}\\text{ m}`), m(`v = \\sqrt{\\frac{GM}{r}} \\approx ${sci(v)}`)], 2, TOL),
+          P('b', 'Find its period in hours.', 'num', Th, S3(Th, 'h'), [m('T = 2\\pi\\sqrt{\\frac{r^3}{GM}}'), m(`\\approx ${sci(Th * 3600)}\\text{ s} = ${sci(Th)}\\text{ h}`)], 2, TOL),
+        ],
+      };
+    },
+    function fieldStrength() {
+      const hkm = pick([200, 500, 1000, 3000, 6400]), r = RE + hkm * 1e3, gh = G * ME / (r * r), mass = pick([60, 70, 500, 1200]);
+      return {
+        level: 'F', tags: ['5.3'], stem: `A probe is ${hkm} km above Earth's surface.`,
+        parts: [
+          P('a', `Find the gravitational field strength there (${m('\\text{N kg}^{-1}')}).`, 'num', gh, S3(gh, 'N/kg'), [m(`g = \\frac{GM}{r^2} = \\frac{6.67 \\times 10^{-11} \\times 6.0 \\times 10^{24}}{(${sci(r, 4)})^2}`), m(`\\approx ${sci(gh)}`)], 1, TOL),
+          P('b', `Find the gravitational force on a ${mass} kg mass there (N).`, 'num', gh * mass, S3(gh * mass, 'N'), [m(`F = mg = ${mass} \\times ${sci(gh)} \\approx ${sci(gh * mass)}`)], 1, TOL),
+        ],
+      };
+    },
+  ];
+
+  /* ================= MODULE 6: ELECTROMAGNETISM ================= */
+  const m6 = finish({
+    id: 'phm6', subject: SUBJECT, title: 'Electromagnetism', chapter: 'Module 6', hue: 'cyan',
+    blurb: 'Charged particles in fields, the motor effect, induction, motors, generators and transformers.',
+    sections: [
+      { code: '6.1', name: 'Charged particles in fields', notes: ['Between parallel plates: $E = \\frac{V}{d}$ and $F = qE$.', 'Work done on a charge: $W = qV$, so $\\frac{1}{2}mv^2 = qV$ when accelerated from rest.', 'A charge moving across a magnetic field: $F = qvB\\sin\\theta$, which gives circular motion with $r = \\frac{mv}{qB}$.'], ex: ['Electron between plates 2 cm apart, 500 V', '$E = \\frac{500}{0.02} = 2.5 \\times 10^4\\text{ V m}^{-1}$', '$F = eE = 4.0 \\times 10^{-15}$ N'] },
+      { code: '6.2', name: 'The motor effect', notes: ['A current-carrying wire in a magnetic field feels $F = lIB\\sin\\theta$.', 'Direction: right-hand palm rule (fingers $B$, thumb $I$, palm pushes $F$).', 'Two parallel wires: $\\frac{F}{l} = \\frac{\\mu_0 I_1I_2}{2\\pi r}$; same direction currents attract.'], ex: ['0.25 m wire, 4 A, 0.5 T, perpendicular', '$F = 0.25 \\times 4 \\times 0.5$', '$= 0.5$ N'] },
+      { code: '6.3', name: 'Electromagnetic induction', notes: ['Magnetic flux $\\Phi = BA\\cos\\theta$ (in Wb).', 'Faraday\'s law: $\\varepsilon = -N\\frac{\\Delta\\Phi}{\\Delta t}$.', 'Lenz\'s law: the induced current opposes the change that caused it (the minus sign).'], ex: ['100 turns, area 0.02 m², $B$ drops from 0.5 T to 0 in 0.1 s', '$\\Delta\\Phi = 0.01$ Wb', '$\\varepsilon = 100 \\times \\frac{0.01}{0.1} = 10$ V'] },
+      { code: '6.4', name: 'Motors, generators and transformers', notes: ['Torque on a coil: $\\tau = nIAB\\sin\\theta$; maximum when the plane of the coil is parallel to $B$.', 'A DC motor uses a split-ring commutator to reverse the current every half turn; AC generators use slip rings.', 'Ideal transformer: $\\frac{V_p}{V_s} = \\frac{N_p}{N_s}$ and $V_pI_p = V_sI_s$.', 'Back emf in a motor increases with speed, reducing the current.'], ex: ['240 V, 1000 primary turns, 50 secondary turns', '$V_s = 240 \\times \\frac{50}{1000}$', '$= 12$ V'] },
+    ],
+    cards: [
+      ['Field between plates', '$E = \\frac{V}{d}$'], ['Force on a charge in $E$', '$F = qE$'], ['Force on a charge in $B$', '$F = qvB\\sin\\theta$'], ['Radius in a magnetic field', '$r = \\frac{mv}{qB}$'],
+      ['Motor effect', '$F = lIB\\sin\\theta$'], ['Magnetic flux', '$\\Phi = BA\\cos\\theta$'], ['Faraday\'s law', '$\\varepsilon = -N\\frac{\\Delta\\Phi}{\\Delta t}$'], ['Lenz\'s law', 'Induced current opposes the change in flux'],
+      ['Transformer ratio', '$\\frac{V_p}{V_s} = \\frac{N_p}{N_s}$'], ['Split-ring commutator', 'Reverses the coil current every half turn so a DC motor keeps turning'],
+    ],
+    concepts: [
+      ['A charge moving parallel to a magnetic field experiences…', ['No force', 'Maximum force', 'A force along $B$', 'Circular motion'], 0, '$\\sin 0^\\circ = 0$.'],
+      ['Increasing $B$ for a charge in circular motion makes the radius…', ['Smaller', 'Larger', 'Unchanged', 'Infinite'], 0, '$r = mv/(qB)$.'],
+      ['A step-down transformer has…', ['More primary turns than secondary', 'More secondary turns', 'Equal turns', 'No iron core'], 0, ''],
+      ['The work done by a magnetic force on a moving charge is…', ['Zero', 'qvB', 'qV', 'mv²'], 0, 'The force is always perpendicular to the velocity.'],
+      ['Back emf in a DC motor is greatest when the motor…', ['Spins fastest', 'Starts up', 'Is stalled', 'Is switched off'], 0, ''],
+      ['Lenz\'s law is a consequence of…', ['Conservation of energy', 'Conservation of charge', 'Newton\'s first law', 'Coulomb\'s law'], 0, ''],
+    ],
+    short: [
+      { q: 'Explain the role of the split-ring commutator in a DC motor.', marks: 3, tags: ['6.4'], criteria: ['It reverses the direction of current in the coil every half turn', 'This happens as the coil passes the vertical position (plane perpendicular to the field)', 'So the torque keeps acting in the same rotational direction and the motor rotates continuously'], model: 'The split-ring commutator connects the rotating coil to the DC supply through brushes. Every half turn, as the coil passes the position where its plane is perpendicular to the magnetic field, the commutator swaps which brush touches which side of the coil, reversing the current in the coil. Without this, the torque would reverse and the coil would just oscillate; with it, the torque always acts in the same rotational direction, so the motor keeps turning.' },
+      { q: 'A strong magnet falls much more slowly through a vertical copper pipe than through an identical plastic pipe. Explain why.', marks: 4, tags: ['6.3'], criteria: ['The falling magnet changes the magnetic flux through sections of the copper pipe', 'This induces eddy currents in the copper (Faraday\'s law); plastic is an insulator, so no current flows', 'By Lenz\'s law the eddy currents create magnetic fields that oppose the change, so they repel/attract the magnet upwards', 'The opposing force reduces the magnet\'s acceleration; energy is converted to heat in the pipe'], model: 'As the magnet falls, the magnetic flux through each section of the pipe changes. In copper, a conductor, this changing flux induces circulating eddy currents (Faraday\'s law). By Lenz\'s law these currents produce magnetic fields that oppose the change in flux: the section below the magnet repels it and the section above attracts it, so there is an upward force on the magnet and it falls slowly, with its kinetic energy turned into heat in the pipe. Plastic is an insulator, so no currents are induced and the magnet falls freely.' },
+      { q: 'Explain why electricity is transmitted over long distances at very high voltages.', marks: 3, tags: ['6.4'], criteria: ['Power lost in the lines is $P = I^2R$', 'For the same power $P = VI$, a higher voltage means a lower current', 'Step-up transformers raise the voltage at the power station, greatly reducing energy losses; step-down transformers lower it near homes'], model: 'Transmission lines have resistance, so power is lost as heat at a rate $P = I^2R$. Since power delivered is $P = VI$, transmitting the same power at a much higher voltage requires a much smaller current, which reduces the losses dramatically (they depend on the square of the current). Step-up transformers raise the voltage at the power station, and step-down transformers lower it again before it reaches homes.' },
+    ],
+  });
+  m6.bank = [
+    function plates() {
+      const V = pick([100, 200, 250, 500, 1000, 1500]), dcm = pick([0.5, 1, 2, 2.5, 4, 5]), d = dcm / 100, E = V / d, F = e * E, a = F / me;
+      return {
+        level: 'F', tags: ['6.1'], stem: `Two parallel plates ${dcm} cm apart have a potential difference of ${V} V. An electron is between them.`,
+        parts: [
+          P('a', `Find the electric field strength (${m('\\text{V m}^{-1}')}).`, 'num', E, S3(E), [m(`E = \\frac{V}{d} = \\frac{${V}}{${d}} = ${sci(E)}`)], 1, TOL),
+          P('b', 'Find the force on the electron (N).', 'num', F, S3(F, 'N'), [m(`F = qE = 1.602 \\times 10^{-19} \\times ${sci(E)} \\approx ${sci(F)}`)], 1, TOL),
+          P('c', `Find its acceleration (${m('\\text{m s}^{-2}')}).`, 'num', a, S3(a), [m(`a = \\frac{F}{m_e} = \\frac{${sci(F)}}{9.109 \\times 10^{-31}} \\approx ${sci(a)}`)], 1, TOL),
+        ],
+      };
+    },
+    function chargeInB() {
+      const isE = Math.random() < 0.5, mass = isE ? me : mp, name = isE ? 'An electron' : 'A proton', v = pick([2, 3, 5, 8]) * 10 ** (isE ? 6 : 5), B = pick([0.002, 0.005, 0.01, 0.05, 0.1, 0.2]), r = mass * v / (e * B), F = e * v * B;
+      return {
+        level: 'S', tags: ['6.1'], stem: `${name} moves at ${m(sci(v))} m/s perpendicular to a ${B} T magnetic field.`,
+        parts: [
+          P('a', 'Find the magnetic force on it (N).', 'num', F, S3(F, 'N'), [m(`F = qvB = 1.602 \\times 10^{-19} \\times ${sci(v)} \\times ${B} \\approx ${sci(F)}`)], 1, TOL),
+          P('b', 'Find the radius of its circular path (m).', 'num', r, S3(r, 'm'), [m(`r = \\frac{mv}{qB} = \\frac{${sci(mass, 4)} \\times ${sci(v)}}{1.602 \\times 10^{-19} \\times ${B}}`), m(`\\approx ${sci(r)}`)], 2, TOL),
+        ],
+      };
+    },
+    function motorEffect() {
+      const l = pick([0.1, 0.2, 0.25, 0.4, 0.5]), I = ri(2, 12), B = pick([0.1, 0.2, 0.4, 0.5, 0.8]), th = pick([30, 45, 60, 90]), F = l * I * B * Math.sin(deg(th));
+      const n = pick([50, 100, 200]), A = pick([0.01, 0.02, 0.05]), tau = n * I * A * B;
+      return {
+        level: 'S', tags: ['6.2', '6.4'], stem: 'The motor effect.',
+        parts: [
+          P('a', `A ${l} m wire carries ${I} A at ${m(`${th}^\\circ`)} to a ${B} T field. Find the force on it (N).`, 'num', F, S3(F, 'N'), [m(`F = lIB\\sin\\theta = ${l} \\times ${I} \\times ${B} \\times \\sin ${th}^\\circ \\approx ${sci(F)}`)], 1, TOL),
+          P('b', `A coil of ${n} turns, area ${A} m², carries ${I} A with its plane parallel to a ${B} T field. Find the torque (N m).`, 'num', tau, S3(tau, 'N m'), [m(`\\tau = nIAB = ${n} \\times ${I} \\times ${A} \\times ${B} = ${sci(tau)}`)], 2, TOL),
+        ],
+      };
+    },
+    function induction() {
+      const N = pick([50, 100, 200, 500]), A = pick([0.01, 0.02, 0.04, 0.05]), B1 = pick([0.2, 0.4, 0.5, 0.8]), B2 = pick([0, 0.1]), t = pick([0.05, 0.1, 0.2, 0.5]), emf = N * A * (B1 - B2) / t;
+      return {
+        level: 'S', tags: ['6.3'], stem: `A coil of ${N} turns and area ${A} m² sits perpendicular to a magnetic field that falls from ${B1} T to ${B2} T in ${t} s.`,
+        parts: [
+          P('a', 'Find the change in flux through one turn (Wb).', 'num', A * (B1 - B2), S3(A * (B1 - B2), 'Wb'), [m(`\\Delta\\Phi = A\\Delta B = ${A} \\times ${rnd(B1 - B2, 2)} = ${sci(A * (B1 - B2))}`)], 1, TOL),
+          P('b', 'Find the size of the average induced emf (V).', 'num', emf, S3(emf, 'V'), [m(`\\varepsilon = N\\frac{\\Delta\\Phi}{\\Delta t} = ${N} \\times \\frac{${sci(A * (B1 - B2))}}{${t}} = ${sci(emf)}`)], 2, TOL),
+        ],
+      };
+    },
+    function transformer() {
+      const Vp = pick([240, 11000, 330000, 415]), Np = pick([500, 1000, 2000, 4000]), Ns = pick([50, 100, 250, 8000, 20000]), Vs = Vp * Ns / Np, Is = pick([0.5, 1, 2, 5, 10]), Ip = Vs * Is / Vp;
+      return {
+        level: 'F', tags: ['6.4'], stem: `An ideal transformer has ${Np} primary turns and ${Ns} secondary turns, with ${Vp} V on the primary.`,
+        parts: [
+          P('a', 'Find the secondary voltage (V).', 'num', Vs, S3(Vs, 'V'), [m(`V_s = V_p\\frac{N_s}{N_p} = ${Vp} \\times \\frac{${Ns}}{${Np}} = ${sci(Vs)}`)], 1, TOL),
+          CH('b', 'Is it a step-up or step-down transformer?', Ns > Np ? 'Step-up' : 'Step-down', [Ns > Np ? 'Step-down' : 'Step-up'], [`${Ns} secondary turns vs ${Np} primary turns`]),
+          P('c', `If the secondary current is ${Is} A, find the primary current (A).`, 'num', Ip, S3(Ip, 'A'), [m(`V_pI_p = V_sI_s \\Rightarrow I_p = \\frac{${sci(Vs)} \\times ${Is}}{${Vp}} = ${sci(Ip)}`)], 1, TOL),
+        ],
+      };
+    },
+  ];
+
+  /* ================= MODULE 7: THE NATURE OF LIGHT ================= */
+  const m7 = finish({
+    id: 'phm7', subject: SUBJECT, title: 'The Nature of Light', chapter: 'Module 7', hue: 'gold',
+    blurb: 'Maxwell and the EM spectrum, wave and quantum models of light, and special relativity.',
+    sections: [
+      { code: '7.1', name: 'Electromagnetic spectrum', notes: ['Maxwell predicted EM waves travelling at $c = \\frac{1}{\\sqrt{\\mu_0\\varepsilon_0}} \\approx 3.00 \\times 10^8$ m/s.', 'All EM waves obey $c = f\\lambda$.', 'Spectra of stars give their surface temperature, composition, rotation and motion (Doppler shift).'], ex: ['Frequency of 600 nm light', '$f = \\frac{3.00 \\times 10^8}{600 \\times 10^{-9}}$', '$= 5.0 \\times 10^{14}$ Hz'] },
+      { code: '7.2', name: 'Light: wave model', notes: ['Double slit: bright fringes where $d\\sin\\theta = m\\lambda$; fringe spacing $\\Delta y = \\frac{\\lambda L}{d}$.', 'Diffraction gratings give sharper, brighter maxima using the same equation.', 'Polarisation (Malus\'s law): $I = I_{\\max}\\cos^2\\theta$. Only transverse waves can be polarised.'], ex: ['$\\lambda = 650$ nm, $d = 0.25$ mm, $L = 2$ m', '$\\Delta y = \\frac{650 \\times 10^{-9} \\times 2}{0.25 \\times 10^{-3}}$', '$= 5.2$ mm'] },
+      { code: '7.3', name: 'Light: quantum model', notes: ['Black body radiation: Wien\'s law $\\lambda_{\\max} = \\frac{b}{T}$, $b = 2.898 \\times 10^{-3}$ m K. Planck explained it with quantised energy $E = hf$.', 'Photoelectric effect: $K_{\\max} = hf - \\phi$. Below the threshold frequency $f_0 = \\frac{\\phi}{h}$ no electrons are emitted, however bright the light.', 'Einstein used photons to explain it, supporting the particle model.'], ex: ['300 nm light on a metal with $\\phi = 2.3$ eV', '$E = \\frac{hc}{\\lambda} = 4.14$ eV', '$K_{\\max} = 4.14 - 2.3 = 1.84$ eV'] },
+      { code: '7.4', name: 'Light and special relativity', notes: ['Postulates: the laws of physics are the same in all inertial frames, and the speed of light is the same for all observers.', 'Time dilation $t = \\frac{t_0}{\\sqrt{1 - v^2/c^2}}$; length contraction $l = l_0\\sqrt{1 - v^2/c^2}$.', 'Relativistic momentum $p = \\frac{m_0v}{\\sqrt{1 - v^2/c^2}}$; mass-energy $E = mc^2$.', 'Evidence: muons reaching the ground, atomic clocks on aircraft, particle accelerators.'], ex: ['Muon lifetime $2.2\\ \\mu$s at $0.99c$', '$\\gamma = \\frac{1}{\\sqrt{1 - 0.99^2}} \\approx 7.09$', '$t \\approx 15.6\\ \\mu$s in Earth\'s frame'] },
+    ],
+    cards: [
+      ['Wave equation', '$c = f\\lambda$'], ['Double slit maxima', '$d\\sin\\theta = m\\lambda$'], ['Fringe spacing', '$\\Delta y = \\frac{\\lambda L}{d}$'], ['Malus\'s law', '$I = I_{\\max}\\cos^2\\theta$'],
+      ['Wien\'s law', '$\\lambda_{\\max} = \\frac{b}{T}$'], ['Photon energy', '$E = hf = \\frac{hc}{\\lambda}$'], ['Photoelectric equation', '$K_{\\max} = hf - \\phi$'], ['Threshold frequency', '$f_0 = \\frac{\\phi}{h}$'],
+      ['Time dilation', '$t = \\frac{t_0}{\\sqrt{1 - v^2/c^2}}$'], ['Length contraction', '$l = l_0\\sqrt{1 - v^2/c^2}$'], ['Michelson–Morley result', 'Null result: no evidence for an aether'],
+    ],
+    concepts: [
+      ['Increasing the intensity of light below the threshold frequency…', ['Still emits no electrons', 'Emits more electrons', 'Emits faster electrons', 'Lowers the work function'], 0, ''],
+      ['Moving the screen further from a double slit makes the fringes…', ['Further apart', 'Closer together', 'Brighter only', 'Disappear'], 0, '$\\Delta y \\propto L$.'],
+      ['A hotter star\'s peak wavelength is…', ['Shorter', 'Longer', 'The same', 'Infrared'], 0, 'Wien\'s law.'],
+      ['Polarisation shows that light is…', ['A transverse wave', 'A longitudinal wave', 'Made of particles', 'Slower than sound'], 0, ''],
+      ['To an observer on Earth, a fast-moving clock runs…', ['Slow', 'Fast', 'At the same rate', 'Backwards'], 0, ''],
+      ['The stopping voltage in a photoelectric experiment measures…', ['$K_{\\max}$ of the electrons', 'The work function', 'The intensity', 'The threshold wavelength'], 0, ''],
+    ],
+    short: [
+      { q: 'Describe how Young\'s double-slit experiment supports the wave model of light.', marks: 3, tags: ['7.2'], criteria: ['Light through two narrow slits produces alternating bright and dark fringes', 'Bright fringes are constructive interference (path difference $m\\lambda$), dark fringes destructive', 'Interference is a wave property that a particle model (Newton\'s corpuscles) could not explain'], model: 'When light passes through two narrow, closely spaced slits it produces a pattern of alternating bright and dark bands on a screen. The bands form where waves from the two slits interfere: constructively where the path difference is a whole number of wavelengths, giving bright fringes, and destructively where it is a half-wavelength out, giving dark fringes. Interference is a property of waves, and a particle model would predict only two bright bands, so the experiment supports the wave model.' },
+      { q: 'Explain how the photoelectric effect supports the particle model of light. Refer to threshold frequency in your answer.', marks: 4, tags: ['7.3'], criteria: ['No electrons are emitted below a threshold frequency, however intense the light', 'Above it, the maximum kinetic energy depends on frequency, not intensity ($K_{\\max} = hf - \\phi$)', 'Emission is instant, with no time to build up energy', 'Explained by photons of energy $hf$ each giving all their energy to one electron; intensity only changes the number of photons'], model: 'Light only ejects electrons from a metal if its frequency is above a threshold value, no matter how intense it is, and the maximum kinetic energy of the electrons depends on the frequency, not the intensity. Electrons are also emitted instantly. The wave model predicts that bright light of any frequency should eventually give electrons enough energy. Einstein explained the results with photons: each photon carries energy $E = hf$ and gives it all to one electron, so if $hf$ is less than the work function nothing happens, and above that $K_{\\max} = hf - \\phi$. Brighter light just means more photons, so more electrons but not faster ones.' },
+      { q: 'Explain the significance of the Michelson–Morley experiment for the development of physics.', marks: 3, tags: ['7.4'], criteria: ['It tried to detect Earth\'s motion through the aether by comparing the speed of light in perpendicular directions', 'It found a null result (no difference in the speed of light)', 'This undermined the aether model and was consistent with Einstein\'s postulate that the speed of light is constant for all observers'], model: 'Scientists thought light travelled through a medium called the aether, so Earth\'s motion through it should change the measured speed of light in different directions. Michelson and Morley used an interferometer to compare light travelling in perpendicular directions, but found no change in the interference pattern: a null result. This undermined the aether model and was later consistent with Einstein\'s special relativity, which states that the speed of light is the same for all observers.' },
+    ],
+  });
+  const METALS = [['sodium', 2.3], ['potassium', 2.3], ['calcium', 2.9], ['zinc', 4.3], ['copper', 4.7]];
+  m7.bank = [
+    function wien() {
+      const T = pick([3000, 3500, 4500, 5800, 7500, 10000, 20000]), lam = b / T;
+      return {
+        level: 'F', tags: ['7.3'], stem: `A star has a surface temperature of ${T} K.`,
+        parts: [
+          P('a', 'Find the wavelength of its peak emission (nm).', 'num', lam * 1e9, S3(lam * 1e9, 'nm'), [m(`\\lambda_{\\max} = \\frac{b}{T} = \\frac{2.898 \\times 10^{-3}}{${T}} = ${sci(lam)}\\text{ m}`), m(`= ${sci(lam * 1e9)}\\text{ nm}`)], 2, TOL),
+          CH('b', 'In which part of the spectrum is that peak?', lam < 380e-9 ? 'Ultraviolet' : lam <= 750e-9 ? 'Visible' : 'Infrared', ['Ultraviolet', 'Visible', 'Infrared', 'X-ray'], ['Visible light is about 380 to 750 nm']),
+        ],
+      };
+    },
+    function doubleSlit() {
+      const lnm = pick([450, 500, 550, 600, 633, 650, 700]), dmm = pick([0.1, 0.2, 0.25, 0.3, 0.5]), L = pick([1.0, 1.5, 2.0, 2.5, 3.0]), mm = ri(1, 3);
+      const dy = lnm * 1e-9 * L / (dmm * 1e-3) * 1e3, th = Math.asin(mm * lnm * 1e-9 / (dmm * 1e-3)) * 180 / Math.PI;
+      return {
+        level: 'S', tags: ['7.2'], stem: `Light of wavelength ${lnm} nm passes through two slits ${dmm} mm apart onto a screen ${L} m away.`,
+        parts: [
+          P('a', 'Find the spacing between bright fringes (mm).', 'num', dy, S3(dy, 'mm'), [m(`\\Delta y = \\frac{\\lambda L}{d} = \\frac{${lnm} \\times 10^{-9} \\times ${L}}{${dmm} \\times 10^{-3}}`), m(`= ${sci(dy)}\\text{ mm}`)], 2, TOL),
+          P('b', `Find the angle to the order ${mm} bright fringe (degrees).`, 'num', th, m(`${sci(th)}^\\circ`), [m(`\\sin\\theta = \\frac{m\\lambda}{d} = \\frac{${mm} \\times ${lnm} \\times 10^{-9}}{${dmm} \\times 10^{-3}}`), m(`\\theta \\approx ${sci(th)}^\\circ`)], 1, TOL),
+        ],
+      };
+    },
+    function photoelectric() {
+      const [metal, phi] = pick(METALS), lnm = pick(phi > 4 ? [150, 180, 200, 220, 250] : [200, 250, 300, 350, 400]), E = h * c / (lnm * 1e-9) / e, K = E - phi, f0 = phi * e / h;
+      return {
+        level: 'S', tags: ['7.3'], stem: `Light of wavelength ${lnm} nm shines on ${metal} (work function ${phi} eV).`,
+        parts: [
+          P('a', 'Find the energy of each photon (eV).', 'num', E, S3(E, 'eV'), [m(`E = \\frac{hc}{\\lambda} = \\frac{6.626 \\times 10^{-34} \\times 3.00 \\times 10^8}{${lnm} \\times 10^{-9}} = ${sci(E * e)}\\text{ J}`), m(`\\div 1.602 \\times 10^{-19} = ${sci(E)}\\text{ eV}`)], 2, TOL),
+          P('b', 'Find the maximum kinetic energy of the photoelectrons (eV).', 'num', K, S3(K, 'eV'), [m(`K_{\\max} = hf - \\phi = ${sci(E)} - ${phi} = ${sci(K)}`)], 1, TOL),
+          P('c', 'Find the threshold frequency (Hz).', 'num', f0, S3(f0, 'Hz'), [m(`f_0 = \\frac{\\phi}{h} = \\frac{${phi} \\times 1.602 \\times 10^{-19}}{6.626 \\times 10^{-34}} = ${sci(f0)}`)], 1, TOL),
+        ],
+      };
+    },
+    function relativity() {
+      const k = pick([0.6, 0.8, 0.9, 0.95, 0.98, 0.99]), gam = 1 / Math.sqrt(1 - k * k), t0 = pick([2.2, 5, 10, 26]), L0 = pick([100, 50, 30, 10]);
+      return {
+        level: 'C', tags: ['7.4'], stem: `A spacecraft travels past Earth at ${m(`${k}c`)}.`,
+        parts: [
+          P('a', `Find the Lorentz factor ${m('\\gamma')}.`, 'num', gam, S3(gam), [m(`\\gamma = \\frac{1}{\\sqrt{1 - ${k}^2}} = ${sci(gam)}`)], 1, TOL),
+          P('b', `A clock on board ticks ${t0} s. How long does that take as measured from Earth (s)?`, 'num', t0 * gam, S3(t0 * gam, 's'), [m(`t = \\gamma t_0 = ${sci(gam)} \\times ${t0} = ${sci(t0 * gam)}`)], 2, TOL),
+          P('c', `The craft is ${L0} m long at rest. How long is it as measured from Earth (m)?`, 'num', L0 / gam, S3(L0 / gam, 'm'), [m(`l = \\frac{l_0}{\\gamma} = \\frac{${L0}}{${sci(gam)}} = ${sci(L0 / gam)}`)], 1, TOL),
+        ],
+      };
+    },
+    function malus() {
+      const I0 = pick([20, 40, 60, 80, 120]), th = pick([20, 30, 45, 60, 75]), I = I0 * Math.cos(deg(th)) ** 2;
+      return {
+        level: 'F', tags: ['7.2'], stem: `Polarised light of intensity ${I0} ${m('\\text{W m}^{-2}')} passes through a polariser at ${m(`${th}^\\circ`)} to its plane of polarisation.`,
+        parts: [P('a', `Find the transmitted intensity (${m('\\text{W m}^{-2}')}).`, 'num', I, S3(I), [m(`I = I_{\\max}\\cos^2\\theta = ${I0}\\cos^2 ${th}^\\circ = ${sci(I)}`)], 2, TOL)],
+      };
+    },
+  ];
+
+  /* ================= MODULE 8: FROM THE UNIVERSE TO THE ATOM ================= */
+  const m8 = finish({
+    id: 'phm8', subject: SUBJECT, title: 'From the Universe to the Atom', chapter: 'Module 8', hue: 'lilac',
+    blurb: 'The expanding universe, stars, the Bohr model, matter waves, radioactivity and the nucleus.',
+    sections: [
+      { code: '8.1', name: 'Origins of the elements', notes: ['Hubble\'s law $v = H_0d$: distant galaxies are redshifted and recede faster the further away they are.', 'Evidence for the Big Bang: expansion (redshift), the cosmic microwave background, and the abundance of light elements.', 'Main-sequence stars fuse hydrogen: the proton–proton chain in smaller stars, the CNO cycle in more massive ones. $E = mc^2$ gives the energy released.', 'The Hertzsprung–Russell diagram plots luminosity against temperature.'], ex: ['Galaxy at 150 Mpc, $H_0 = 70$ km/s/Mpc', '$v = 70 \\times 150$', '$= 10\\,500$ km/s'] },
+      { code: '8.2', name: 'Structure of the atom', notes: ['Thomson measured the charge-to-mass ratio of electrons with crossed $E$ and $B$ fields.', 'Millikan\'s oil drop experiment found the charge on an electron.', 'Rutherford\'s gold foil experiment: most alpha particles passed through, a few bounced back, so atoms have a small dense positive nucleus.', 'Chadwick discovered the neutron.'], ex: ['Why did a few alpha particles bounce back?', 'They came close to a small, massive, positive nucleus', 'Strong repulsion turned them around'] },
+      { code: '8.3', name: 'Quantum model of the atom', notes: ['Bohr: electrons occupy fixed energy levels; photons are emitted or absorbed when they jump, $E = hf$.', 'Hydrogen: $\\frac{1}{\\lambda} = R\\left(\\frac{1}{n_f^2} - \\frac{1}{n_i^2}\\right)$ with $R = 1.097 \\times 10^7\\text{ m}^{-1}$. Lyman ($n_f = 1$, UV), Balmer ($n_f = 2$, visible), Paschen ($n_f = 3$, IR).', 'de Broglie: matter has wavelength $\\lambda = \\frac{h}{mv}$; electron diffraction confirmed it.', 'Schrödinger replaced orbits with probability clouds (orbitals).'], ex: ['Hydrogen $n = 3 \\to 2$', '$\\frac{1}{\\lambda} = 1.097 \\times 10^7\\left(\\frac{1}{4} - \\frac{1}{9}\\right)$', '$\\lambda \\approx 656$ nm (red)'] },
+      { code: '8.4', name: 'Properties of the nucleus', notes: ['Alpha ($^4_2\\text{He}$), beta ($e^-$ or $e^+$) and gamma decay; balance mass and atomic numbers.', 'Half-life: $N = N_0\\left(\\frac{1}{2}\\right)^{t/t_{1/2}} = N_0e^{-\\lambda t}$ with $\\lambda = \\frac{\\ln 2}{t_{1/2}}$.', 'Mass defect and binding energy: $E = \\Delta mc^2$, with $1\\text{ u} = 931.5\\text{ MeV}$.', 'Fission splits heavy nuclei and fusion joins light ones; both release energy as binding energy per nucleon increases.'], ex: ['80 g of an isotope, half-life 5 days, after 15 days', '$80 \\times \\left(\\frac{1}{2}\\right)^3$', '$= 10$ g'] },
+      { code: '8.5', name: 'Deep inside the atom', notes: ['The Standard Model: quarks and leptons (fermions) and force-carrying bosons.', 'Protons are $uud$ and neutrons are $udd$.', 'Particle accelerators confirm predictions such as the Higgs boson.'], ex: ['Charge of a proton from quarks', '$u = +\\frac{2}{3}$, $d = -\\frac{1}{3}$', '$\\frac{2}{3} + \\frac{2}{3} - \\frac{1}{3} = +1$'] },
+    ],
+    cards: [
+      ['Hubble\'s law', '$v = H_0d$'], ['Evidence for the Big Bang', 'Redshift / expansion, cosmic microwave background, light element abundance'], ['Main sequence fusion', 'Proton–proton chain (smaller stars), CNO cycle (larger stars)'], ['Rydberg equation', '$\\frac{1}{\\lambda} = R\\left(\\frac{1}{n_f^2} - \\frac{1}{n_i^2}\\right)$'],
+      ['Balmer series', 'Transitions to $n = 2$: visible light'], ['de Broglie wavelength', '$\\lambda = \\frac{h}{mv}$'], ['Decay law', '$N = N_0e^{-\\lambda t}$, $\\lambda = \\frac{\\ln 2}{t_{1/2}}$'], ['1 u of mass', '931.5 MeV'],
+      ['Rutherford\'s conclusion', 'A small, dense, positive nucleus'], ['Proton quark content', '$uud$'],
+    ],
+    concepts: [
+      ['Redshift of distant galaxies shows that they are…', ['Moving away from us', 'Moving towards us', 'Getting hotter', 'Made of hydrogen'], 0, ''],
+      ['After three half-lives, the fraction remaining is…', ['$\\frac{1}{8}$', '$\\frac{1}{3}$', '$\\frac{1}{6}$', '$\\frac{1}{9}$'], 0, ''],
+      ['In beta-minus decay, the atomic number…', ['Increases by 1', 'Decreases by 1', 'Decreases by 2', 'Stays the same'], 0, 'A neutron turns into a proton.'],
+      ['Electron diffraction is evidence that electrons…', ['Have wave properties', 'Have no mass', 'Are positive', 'Orbit in circles'], 0, ''],
+      ['The Balmer series is in the…', ['Visible region', 'Ultraviolet', 'Infrared', 'X-ray region'], 0, ''],
+      ['Fusion releases energy because the products have…', ['Higher binding energy per nucleon', 'More mass', 'More protons', 'Lower binding energy per nucleon'], 0, ''],
+    ],
+    short: [
+      { q: 'Explain how the emission spectrum of hydrogen provides evidence for the Bohr model of the atom.', marks: 3, tags: ['8.3'], criteria: ['Hydrogen emits only specific wavelengths (a line spectrum), not a continuous spectrum', 'Bohr proposed electrons occupy fixed energy levels and emit a photon of energy $E = hf$ equal to the level difference when they drop', 'The Rydberg equation (from Bohr\'s levels) predicts the observed wavelengths, e.g. the Balmer series'], model: 'Excited hydrogen gas emits light only at certain wavelengths, giving a line spectrum rather than a continuous rainbow. Bohr explained this by proposing that electrons can only occupy fixed energy levels, and when an electron drops from a higher level to a lower one it emits a single photon whose energy $E = hf$ equals the difference between the levels. Because only certain level differences exist, only certain wavelengths appear, and the wavelengths calculated from Bohr\'s levels match the measured lines such as the visible Balmer series.' },
+      { q: 'Describe the evidence that the universe is expanding.', marks: 3, tags: ['8.1'], criteria: ['Light from distant galaxies is redshifted, so they are moving away', 'Hubble found recession speed is proportional to distance ($v = H_0d$)', 'The cosmic microwave background, cooled radiation from the early universe, supports expansion from a hot dense state'], model: 'Light from distant galaxies is redshifted, meaning their spectral lines are shifted to longer wavelengths because they are moving away from us. Hubble showed that the further away a galaxy is, the faster it recedes ($v = H_0d$), which is what we expect if space itself is expanding. The cosmic microwave background, faint radiation coming from every direction, is the cooled remnant of the hot early universe, which also supports an expanding universe that began in a hot, dense state.' },
+      { q: 'Explain how main-sequence stars produce energy, and how the process differs in more massive stars.', marks: 4, tags: ['8.1'], criteria: ['Hydrogen nuclei fuse into helium in the core', 'The mass of the products is less than the reactants; the mass defect is released as energy ($E = mc^2$)', 'Lower-mass stars like the Sun mainly use the proton–proton chain', 'More massive stars have hotter cores and mainly use the CNO cycle, with carbon acting as a catalyst'], model: 'Main-sequence stars produce energy by nuclear fusion of hydrogen into helium in their cores. The helium nucleus has slightly less mass than the four protons that formed it, and this mass defect is released as energy according to $E = mc^2$. Stars around the mass of the Sun mainly use the proton–proton chain. More massive stars have hotter cores, so the CNO cycle dominates, in which carbon, nitrogen and oxygen nuclei act as catalysts for turning hydrogen into helium.' },
+    ],
+  });
+  m8.bank = [
+    function hubble() {
+      const H0 = 70, d = pick([20, 50, 120, 250, 400, 800]), v = H0 * d, v2 = pick([3500, 7000, 14000, 21000]);
+      return {
+        level: 'F', tags: ['8.1'], stem: `Take ${m('H_0 = 70')} km/s/Mpc.`,
+        parts: [
+          P('a', `How fast is a galaxy ${d} Mpc away receding (km/s)?`, 'num', v, S3(v, 'km/s'), [m(`v = H_0d = 70 \\times ${d} = ${v}`)], 1, TOL),
+          P('b', `How far away is a galaxy receding at ${v2} km/s (Mpc)?`, 'num', v2 / H0, S3(v2 / H0, 'Mpc'), [m(`d = \\frac{v}{H_0} = \\frac{${v2}}{70} = ${sci(v2 / H0)}`)], 1, TOL),
+        ],
+      };
+    },
+    function bohr() {
+      const nf = pick([1, 2, 2, 3]), ni = nf + ri(1, 3), inv = Ryd * (1 / nf ** 2 - 1 / ni ** 2), lam = 1 / inv, E = h * c / lam / e;
+      const series = { 1: 'Lyman (ultraviolet)', 2: 'Balmer (visible)', 3: 'Paschen (infrared)' };
+      return {
+        level: 'S', tags: ['8.3'], stem: `An electron in a hydrogen atom drops from ${m(`n = ${ni}`)} to ${m(`n = ${nf}`)}.`,
+        parts: [
+          P('a', 'Find the wavelength of the emitted photon (nm).', 'num', lam * 1e9, S3(lam * 1e9, 'nm'), [m(`\\frac{1}{\\lambda} = 1.097 \\times 10^7\\left(\\frac{1}{${nf * nf}} - \\frac{1}{${ni * ni}}\\right) = ${sci(inv)}`), m(`\\lambda = ${sci(lam)}\\text{ m} = ${sci(lam * 1e9)}\\text{ nm}`)], 2, TOL),
+          P('b', 'Find the photon energy (eV).', 'num', E, S3(E, 'eV'), [m(`E = \\frac{hc}{\\lambda} = ${sci(E * e)}\\text{ J} = ${sci(E)}\\text{ eV}`)], 1, TOL),
+          CH('c', 'Which series is this line in?', series[nf], Object.values(series), [`Transitions down to ${m(`n = ${nf}`)}`]),
+        ],
+      };
+    },
+    function deBroglie() {
+      const isE = Math.random() < 0.6, mass = isE ? me : mp, v = pick([1, 2, 4, 6]) * 10 ** (isE ? 6 : 4), lam = h / (mass * v);
+      return {
+        level: 'S', tags: ['8.3'], stem: `${isE ? 'An electron' : 'A proton'} travels at ${m(sci(v))} m/s.`,
+        parts: [P('a', 'Find its de Broglie wavelength (m).', 'num', lam, S3(lam, 'm'), [m(`\\lambda = \\frac{h}{mv} = \\frac{6.626 \\times 10^{-34}}{${sci(mass, 4)} \\times ${sci(v)}}`), m(`= ${sci(lam)}\\text{ m}`)], 2, TOL)],
+      };
+    },
+    function halfLife() {
+      const m0 = pick([40, 64, 80, 120, 200]), th = pick([2, 5, 8, 12, 30]), t = th * pick([1.5, 2, 2.5, 3, 4]), mt = m0 * 0.5 ** (t / th), lam = Math.log(2) / th;
+      return {
+        level: 'F', tags: ['8.4'], stem: `A sample contains ${m0} g of an isotope with a half-life of ${th} days.`,
+        parts: [
+          P('a', `How much is left after ${t} days (g)?`, 'num', mt, S3(mt, 'g'), [m(`m = ${m0}\\left(\\frac{1}{2}\\right)^{${t}/${th}} = ${sci(mt)}`)], 2, TOL),
+          P('b', `Find the decay constant (per day).`, 'num', lam, S3(lam, 'day⁻¹'), [m(`\\lambda = \\frac{\\ln 2}{t_{1/2}} = \\frac{0.693}{${th}} = ${sci(lam)}`)], 1, TOL),
+        ],
+      };
+    },
+    function bindingEnergy() {
+      const A = pick([4, 7, 12, 16, 56]), dm = { 4: 0.0304, 7: 0.0421, 12: 0.0990, 16: 0.1370, 56: 0.5285 }[A], E = dm * 931.5;
+      const name = { 4: 'helium-4', 7: 'lithium-7', 12: 'carbon-12', 16: 'oxygen-16', 56: 'iron-56' }[A];
+      return {
+        level: 'C', tags: ['8.4'], stem: `The mass defect of a ${name} nucleus is ${dm} u.`,
+        parts: [
+          P('a', 'Find its binding energy (MeV).', 'num', E, S3(E, 'MeV'), [m(`E = \\Delta m \\times 931.5 = ${dm} \\times 931.5 = ${sci(E)}`)], 2, TOL),
+          P('b', 'Find the binding energy per nucleon (MeV).', 'num', E / A, S3(E / A, 'MeV'), [m(`\\frac{${sci(E)}}{${A}} = ${sci(E / A)}`)], 1, TOL),
+        ],
+      };
+    },
+  ];
+
+  return { DECKS: [m5, m6, m7, m8] };
+})();
+if (typeof module !== 'undefined') module.exports = PH;
+
+</script>
+<script>
 /* ===== Lock In — app ===== */
 (() => {
   const $ = (s, el = document) => el.querySelector(s);
@@ -3445,16 +4304,16 @@ if (typeof module !== 'undefined') module.exports = E2;
   const SUBJ = [
     { id: 'geo', name: 'Geography', hue: 'green', exam: new Date(2026, 9, 26, 9, 0), when: 'Mon 26 Oct, P1–2', format: '45 minutes. 30 multiple choice (25 on geographical tools & skills, 5 on Water in the World) + 3 short answers.', mock: 'geo' },
     { id: 'maths', name: 'Maths', hue: 'gold', exam: new Date(2026, 9, 29, 11, 0), when: 'Thu 29 Oct, P3–4', format: 'The exam covers chapters 8, 9, 10 and 12, with multi-part questions like the Test Yourself pages. Ch 3 and Ch 7 are extra practice.', mock: 'maths' },
-    { id: 'y12', name: 'Maths Extension 2', hue: 'lilac', exam: new Date(2026, 9, 19, 13, 50), when: 'Mon 19 Oct, 1:50 pm', format: 'HSC: proof, complex numbers, induction, integration, vectors and mechanics. The real paper is 3 hours.', mock: 'gen' },
-    { id: 'e1', name: 'Maths Extension 1', hue: 'cyan', exam: new Date(2026, 9, 23, 13, 50), when: 'Fri 23 Oct, 1:50 pm', format: 'HSC. Upload your notes or past papers to build decks for this subject.' },
-    { id: 'phys', name: 'Physics', hue: 'coral', exam: new Date(2026, 10, 5, 9, 25), when: 'Thu 5 Nov, 9:25 am', format: 'HSC. Upload your notes or past papers to build decks for this subject.' },
+    { id: 'y12', name: 'Maths Extension 2', tab: 'Ext 2', hue: 'lilac', exam: new Date(2026, 9, 19, 13, 50), when: 'Mon 19 Oct, 1:50 pm', format: 'HSC paper: 3 hours. Section I is 10 multiple choice; Section II is 90 marks across proof, complex numbers, induction, integration, vectors and mechanics.', mock: 'gen', papers: 'https://www.nsw.gov.au/education-and-training/nesa/curriculum/hsc-exam-papers/mathematics-extension-2' },
+    { id: 'e1', name: 'Maths Extension 1', tab: 'Ext 1', hue: 'cyan', exam: new Date(2026, 9, 23, 13, 50), when: 'Fri 23 Oct, 1:50 pm', format: 'HSC paper: 2 hours. Section I is 10 multiple choice; Section II is 60 marks of multi-part questions.', mock: 'gen', papers: 'https://www.nsw.gov.au/education-and-training/nesa/curriculum/hsc-exam-papers/mathematics-extension-1' },
+    { id: 'phys', name: 'Physics', hue: 'coral', exam: new Date(2026, 10, 5, 9, 25), when: 'Thu 5 Nov, 9:25 am', format: 'HSC paper: 3 hours. Section I is 20 multiple choice; Section II is 80 marks of short answers and extended responses on modules 5 to 8.', mock: 'gen', papers: 'https://www.nsw.gov.au/education-and-training/nesa/curriculum/hsc-exam-papers/physics' },
   ];
   const BUILTIN = [
     G.mapDeck, G.waterDeck,
     ...Y8.DECKS,
     ...M.DECKS.map(d => ({ ...d, subject: 'maths', bank: X.BANK[d.id], drills: M.GEN[d.gen] })),
     { ...X.ch12, subject: 'maths', bank: X.BANK.sim },
-    ...E2.DECKS,
+    ...E2.DECKS, ...E1.DECKS, ...PH.DECKS,
   ].map(d => ({ ...d, subject: d.subject || 'maths', bank: typeof d.bank === 'string' ? G.BANK[d.bank] : d.bank }));
   const extraQ = (id) => (S.extra[id] ||= { concepts: [], short: [] });
   const allDecks = () => [...BUILTIN, ...S.custom];
@@ -3603,7 +4462,7 @@ if (typeof module !== 'undefined') module.exports = E2;
 
   /* ---------------- subject tabs + panel ---------------- */
   function renderTabs() {
-    $('#subtabs').innerHTML = [{ id: 'home', name: 'Home' }, ...subjects()].map(s => `<button class="subtab" role="tab" type="button" data-subj="${esc(s.id)}" aria-selected="${S.subj === s.id}">${esc(s.name)}</button>`).join('');
+    $('#subtabs').innerHTML = [{ id: 'home', name: 'Home' }, ...subjects()].map(s => `<button class="subtab" role="tab" type="button" data-subj="${esc(s.id)}" aria-selected="${S.subj === s.id}" title="${esc(s.name)}">${esc(s.tab || s.name)}</button>`).join('');
   }
   $('#subtabs').addEventListener('click', e => { const b = e.target.closest('[data-subj]'); if (!b) return; S.subj = b.dataset.subj; save(); renderTabs(); renderSubject(); $('#subject').scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' }); });
   /* ---------------- home: report card, what's inside, what it does ---------------- */
@@ -3648,7 +4507,7 @@ if (typeof module !== 'undefined') module.exports = E2;
     if (S.subj === 'home') return renderHome($('#subject'));
     const s = getSubj(S.subj), ds = decksOf(s.id), el = $('#subject'), nm = mistakesOf(s.id).length;
     el.className = 'wrap section c-' + s.hue;
-    el.innerHTML = `<div class="subj-head"><div><h2>${esc(s.name)}</h2><p class="subj-meta">${s.exam ? `Exam ${esc(s.when)}. ` : ''}${esc(s.format)}</p>${nm ? `<button class="linkbtn mist-link" type="button" data-act="mistakes" data-s="${esc(s.id)}">${nm} mistake${nm > 1 ? 's' : ''} to fix</button>` : ''}</div>
+    el.innerHTML = `<div class="subj-head"><div><h2>${esc(s.name)}</h2><p class="subj-meta">${s.exam ? `Exam ${esc(s.when)}. ` : ''}${esc(s.format)}</p>${s.papers ? `<p class="subj-meta"><a class="linkbtn" href="${esc(s.papers)}" target="_blank" rel="noopener">Official HSC past papers and marking guidelines (NESA)</a></p>` : ''}${nm ? `<button class="linkbtn mist-link" type="button" data-act="mistakes" data-s="${esc(s.id)}">${nm} mistake${nm > 1 ? 's' : ''} to fix</button>` : ''}</div>
       <div class="subj-actions">${s.mock ? `<button class="btn" type="button" data-act="mock" data-s="${s.id}">Practice exam${s.mock === 'geo' ? ', 45 min' : ''}</button>` : ''}${ds.length ? `<button class="btn btn-ghost" type="button" data-act="cards" data-s="${esc(s.id)}">All flashcards</button>` : ''}<button class="btn btn-ghost" type="button" data-act="upload" data-s="${esc(s.id)}">Upload notes</button></div></div>
       ${ds.length ? `<ol class="decks">${ds.map(d => { const m = mastery(d.id), L = levelOf(d); return `<li><button class="deck ${hue(d)}" type="button" data-open="${esc(d.id)}">
           <span class="d-ch">${esc(d.chapter || 'Yours')}</span>
@@ -4095,8 +4954,9 @@ Write 8 mcq (answer = index 0-3 of the correct option, vary its position) and 2 
       decksOf(sid).filter(d => d.bank).forEach(d => {
         blocks.push(bankQ(pick(d.bank), d, 'S'), bankQ(pick(d.bank), d, 'C'));
         const c = conceptsOf(d); if (c.length) blocks.push(mcqQ(pick(c), d));
+        const sh = shortOf(d); if (sh.length) blocks.push(shortQ(pick(sh), d)); // extended response, where the deck has them
       });
-      return { sid, title: `${s.name} practice exam`, minutes: 60, blocks: shuffle(blocks), acc: 'c-' + s.hue, intro: 'Two questions from every topic plus quick multiple choice. 60 minutes, so about a third of the real paper.' };
+      return { sid, title: `${s.name} practice exam`, minutes: 60, blocks: shuffle(blocks), acc: 'c-' + s.hue, intro: `Questions from every topic in the style of the HSC paper, plus multiple choice${blocks.some(q => q.parts[0].type === 'short') ? ' and extended responses' : ''}. 60 minutes.` };
     }
     if (sid === 'geo') {
       const maps = G.mapDeck, water = G.waterDeck;

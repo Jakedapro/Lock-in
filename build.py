@@ -1,5 +1,5 @@
 s=open('src/shell.html').read()
-js=[open('src/'+f).read() for f in ['fmt.js','mathin.js','logic.js','cloud.js','content.js','exam.js','geo.js','viz.js','y8more.js','ext2.js','app.js']]
+js=[open('src/'+f).read() for f in ['fmt.js','mathin.js','logic.js','cloud.js','content.js','exam.js','geo.js','viz.js','y8more.js','texkit.js','ext2.js','e1.js','physics.js','app.js']]
 libs='<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>\n'
 # MathJax renders $…$ maths as SVG (no stylesheet or font downloads). Typesetting is driven by app.js.
 libs+='<script>window.MathJax={tex:{inlineMath:[],displayMath:[]},svg:{fontCache:"local"},startup:{typeset:false}};</script>\n'

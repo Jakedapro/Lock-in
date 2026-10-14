@@ -51,16 +51,16 @@
   const SUBJ = [
     { id: 'geo', name: 'Geography', hue: 'green', exam: new Date(2026, 9, 26, 9, 0), when: 'Mon 26 Oct, P1–2', format: '45 minutes. 30 multiple choice (25 on geographical tools & skills, 5 on Water in the World) + 3 short answers.', mock: 'geo' },
     { id: 'maths', name: 'Maths', hue: 'gold', exam: new Date(2026, 9, 29, 11, 0), when: 'Thu 29 Oct, P3–4', format: 'The exam covers chapters 8, 9, 10 and 12, with multi-part questions like the Test Yourself pages. Ch 3 and Ch 7 are extra practice.', mock: 'maths' },
-    { id: 'y12', name: 'Maths Extension 2', hue: 'lilac', exam: new Date(2026, 9, 19, 13, 50), when: 'Mon 19 Oct, 1:50 pm', format: 'HSC: proof, complex numbers, induction, integration, vectors and mechanics. The real paper is 3 hours.', mock: 'gen' },
-    { id: 'e1', name: 'Maths Extension 1', hue: 'cyan', exam: new Date(2026, 9, 23, 13, 50), when: 'Fri 23 Oct, 1:50 pm', format: 'HSC. Upload your notes or past papers to build decks for this subject.' },
-    { id: 'phys', name: 'Physics', hue: 'coral', exam: new Date(2026, 10, 5, 9, 25), when: 'Thu 5 Nov, 9:25 am', format: 'HSC. Upload your notes or past papers to build decks for this subject.' },
+    { id: 'y12', name: 'Maths Extension 2', tab: 'Ext 2', hue: 'lilac', exam: new Date(2026, 9, 19, 13, 50), when: 'Mon 19 Oct, 1:50 pm', format: 'HSC paper: 3 hours. Section I is 10 multiple choice; Section II is 90 marks across proof, complex numbers, induction, integration, vectors and mechanics.', mock: 'gen', papers: 'https://www.nsw.gov.au/education-and-training/nesa/curriculum/hsc-exam-papers/mathematics-extension-2' },
+    { id: 'e1', name: 'Maths Extension 1', tab: 'Ext 1', hue: 'cyan', exam: new Date(2026, 9, 23, 13, 50), when: 'Fri 23 Oct, 1:50 pm', format: 'HSC paper: 2 hours. Section I is 10 multiple choice; Section II is 60 marks of multi-part questions.', mock: 'gen', papers: 'https://www.nsw.gov.au/education-and-training/nesa/curriculum/hsc-exam-papers/mathematics-extension-1' },
+    { id: 'phys', name: 'Physics', hue: 'coral', exam: new Date(2026, 10, 5, 9, 25), when: 'Thu 5 Nov, 9:25 am', format: 'HSC paper: 3 hours. Section I is 20 multiple choice; Section II is 80 marks of short answers and extended responses on modules 5 to 8.', mock: 'gen', papers: 'https://www.nsw.gov.au/education-and-training/nesa/curriculum/hsc-exam-papers/physics' },
   ];
   const BUILTIN = [
     G.mapDeck, G.waterDeck,
     ...Y8.DECKS,
     ...M.DECKS.map(d => ({ ...d, subject: 'maths', bank: X.BANK[d.id], drills: M.GEN[d.gen] })),
     { ...X.ch12, subject: 'maths', bank: X.BANK.sim },
-    ...E2.DECKS,
+    ...E2.DECKS, ...E1.DECKS, ...PH.DECKS,
   ].map(d => ({ ...d, subject: d.subject || 'maths', bank: typeof d.bank === 'string' ? G.BANK[d.bank] : d.bank }));
   const extraQ = (id) => (S.extra[id] ||= { concepts: [], short: [] });
   const allDecks = () => [...BUILTIN, ...S.custom];
@@ -209,7 +209,7 @@
 
   /* ---------------- subject tabs + panel ---------------- */
   function renderTabs() {
-    $('#subtabs').innerHTML = [{ id: 'home', name: 'Home' }, ...subjects()].map(s => `<button class="subtab" role="tab" type="button" data-subj="${esc(s.id)}" aria-selected="${S.subj === s.id}">${esc(s.name)}</button>`).join('');
+    $('#subtabs').innerHTML = [{ id: 'home', name: 'Home' }, ...subjects()].map(s => `<button class="subtab" role="tab" type="button" data-subj="${esc(s.id)}" aria-selected="${S.subj === s.id}" title="${esc(s.name)}">${esc(s.tab || s.name)}</button>`).join('');
   }
   $('#subtabs').addEventListener('click', e => { const b = e.target.closest('[data-subj]'); if (!b) return; S.subj = b.dataset.subj; save(); renderTabs(); renderSubject(); $('#subject').scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' }); });
   /* ---------------- home: report card, what's inside, what it does ---------------- */
@@ -254,7 +254,7 @@
     if (S.subj === 'home') return renderHome($('#subject'));
     const s = getSubj(S.subj), ds = decksOf(s.id), el = $('#subject'), nm = mistakesOf(s.id).length;
     el.className = 'wrap section c-' + s.hue;
-    el.innerHTML = `<div class="subj-head"><div><h2>${esc(s.name)}</h2><p class="subj-meta">${s.exam ? `Exam ${esc(s.when)}. ` : ''}${esc(s.format)}</p>${nm ? `<button class="linkbtn mist-link" type="button" data-act="mistakes" data-s="${esc(s.id)}">${nm} mistake${nm > 1 ? 's' : ''} to fix</button>` : ''}</div>
+    el.innerHTML = `<div class="subj-head"><div><h2>${esc(s.name)}</h2><p class="subj-meta">${s.exam ? `Exam ${esc(s.when)}. ` : ''}${esc(s.format)}</p>${s.papers ? `<p class="subj-meta"><a class="linkbtn" href="${esc(s.papers)}" target="_blank" rel="noopener">Official HSC past papers and marking guidelines (NESA)</a></p>` : ''}${nm ? `<button class="linkbtn mist-link" type="button" data-act="mistakes" data-s="${esc(s.id)}">${nm} mistake${nm > 1 ? 's' : ''} to fix</button>` : ''}</div>
       <div class="subj-actions">${s.mock ? `<button class="btn" type="button" data-act="mock" data-s="${s.id}">Practice exam${s.mock === 'geo' ? ', 45 min' : ''}</button>` : ''}${ds.length ? `<button class="btn btn-ghost" type="button" data-act="cards" data-s="${esc(s.id)}">All flashcards</button>` : ''}<button class="btn btn-ghost" type="button" data-act="upload" data-s="${esc(s.id)}">Upload notes</button></div></div>
       ${ds.length ? `<ol class="decks">${ds.map(d => { const m = mastery(d.id), L = levelOf(d); return `<li><button class="deck ${hue(d)}" type="button" data-open="${esc(d.id)}">
           <span class="d-ch">${esc(d.chapter || 'Yours')}</span>
@@ -701,8 +701,9 @@ Write 8 mcq (answer = index 0-3 of the correct option, vary its position) and 2 
       decksOf(sid).filter(d => d.bank).forEach(d => {
         blocks.push(bankQ(pick(d.bank), d, 'S'), bankQ(pick(d.bank), d, 'C'));
         const c = conceptsOf(d); if (c.length) blocks.push(mcqQ(pick(c), d));
+        const sh = shortOf(d); if (sh.length) blocks.push(shortQ(pick(sh), d)); // extended response, where the deck has them
       });
-      return { sid, title: `${s.name} practice exam`, minutes: 60, blocks: shuffle(blocks), acc: 'c-' + s.hue, intro: 'Two questions from every topic plus quick multiple choice. 60 minutes, so about a third of the real paper.' };
+      return { sid, title: `${s.name} practice exam`, minutes: 60, blocks: shuffle(blocks), acc: 'c-' + s.hue, intro: `Questions from every topic in the style of the HSC paper, plus multiple choice${blocks.some(q => q.parts[0].type === 'short') ? ' and extended responses' : ''}. 60 minutes.` };
     }
     if (sid === 'geo') {
       const maps = G.mapDeck, water = G.waterDeck;
