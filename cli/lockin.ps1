@@ -133,7 +133,8 @@ function Get-Exams {
     $json = (Invoke-WebRequest "https://raw.githubusercontent.com/$Repo/main/exams.json" -UseBasicParsing -TimeoutSec 3).Content
     Set-Content -Path $cache -Value $json -Encoding UTF8
   } catch { if (Test-Path $cache) { $json = Get-Content $cache -Raw } else { return @() } }
-  return @($json | ConvertFrom-Json)
+  $list = $json | ConvertFrom-Json # Windows PowerShell 5 hands back the whole array as one object
+  return $list
 }
 
 function Show-Exams {
@@ -168,7 +169,7 @@ $Tips = @(
 function Show-Intro([switch]$Launch) {
   Show-Banner
   Write-Typed '  study like it is the night before.' $Dim 12
-  Show-Exams
+  try { Show-Exams } catch { } # the countdown is a nice-to-have; never let it stop the app opening
   Write-Host ''
   Write-Typed ('  tip  ' + ($Tips | Get-Random)) (Rgb @(148, 163, 184)) 6
   $installed = Get-InstalledVersion
