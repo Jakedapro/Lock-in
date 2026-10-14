@@ -25,7 +25,7 @@ function Get-AppExe { $d = Find-AppDir; if ($d) { return (Join-Path $d 'Lock in.
 
 function Get-InstalledVersion {
   $exe = Get-AppExe
-  if ($exe) { return (Get-Item $exe).VersionInfo.ProductVersion }
+  if ($exe) { $v = (Get-Item $exe).VersionInfo.ProductVersion; if (($v -split '\.').Count -eq 4) { $v = $v -replace '\.0$', '' }; return $v } # 1.0.0.0 -> 1.0.0
   return $null
 }
 
