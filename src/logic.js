@@ -60,6 +60,46 @@ const Logic = (() => {
   }
   const missAgain = (list, id) => list.map(m => (m.id === id ? { ...m, fixes: 0 } : m));
 
-  return { LEVELS, defaults, classify, ladder, nearestLevel, weekStart, serialise, addMistake, fixMistake, missAgain };
+  /* ---------- sync ---------- */
+  const storageKey = (uid) => (uid ? 'lockin.v2:' + uid : 'lockin.v2');
+  const unionBy = (a, b, key, pickNewer) => {
+    const out = new Map();
+    for (const x of [...(a || []), ...(b || [])]) { const k = x[key], old = out.get(k); out.set(k, old && pickNewer ? pickNewer(old, x) : old || x); }
+    return [...out.values()];
+  };
+  // Combines two saved states (local + cloud) without losing progress from either.
+  function mergeState(a, b) {
+    a = defaults(JSON.parse(JSON.stringify(a || {}))); b = defaults(JSON.parse(JSON.stringify(b || {})));
+    const m = { ...a, ...b };
+    m.xp = Math.max(a.xp || 0, b.xp || 0);
+    m.streak = ((a.streak && a.streak.last) || '') > ((b.streak && b.streak.last) || '') ? a.streak : (b.streak || a.streak);
+    m.p = { ...a.p };
+    for (const [id, pb] of Object.entries(b.p || {})) {
+      const pa = m.p[id];
+      const win = !pa || (pb.att || 0) > (pa.att || 0) ? pb : pa;
+      m.p[id] = { ...win, known: { ...(pa && pa.known), ...pb.known } };
+    }
+    m.lvl = { ...a.lvl };
+    for (const [id, lb] of Object.entries(b.lvl)) { const la = m.lvl[id]; if (!la || LEVELS.indexOf(lb.L) >= LEVELS.indexOf(la.L)) m.lvl[id] = lb; }
+    m.custom = unionBy(a.custom, b.custom, 'id');
+    m.mistakes = unionBy(a.mistakes, b.mistakes, 'key', (x, y) => (y.at > x.at ? y : x));
+    m.week = a.week.start > b.week.start ? a.week : b.week.start > a.week.start ? b.week : { start: b.week.start, xp: Math.max(a.week.xp, b.week.xp) };
+    m.profile = b.profile || a.profile;
+    m.groups = b.groups.length ? b.groups : a.groups;
+    m.extra = { ...a.extra, ...b.extra };
+    return m;
+  }
+  const MAX_DOC_CHARS = 900000;
+  function cloudPayload(S) {
+    const state = JSON.parse(JSON.stringify(S));
+    if (JSON.stringify(state).length <= MAX_DOC_CHARS) return { state, droppedCustom: false };
+    state.custom = [];
+    return { state, droppedCustom: true };
+  }
+  const validNickname = (s) => /^[A-Za-z0-9 ]{2,16}$/.test(s || '') && /\S/.test(s);
+  const CODE_ABC = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  const newGroupCode = (rand = Math.random) => Array.from({ length: 6 }, () => CODE_ABC[Math.floor(rand() * CODE_ABC.length) % CODE_ABC.length]).join('');
+
+  return { LEVELS, defaults, classify, ladder, nearestLevel, weekStart, serialise, addMistake, fixMistake, missAgain, storageKey, mergeState, cloudPayload, validNickname, newGroupCode };
 })();
 if (typeof module !== 'undefined') module.exports = Logic;

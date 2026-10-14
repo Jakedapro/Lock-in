@@ -97,6 +97,76 @@ test('fix, missAgain, fix keeps it in the list', () => {
   assert.strictEqual(r.removed, false); assert.strictEqual(r.list[0].fixes, 1);
 });
 
+/* ---------- sync ---------- */
+test('storageKey: guest vs signed-in user', () => {
+  assert.strictEqual(Logic.storageKey(null), 'lockin.v2');
+  assert.strictEqual(Logic.storageKey('abc'), 'lockin.v2:abc');
+});
+const base = (o) => Logic.defaults({ p: {}, xp: 0, streak: { last: '', n: 0 }, custom: [], extra: {}, subj: 'geo', ...o });
+test('mergeState: xp max, streak from the later day', () => {
+  const m = Logic.mergeState(base({ xp: 50, streak: { last: '2026-10-13', n: 4 } }), base({ xp: 80, streak: { last: '2026-10-14', n: 1 } }));
+  assert.strictEqual(m.xp, 80);
+  assert.deepStrictEqual(m.streak, { last: '2026-10-14', n: 1 });
+});
+test('mergeState: deck progress from more attempts, known cards unioned', () => {
+  const a = base({ p: { maps: { att: 10, cor: 8, tags: {}, known: { 1: 1 } } } });
+  const b = base({ p: { maps: { att: 4, cor: 1, tags: {}, known: { 2: 1 } }, eq: { att: 1, cor: 1, tags: {}, known: {} } } });
+  const m = Logic.mergeState(a, b);
+  assert.strictEqual(m.p.maps.att, 10);
+  assert.deepStrictEqual(m.p.maps.known, { 1: 1, 2: 1 });
+  assert.strictEqual(m.p.eq.att, 1);
+});
+test('mergeState: higher level wins', () => {
+  const m = Logic.mergeState(base({ lvl: { maps: { L: 'C', up: 0, down: 0 }, eq: { L: 'F', up: 2, down: 0 } } }), base({ lvl: { maps: { L: 'S', up: 1, down: 0 }, eq: { L: 'S', up: 0, down: 0 } } }));
+  assert.strictEqual(m.lvl.maps.L, 'C');
+  assert.strictEqual(m.lvl.eq.L, 'S');
+});
+test('mergeState: custom decks union by id, mistakes union by key keeping newer', () => {
+  const a = base({ custom: [{ id: 'u1' }], mistakes: [{ id: 'm1', key: 'k', at: 5, fixes: 1 }, { id: 'm2', key: 'j', at: 1, fixes: 0 }] });
+  const b = base({ custom: [{ id: 'u1' }, { id: 'u2' }], mistakes: [{ id: 'm9', key: 'k', at: 9, fixes: 0 }] });
+  const m = Logic.mergeState(a, b);
+  assert.deepStrictEqual(m.custom.map(d => d.id).sort(), ['u1', 'u2']);
+  assert.strictEqual(m.mistakes.length, 2);
+  assert.strictEqual(m.mistakes.find(x => x.key === 'k').at, 9);
+});
+test('mergeState: week from the later start, xp max on the same week', () => {
+  assert.deepStrictEqual(Logic.mergeState(base({ week: { start: '2026-10-05', xp: 90 } }), base({ week: { start: '2026-10-12', xp: 10 } })).week, { start: '2026-10-12', xp: 10 });
+  assert.deepStrictEqual(Logic.mergeState(base({ week: { start: '2026-10-12', xp: 30 } }), base({ week: { start: '2026-10-12', xp: 10 } })).week, { start: '2026-10-12', xp: 30 });
+});
+test('mergeState: profile and groups come from b when set', () => {
+  const m = Logic.mergeState(base({ profile: { nickname: 'A' }, groups: ['AAAAAA'] }), base({ profile: { nickname: 'B' }, groups: [] }));
+  assert.strictEqual(m.profile.nickname, 'B');
+  assert.deepStrictEqual(m.groups, ['AAAAAA']);
+});
+test('mergeState into an empty cloud state keeps local progress', () => {
+  const m = Logic.mergeState(base({ xp: 40, p: { maps: { att: 3, cor: 2, tags: {}, known: {} } } }), null);
+  assert.strictEqual(m.xp, 40);
+  assert.strictEqual(m.p.maps.att, 3);
+});
+test('cloudPayload drops custom decks when too big', () => {
+  const small = Logic.cloudPayload(base({ custom: [{ id: 'u1', title: 'x' }] }));
+  assert.strictEqual(small.droppedCustom, false);
+  assert.strictEqual(small.state.custom.length, 1);
+  const big = Logic.cloudPayload(base({ xp: 7, custom: [{ id: 'u1', notes: 'x'.repeat(1000000) }] }));
+  assert.strictEqual(big.droppedCustom, true);
+  assert.deepStrictEqual(big.state.custom, []);
+  assert.strictEqual(big.state.xp, 7);
+});
+test('validNickname: 2-16 letters, numbers, spaces', () => {
+  assert.ok(Logic.validNickname('Jai 99'));
+  assert.ok(!Logic.validNickname('J'));
+  assert.ok(!Logic.validNickname('x'.repeat(17)));
+  assert.ok(!Logic.validNickname('bad<name>'));
+  assert.ok(!Logic.validNickname('   '));
+});
+test('newGroupCode: 6 chars from the safe alphabet', () => {
+  let i = 0; const seq = [0, 0.999, 0.5, 0.25, 0.75, 0.1];
+  const code = Logic.newGroupCode(() => seq[i++]);
+  assert.strictEqual(code.length, 6);
+  assert.ok(/^[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]{6}$/.test(code));
+  assert.ok(/^[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]{6}$/.test(Logic.newGroupCode()));
+});
+
 let fail = 0;
 for (const [name, fn] of tests) { try { fn(); } catch (e) { fail++; console.log('FAIL', name, '\n ', e.message); } }
 console.log(fail ? `${fail}/${tests.length} failed` : `ok (${tests.length} tests)`);
