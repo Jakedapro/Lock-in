@@ -1285,6 +1285,19 @@ Aim for 2-5 sections with 3-6 notes each, 10-20 flashcards (key terms, people, d
 
   $('#mistBtn').onclick = () => openMistakes();
   $('#focusBtn').onclick = openFocus;
+  // Theme: auto (follows the device), dark or light. Remembered on this device.
+  const THEMES = ['auto', 'dark', 'light'], THEME_ICON = {
+    auto: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M12 4a8 8 0 0 1 0 16z" fill="currentColor"/></svg>',
+    dark: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg>',
+    light: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>',
+  };
+  function applyTheme(t) {
+    if (t === 'auto') delete document.documentElement.dataset.theme; else document.documentElement.dataset.theme = t;
+    const b = $('#themeBtn'); b.innerHTML = THEME_ICON[t] + `<small>${t === 'auto' ? 'Auto' : t === 'dark' ? 'Dark' : 'Light'}</small>`; b.setAttribute('aria-label', `Theme: ${t}. Click to change.`);
+  }
+  let theme = 'auto'; try { theme = localStorage.getItem('lockin.theme') || 'auto'; } catch (e) { }
+  applyTheme(theme);
+  $('#themeBtn').onclick = () => { theme = THEMES[(THEMES.indexOf(theme) + 1) % 3]; try { localStorage.setItem('lockin.theme', theme); } catch (e) { } applyTheme(theme); };
   if (focusState()) openFocus(); // a session survives a reload
   $('#acctBtn').onclick = () => (me && !S.profile ? openProfile(true) : openAccount());
   if (S.subj !== 'home' && !subjects().some(s => s.id === S.subj)) S.subj = 'home';
