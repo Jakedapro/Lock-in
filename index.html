@@ -531,6 +531,9 @@ footer { padding-block: 26px 44px; color: var(--ink-3); font-size: 14px; border-
 <script src="https://cdn.jsdelivr.net/npm/firebase@10.14.1/firebase-auth-compat.js" integrity="sha384-I1LYojsZ5RM1cOda44Z2h42Qa6YfsQ1XkXxREnhp4ueYBR/4d1pG1K+NZM537Vsj" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/firebase@10.14.1/firebase-firestore-compat.js" integrity="sha384-Ke0FJhH7LyRqDxZ0wt+/OXV38yfQVu7g9VPEEGjYmB4RVOY/ta04uecRhsMwT7V3" crossorigin="anonymous"></script>
 <script>
+const EXAMS = [{"id": "y12", "name": "Maths Extension 2", "date": "2026-10-19T13:50", "when": "Mon 19 Oct, 1:50 pm"}, {"id": "e1", "name": "Maths Extension 1", "date": "2026-10-23T13:50", "when": "Fri 23 Oct, 1:50 pm"}, {"id": "geo", "name": "Geography", "date": "2026-10-26T09:00", "when": "Mon 26 Oct, P1–2"}, {"id": "maths", "name": "Maths", "date": "2026-10-29T11:00", "when": "Thu 29 Oct, P3–4"}, {"id": "phys", "name": "Physics", "date": "2026-11-05T09:25", "when": "Thu 5 Nov, 9:25 am"}];
+</script>
+<script>
 /* ===== Lock In — text formatting: safe HTML with proper maths (powers, fractions) and bold ===== */
 const Fmt = (() => {
   const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -4393,12 +4396,16 @@ if (typeof module !== 'undefined') module.exports = PH;
   function renderStats() { $('#xp').textContent = S.xp; $('#streak').textContent = S.streak.n; }
 
   /* ---------------- subjects & decks ---------------- */
+  // Exam dates come from exams.json (one list shared with the lockin command and the desktop splash screen).
+  const examOf = (id) => (typeof EXAMS !== 'undefined' ? EXAMS : []).find(e => e.id === id);
+  const examDate = (id) => (examOf(id) ? new Date(examOf(id).date) : null);
+  const examWhen = (id) => examOf(id)?.when || '';
   const SUBJ = [
-    { id: 'geo', name: 'Geography', hue: 'green', exam: new Date(2026, 9, 26, 9, 0), when: 'Mon 26 Oct, P1–2', format: '45 minutes. 30 multiple choice (25 on geographical tools & skills, 5 on Water in the World) + 3 short answers.', mock: 'geo' },
-    { id: 'maths', name: 'Maths', hue: 'gold', exam: new Date(2026, 9, 29, 11, 0), when: 'Thu 29 Oct, P3–4', format: 'The exam covers chapters 8, 9, 10 and 12, with multi-part questions like the Test Yourself pages. Ch 3 and Ch 7 are extra practice.', mock: 'maths' },
-    { id: 'y12', name: 'Maths Extension 2', tab: 'Ext 2', hue: 'lilac', exam: new Date(2026, 9, 19, 13, 50), when: 'Mon 19 Oct, 1:50 pm', format: 'HSC paper: 3 hours. Section I is 10 multiple choice; Section II is 90 marks across proof, complex numbers, induction, integration, vectors and mechanics.', mock: 'gen', papers: 'https://www.nsw.gov.au/education-and-training/nesa/curriculum/hsc-exam-papers/mathematics-extension-2' },
-    { id: 'e1', name: 'Maths Extension 1', tab: 'Ext 1', hue: 'cyan', exam: new Date(2026, 9, 23, 13, 50), when: 'Fri 23 Oct, 1:50 pm', format: 'HSC paper: 2 hours. Section I is 10 multiple choice; Section II is 60 marks of multi-part questions.', mock: 'gen', papers: 'https://www.nsw.gov.au/education-and-training/nesa/curriculum/hsc-exam-papers/mathematics-extension-1' },
-    { id: 'phys', name: 'Physics', hue: 'coral', exam: new Date(2026, 10, 5, 9, 25), when: 'Thu 5 Nov, 9:25 am', format: 'HSC paper: 3 hours. Section I is 20 multiple choice; Section II is 80 marks of short answers and extended responses on modules 5 to 8.', mock: 'gen', papers: 'https://www.nsw.gov.au/education-and-training/nesa/curriculum/hsc-exam-papers/physics' },
+    { id: 'geo', name: 'Geography', hue: 'green', exam: examDate('geo'), when: examWhen('geo'), format: '45 minutes. 30 multiple choice (25 on geographical tools & skills, 5 on Water in the World) + 3 short answers.', mock: 'geo' },
+    { id: 'maths', name: 'Maths', hue: 'gold', exam: examDate('maths'), when: examWhen('maths'), format: 'The exam covers chapters 8, 9, 10 and 12, with multi-part questions like the Test Yourself pages. Ch 3 and Ch 7 are extra practice.', mock: 'maths' },
+    { id: 'y12', name: 'Maths Extension 2', tab: 'Ext 2', hue: 'lilac', exam: examDate('y12'), when: examWhen('y12'), format: 'HSC paper: 3 hours. Section I is 10 multiple choice; Section II is 90 marks across proof, complex numbers, induction, integration, vectors and mechanics.', mock: 'gen', papers: 'https://www.nsw.gov.au/education-and-training/nesa/curriculum/hsc-exam-papers/mathematics-extension-2' },
+    { id: 'e1', name: 'Maths Extension 1', tab: 'Ext 1', hue: 'cyan', exam: examDate('e1'), when: examWhen('e1'), format: 'HSC paper: 2 hours. Section I is 10 multiple choice; Section II is 60 marks of multi-part questions.', mock: 'gen', papers: 'https://www.nsw.gov.au/education-and-training/nesa/curriculum/hsc-exam-papers/mathematics-extension-1' },
+    { id: 'phys', name: 'Physics', hue: 'coral', exam: examDate('phys'), when: examWhen('phys'), format: 'HSC paper: 3 hours. Section I is 20 multiple choice; Section II is 80 marks of short answers and extended responses on modules 5 to 8.', mock: 'gen', papers: 'https://www.nsw.gov.au/education-and-training/nesa/curriculum/hsc-exam-papers/physics' },
   ];
   const BUILTIN = [
     G.mapDeck, G.waterDeck,
@@ -4556,6 +4563,9 @@ if (typeof module !== 'undefined') module.exports = PH;
   function renderTabs() {
     $('#subtabs').innerHTML = [{ id: 'home', name: 'Home' }, ...subjects()].map(s => `<button class="subtab" role="tab" type="button" data-subj="${esc(s.id)}" aria-selected="${S.subj === s.id}" title="${esc(s.name)}">${esc(s.tab || s.name)}</button>`).join('');
   }
+  // Sections scrolled to stop below the sticky top bar (which is two rows tall on narrow screens).
+  const nav = $('.nav'), padNav = () => { document.documentElement.style.scrollPaddingTop = (nav.offsetHeight + 12) + 'px'; };
+  padNav(); if (window.ResizeObserver) new ResizeObserver(padNav).observe(nav); else addEventListener('resize', padNav);
   $('#subtabs').addEventListener('click', e => { const b = e.target.closest('[data-subj]'); if (!b) return; S.subj = b.dataset.subj; save(); renderTabs(); renderSubject(); $('#subject').scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' }); });
   /* ---------------- study planner ---------------- */
   const planSubs = () => S.planSubs || SUBJ.filter(s => s.exam && s.exam > Date.now()).map(s => s.id);

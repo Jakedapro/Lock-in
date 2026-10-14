@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Lock in</title>
+<link rel="stylesheet" href="vendor/fonts.css">
+<style>
+  :root { --bg: #12161C; --ink: #E7ECF2; --ink-3: #8A95A3; --rule: #262E38; --pen: #7FA2FF; --teal: #2DD4BF; --violet: #A78BFA; --red: #FF8A7D; --gold: #F0B54A; }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { height: 100%; background: var(--bg); color: var(--ink); font-family: "Atkinson Hyperlegible", "Segoe UI", sans-serif; overflow: hidden; user-select: none; -webkit-app-region: drag; }
+  body { display: grid; place-items: center; }
+  .glow { position: fixed; inset: -40%; background: radial-gradient(closest-side, rgba(127,162,255,.18), transparent 70%); opacity: 0; animation: glow 1.2s .55s ease-out forwards; }
+  main { position: relative; display: grid; justify-items: center; gap: 14px; width: 100%; padding: 0 40px; }
+  svg { width: 92px; height: 108px; overflow: visible; }
+  .shackle { transform: translateY(-26px); animation: drop .42s .25s cubic-bezier(.5,0,.75,0) forwards; }
+  .body { animation: thud .35s .67s ease-out; transform-origin: 50% 100%; }
+  .hole { fill: #2A3240; animation: hole .5s .7s ease-out forwards; }
+  h1 { font-size: 34px; font-weight: 700; letter-spacing: -.5px; display: flex; gap: .26em; }
+  h1 span { display: inline-block; opacity: 0; transform: translateY(10px); animation: rise .4s ease-out forwards; }
+  h1 span:nth-child(1) { animation-delay: .78s; } h1 span:nth-child(2) { animation-delay: .88s; }
+  .grad { background: linear-gradient(90deg, var(--teal), var(--pen), var(--violet)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .line { font-size: 14px; color: var(--ink-3); min-height: 1.3em; opacity: 0; animation: fade .4s 1.05s forwards; }
+  .line b { color: var(--ink); font-weight: 700; }
+  .line .hot { color: var(--red); } .line .warm { color: var(--gold); }
+  .bar { width: 220px; height: 3px; border-radius: 3px; background: var(--rule); overflow: hidden; margin-top: 6px; opacity: 0; animation: fade .3s .9s forwards; }
+  .bar i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--teal), var(--pen), var(--violet)); animation: load 1s .95s cubic-bezier(.4,0,.2,1) forwards; }
+  @keyframes drop { 70% { transform: translateY(2px); } 85% { transform: translateY(-2px); } to { transform: translateY(0); } }
+  @keyframes thud { 40% { transform: scale(1.04, .96); } }
+  @keyframes hole { to { fill: var(--pen); filter: drop-shadow(0 0 6px var(--pen)); } }
+  @keyframes glow { to { opacity: 1; } }
+  @keyframes rise { to { opacity: 1; transform: none; } }
+  @keyframes fade { to { opacity: 1; } }
+  @keyframes load { to { width: 100%; } }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 1ms !important; animation-delay: 0s !important; } }
+</style>
+</head>
+<body>
+<div class="glow"></div>
+<main>
+  <svg viewBox="0 0 92 108" aria-hidden="true">
+    <path class="shackle" d="M24 50V32a22 22 0 0 1 44 0v18" fill="none" stroke="#B4BDC9" stroke-width="10" stroke-linecap="round"/>
+    <g class="body">
+      <rect x="8" y="46" width="76" height="58" rx="12" fill="#E7ECF2"/>
+      <path class="hole" d="M46 64a8 8 0 0 1 4.5 14.6L53 92H39l2.5-13.4A8 8 0 0 1 46 64z"/>
+    </g>
+  </svg>
+  <h1><span>Lock</span><span class="grad">in</span></h1>
+  <p class="line" id="line"></p>
+  <div class="bar"><i></i></div>
+</main>
+<script src="exams.js"></script>
+<script>
+  // One line under the logo: the next exam, plus your streak and XP if you've studied on this computer.
+  (function () {
+    var now = Date.now(), next = (window.EXAMS || []).map(function (e) { return { name: e.name, at: new Date(e.date).getTime() }; })
+      .filter(function (e) { return e.at > now; }).sort(function (a, b) { return a.at - b.at; })[0];
+    var parts = [];
+    if (next) {
+      var d = Math.floor((next.at - now) / 864e5), cls = d < 7 ? 'hot' : d < 14 ? 'warm' : '';
+      parts.push('<b>' + next.name + '</b> in <span class="' + cls + '">' + (d >= 1 ? d + (d === 1 ? ' day' : ' days') : Math.max(1, Math.floor((next.at - now) / 36e5)) + ' hours') + '</span>');
+    }
+    try {
+      var s = JSON.parse(localStorage.getItem('lockin.v2') || 'null');
+      if (s && s.streak && s.streak.n) parts.push(s.streak.n + ' day streak');
+      if (s && s.xp) parts.push(Math.round(s.xp) + ' XP');
+    } catch (e) { }
+    document.getElementById('line').innerHTML = parts.join(' &nbsp;/&nbsp; ') || 'Time to lock in.';
+  })();
+</script>
+</body>
+</html>

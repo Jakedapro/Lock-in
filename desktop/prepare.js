@@ -30,4 +30,8 @@ swap(/<script src="https:\/\/cdnjs\.cloudflare\.com\/ajax\/libs\/gsap\/[^"]+"><\
 swap(/<script async src="https:\/\/cdnjs\.cloudflare\.com\/ajax\/libs\/mathjax\/[^"]+"[^>]*><\/script>/, '<script async src="vendor/tex-svg-full.js"></script>', 'MathJax');
 html = html.replace(/<script src="https:\/\/cdn\.jsdelivr\.net\/npm\/firebase@[^"]+"[^>]*><\/script>\n?/g, '');
 fs.writeFileSync(path.join(out, 'index.html'), html);
+
+// The splash screen, and the exam dates it counts down to.
+copy(path.join(__dirname, 'splash.html'), path.join(out, 'splash.html'));
+fs.writeFileSync(path.join(out, 'exams.js'), `window.EXAMS = ${fs.readFileSync(path.join(root, 'exams.json'), 'utf8').trim()};\n`);
 console.log('desktop/app ready:', fs.readdirSync(out).join(', '));

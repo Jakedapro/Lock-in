@@ -9,6 +9,12 @@ jobs:
   test:
     runs-on: windows-latest
     steps:
+      - uses: actions/checkout@v4
+      - name: lockin.ps1 parses in Windows PowerShell
+        shell: powershell
+        run: |
+          $errs = $null; [void][System.Management.Automation.Language.Parser]::ParseFile("$PWD\cli\lockin.ps1", [ref]$null, [ref]$errs)
+          if ($errs) { $errs | ForEach-Object { $_.ToString() }; throw 'parse errors' }
       - name: Install with the README command
         shell: powershell
         run: irm https://raw.githubusercontent.com/jamalmusialla81-hub/lock-in/main/install.ps1 | iex
@@ -25,6 +31,12 @@ jobs:
           call lockin version || exit /b 1
           call lockin update || exit /b 1
           call lockin help || exit /b 1
+      - name: The intro runs (this commit's lockin.ps1)
+        shell: powershell
+        run: |
+          Copy-Item cli\lockin.ps1 "$env:LOCALAPPDATA\LockIn\bin\lockin.ps1" -Force
+          & "$env:LOCALAPPDATA\LockIn\bin\lockin.cmd" banner
+          if ($LASTEXITCODE) { throw 'lockin banner failed' }
       - name: The lockin command is on the user PATH
         shell: powershell
         run: if (-not ([Environment]::GetEnvironmentVariable('Path','User') -split ';' -contains "$env:LOCALAPPDATA\LockIn\bin")) { throw 'not on PATH' }

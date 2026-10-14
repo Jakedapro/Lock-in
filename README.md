@@ -15,7 +15,9 @@ irm https://raw.githubusercontent.com/jamalmusialla81-hub/lock-in/main/install.p
 It installs the app and a `lockin` command. Then, in any terminal:
 
 ```
-lockin            open the app
+lockin            the intro (exam countdowns, a study tip), then open the app
+lockin open       open the app straight away
+lockin banner     just the intro
 lockin update     update to the latest version
 lockin version    show the installed version
 lockin web        open the website
