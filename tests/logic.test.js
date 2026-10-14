@@ -271,6 +271,25 @@ test('buildPlan with no upcoming exams is empty', () => {
   assert.deepStrictEqual(Logic.buildPlan({ today: new Date(2026, 11, 1), exams: EX, topics: TOPICS }), []);
 });
 
+test('mergeState keeps badges (earliest), flags, quotes (minus deleted), daily wins and writing history', () => {
+  const a = { badges: { first: 100, s3: 300 }, flags: { owl: 1 }, quotes: [{ id: 'q1', q: 'one', box: 1, seen: 5 }, { id: 'q2', q: 'two' }], daily: { done: { '2026-10-13': 1 } }, eng: { best: 70, history: [{ id: 'w1', at: 1, score: 60 }] } };
+  const b = { badges: { first: 50 }, flags: { bird: 1 }, quotes: [{ id: 'q1', q: 'one', box: 3, seen: 9 }], goneQ: { q2: 10 }, daily: { done: { '2026-10-14': 1 } }, eng: { best: 80, history: [{ id: 'w2', at: 2, score: 80 }] } };
+  const m = Logic.mergeState(a, b);
+  assert.deepStrictEqual(m.badges, { first: 50, s3: 300 });
+  assert.deepStrictEqual(m.flags, { owl: 1, bird: 1 });
+  assert.deepStrictEqual(m.quotes.map(q => [q.id, q.box]), [['q1', 3]]);
+  assert.deepStrictEqual(Object.keys(m.daily.done).sort(), ['2026-10-13', '2026-10-14']);
+  assert.strictEqual(m.eng.best, 80); assert.deepStrictEqual(m.eng.history.map(h => h.id), ['w1', 'w2']);
+});
+test('seeded random is repeatable and withSeed restores Math.random', () => {
+  const r1 = Logic.seeded('2026-10-14'), r2 = Logic.seeded('2026-10-14'), r3 = Logic.seeded('2026-10-15');
+  const a = [r1(), r1(), r1()], b = [r2(), r2(), r2()];
+  assert.deepStrictEqual(a, b); assert.notDeepStrictEqual(a, [r3(), r3(), r3()]);
+  a.forEach(x => assert.ok(x >= 0 && x < 1));
+  const orig = Math.random; const v1 = Logic.withSeed('x', () => [Math.random(), Math.random()]), v2 = Logic.withSeed('x', () => [Math.random(), Math.random()]);
+  assert.deepStrictEqual(v1, v2); assert.strictEqual(Math.random, orig);
+});
+
 let fail = 0;
 for (const [name, fn] of tests) { try { fn(); } catch (e) { fail++; console.log('FAIL', name, '\n ', e.message); } }
 console.log(fail ? `${fail}/${tests.length} failed` : `ok (${tests.length} tests)`);

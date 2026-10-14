@@ -7,6 +7,7 @@ const Logic = (() => {
     const s = S || {};
     s.lvl ||= {}; s.mistakes ||= []; s.week ||= { start: '', xp: 0 };
     s.groups ||= []; s.cleared ||= {}; s.gone ||= {}; s.sessions ||= []; s.days ||= {}; s.planDone ||= {}; if (s.profile === undefined) s.profile = null;
+    s.badges ||= {}; s.flags ||= {}; s.quotes ||= []; s.goneQ ||= {}; s.daily ||= { done: {} }; s.daily.done ||= {};
     return s;
   }
 
@@ -141,6 +142,15 @@ const Logic = (() => {
     for (const [d, v] of Object.entries(b.days)) { const o = m.days[d] || {}; m.days[d] = { min: Math.max(o.min || 0, v.min || 0), marks: Math.max(o.marks || 0, v.marks || 0) }; }
     m.planDone = { ...a.planDone, ...b.planDone };
     m.planSubs = b.planSubs || a.planSubs || null;
+    m.badges = { ...b.badges }; for (const [k, t] of Object.entries(a.badges)) m.badges[k] = Math.min(t, m.badges[k] || t); // earliest time wins
+    m.flags = { ...a.flags, ...b.flags };
+    m.goneQ = latest(a.goneQ, b.goneQ);
+    m.quotes = unionBy(a.quotes, b.quotes, 'id', (x, y) => ((y.seen || 0) > (x.seen || 0) ? y : x)).filter(q => !m.goneQ[q.id]);
+    m.daily = { ...a.daily, ...b.daily, done: { ...a.daily.done, ...b.daily.done } };
+    if (a.eng || b.eng) {
+      const ea = a.eng || {}, eb = b.eng || {};
+      m.eng = { ...ea, ...eb, best: Math.max(ea.best || 0, eb.best || 0), history: unionBy(ea.history, eb.history, 'id').sort((x, y) => x.at - y.at).slice(-40) };
+    }
     return m;
   }
   const MAX_DOC_CHARS = 900000;
@@ -150,10 +160,17 @@ const Logic = (() => {
     state.custom = [];
     return { state, droppedCustom: true };
   }
+  // Same seed -> same random numbers (mulberry32), so everyone gets the same daily challenge.
+  function seeded(seed) {
+    let t = typeof seed === 'number' ? seed >>> 0 : [...String(seed)].reduce((h, c) => Math.imul(h ^ c.charCodeAt(0), 16777619) >>> 0, 2166136261);
+    return () => { t = (t + 0x6D2B79F5) >>> 0; let r = Math.imul(t ^ (t >>> 15), 1 | t); r = (r + Math.imul(r ^ (r >>> 7), 61 | r)) ^ r; return ((r ^ (r >>> 14)) >>> 0) / 4294967296; };
+  }
+  // Runs fn with Math.random swapped for a seeded generator (question generators use Math.random).
+  function withSeed(seed, fn) { const old = Math.random; Math.random = seeded(seed); try { return fn(); } finally { Math.random = old; } }
   const validNickname = (s) => /^[A-Za-z0-9 ]{2,16}$/.test(s || '') && /\S/.test(s);
   const CODE_ABC = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   const newGroupCode = (rand = Math.random) => Array.from({ length: 6 }, () => CODE_ABC[Math.floor(rand() * CODE_ABC.length) % CODE_ABC.length]).join('');
 
-  return { LEVELS, defaults, classify, ladder, nearestLevel, weekStart, serialise, addMistake, fixMistake, clearMistake, missAgain, addSession, logActivity, heat, buildPlan, storageKey, mergeState, cloudPayload, validNickname, newGroupCode };
+  return { LEVELS, defaults, classify, ladder, nearestLevel, weekStart, serialise, addMistake, fixMistake, clearMistake, missAgain, addSession, logActivity, heat, buildPlan, storageKey, mergeState, cloudPayload, validNickname, newGroupCode, seeded, withSeed };
 })();
 if (typeof module !== 'undefined') module.exports = Logic;

@@ -73,6 +73,33 @@ for (const id of PH_IDS) test(`Physics deck ${id}`, () => {
   d.short.forEach(q => assert.ok(q.criteria.length >= 2 && q.model && q.marks >= 2, id + ' short answer has criteria and a model answer'));
 });
 
+const EN = () => require('../src/english.js');
+const EN_IDS = ['engtech', 'engessay', 'engcommon', 'engmods', 'engunseen'];
+test('English has its five decks', () => assert.deepStrictEqual(EN().DECKS.map(d => d.id), EN_IDS));
+for (const id of EN_IDS) test(`English deck ${id}`, () => {
+  const d = EN().DECKS.find(x => x.id === id); assert.strictEqual(d.subject, 'eng'); checkDeck(d);
+  assert.ok((d.short || []).length >= 3, id + ' has 3+ short answers');
+  const codes = new Set(d.sections.map(s => s.code));
+  d.short.forEach(q => {
+    assert.ok(q.criteria.length >= 2 && q.model && q.marks >= 2, id + ' short answer has criteria and a model answer');
+    assert.strictEqual(q.criteria.length, q.marks, id + ' short answer has one criterion per mark: ' + q.q);
+    (q.tags || []).forEach(t => assert.ok(codes.has(t), `${id} short tag ${t} matches a section`));
+  });
+});
+test('English unseen deck has 10+ short answers on passages', () => {
+  const d = EN().DECKS.find(x => x.id === 'engunseen');
+  assert.ok(d.short.filter(q => typeof q.passage === 'string' && q.passage.length > 50).length >= 10);
+  for (let i = 0; i < 50; i++) for (const L of ['F', 'S', 'C']) assert.ok(d.bank[0](L).passage, 'unseen bank question has a passage');
+});
+test('English text has no asterisks, dollar signs or digit/digit fractions', () => {
+  const bad = (s, where) => { assert.ok(!/[*$]/.test(s), where + ' contains * or $: ' + s); assert.ok(!/\d\/\d/.test(s), where + ' contains a digit fraction: ' + s); };
+  const walk = (v, where) => { if (typeof v === 'string') bad(v, where); else if (Array.isArray(v)) v.forEach((x, i) => walk(x, where + '.' + i)); else if (v && typeof v === 'object') for (const [k, x] of Object.entries(v)) walk(x, where + '.' + k); };
+  for (const d of EN().DECKS) {
+    const { bank, ...rest } = d; walk(rest, d.id);
+    for (const fn of bank) for (let i = 0; i < 100; i++) for (const L of ['F', 'S', 'C']) walk(fn(L), `${d.id}/${fn.name}`);
+  }
+});
+
 let fail = 0;
 for (const [name, fn] of tests) { try { fn(); } catch (e) { fail++; console.log('FAIL', name, '\n ', e.message); } }
 console.log(fail ? `${fail}/${tests.length} failed` : `ok (${tests.length} tests)`);
