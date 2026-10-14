@@ -1,5 +1,5 @@
 s=open('src/shell.html').read()
-js=[open('src/'+f).read() for f in ['fmt.js','logic.js','cloud.js','content.js','exam.js','geo.js','viz.js','y8more.js','ext2.js','app.js']]
+js=[open('src/'+f).read() for f in ['fmt.js','mathin.js','logic.js','cloud.js','content.js','exam.js','geo.js','viz.js','y8more.js','ext2.js','app.js']]
 libs='<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>\n'
 # Firebase (accounts + sync) only goes in the published site, not the Claude artifact.
 FB={'app':'sha384-ZaR6mWzmJtrRibZ1Vm7SoHFr8OXjyAuGAXalGDKqbxFT18oi/z+oZLIRFkpeNor1',

@@ -32,7 +32,7 @@ test('units, dates and letter fractions are left alone', () => {
   assert.strictEqual(Fmt.text('2.5/3'), '2.5/3');
 });
 test('LaTeX-style maths from the AI is cleaned up', () => {
-  assert.strictEqual(Fmt.text('$\\frac{3}{4} \\times 2$'), `${FR('3', '4')} × 2`);
+  assert.strictEqual(Fmt.text('\\frac{3}{4} \\times 2'), `${FR('3', '4')} × 2`);
   assert.strictEqual(Fmt.text('\\frac{a+b}{2}'), FR('a+b', '2'));
   assert.strictEqual(Fmt.text('\\sqrt{49} \\div 7 \\pm 1 \\pi'), '√49 ÷ 7 ± 1 π');
 });
@@ -49,6 +49,31 @@ test('rich: bullets, headings and line breaks', () => {
 });
 test('rich still formats maths and bold inside bullets', () => {
   assert.strictEqual(Fmt.rich('- **x²** = 1/4'), `<span class="li"><b>x${SUP('2')}</b> = ${FR('1', '4')}</span>`);
+});
+
+/* ---------- TeX maths (rendered by MathJax in the page) ---------- */
+const M = (tex, display) => `<span class="m${display ? ' d' : ''}" data-tex="${tex}">${tex}</span>`;
+test('$…$ becomes an inline maths span', () => {
+  assert.strictEqual(Fmt.text('Find $\\frac{1}{2}x^2$ now'), `Find ${M('\\frac{1}{2}x^2')} now`);
+});
+test('$$…$$ and \\[…\\] become display maths', () => {
+  assert.strictEqual(Fmt.text('$$\\int_0^1 x\\,dx$$'), M('\\int_0^1 x\\,dx', true));
+  assert.strictEqual(Fmt.text('\\[a^2+b^2\\]'), M('a^2+b^2', true));
+});
+test('\\(…\\) becomes inline maths', () => {
+  assert.strictEqual(Fmt.text('so \\(\\sqrt{2}\\) is irrational'), `so ${M('\\sqrt{2}')} is irrational`);
+});
+test('maths source is escaped', () => {
+  assert.strictEqual(Fmt.text('$a<b$'), M('a&lt;b'));
+});
+test('money is not maths', () => {
+  assert.strictEqual(Fmt.text('Share $45 between them, $9 each'), 'Share $45 between them, $9 each');
+});
+test('text around maths still gets bold and fractions', () => {
+  assert.strictEqual(Fmt.text('**Answer:** $x^2$ and 3/4'), `<b>Answer:</b> ${M('x^2')} and ${FR('3', '4')}`);
+});
+test('rich keeps display maths on its own line', () => {
+  assert.strictEqual(Fmt.rich('Solve\n$$x = 2$$'), `Solve\n${M('x = 2', true)}`);
 });
 
 let fail = 0;

@@ -664,6 +664,13 @@ const X = (() => {
       return /±|\+-|\+\/-|-\+/.test(s) || (nums.includes(part.value) && nums.includes(-part.value));
     }
     const p = parseAns(raw);
+    if (!isFinite(p.v)) { // typed as an expression, e.g. 3π/4, 2√3, 2^5: compare its value exactly (or to the rounding asked for)
+      const MI = typeof MathIn !== 'undefined' ? MathIn : typeof require !== 'undefined' ? require('./mathin.js') : null;
+      const v = MI ? MI.evaluate(raw.replace(/^\s*[a-z]\s*=\s*/i, '')) : NaN;
+      if (!isFinite(v)) return false;
+      const T = Math.abs(part.value) || 1, tol = Math.max(1e-6 * T, part.round != null ? 0.5 * 10 ** -(part.round + (part.type === 'pct' ? 2 : 0)) : 0, part.tol ? part.tol * T : 0);
+      return Math.abs(v - part.value) <= tol + 1e-12 || (part.type === 'pct' && Math.abs(v / 100 - part.value) <= tol + 1e-12);
+    }
     if (part.type === 'pct') {
       const cands = p.percent ? [p.v] : [p.v / 100, p.v]; // "25" in a % question means 25%; also accept 0.25
       return cands.some((c, i) => near(c, part.value, i === 0 && !p.percent ? { ...p, dec: p.dec + 2 } : p, part));

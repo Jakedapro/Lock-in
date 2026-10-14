@@ -6,11 +6,26 @@ const Fmt = (() => {
   const sup = (p) => `<span class="sr">^</span><sup class="pow">${p}</sup>`;
   const TEX = { times: '×', div: '÷', pm: '±', pi: 'π', cdot: '·', le: '≤', ge: '≥', leq: '≤', geq: '≥', approx: '≈', neq: '≠', degree: '°', circ: '°' };
 
+  // Real maths ($…$, $$…$$, \(…\), \[…\]) becomes a span that MathJax typesets in the page.
+  const MATH = /\$\$([\s\S]+?)\$\$|\\\[([\s\S]+?)\\\]|\\\(([\s\S]+?)\\\)|\$([^$\n]+?)\$/g;
+  const mathSpan = (tex, display) => { const t = esc(tex.trim()); return `<span class="m${display ? ' d' : ''}" data-tex="${t}">${t}</span>`; };
+
   // One line of text → HTML.
   function text(s) {
+    s = String(s ?? ''); let out = '', last = 0, m;
+    MATH.lastIndex = 0;
+    while ((m = MATH.exec(s))) {
+      const inline = m[4];
+      if (inline !== undefined && /^\d[\d,.]*(\s|$)/.test(inline) && !/[\\^_{}]/.test(inline)) continue; // "$45 … $9" is money, not maths
+      out += plain(s.slice(last, m.index)) + mathSpan(m[1] ?? m[2] ?? m[3] ?? inline, m[1] !== undefined || m[2] !== undefined);
+      last = MATH.lastIndex;
+    }
+    return out + plain(s.slice(last));
+  }
+
+  // Text outside maths delimiters: escape, then tidy powers, fractions, bold and stray LaTeX.
+  function plain(s) {
     let h = esc(s);
-    // LaTeX the AI sometimes writes: strip $…$ / \( \) wrappers, then convert the common commands.
-    h = h.replace(/\$([^$\n]*[\\^][^$\n]*)\$/g, '$1').replace(/\\\(|\\\)/g, '');
     h = h.replace(/\\frac\{([^{}]+)\}\{([^{}]+)\}/g, (_, a, b) => frac(a, b));
     h = h.replace(/\\sqrt\{([^{}]+)\}/g, '√$1');
     h = h.replace(/\\([a-z]+)\b/g, (m, w) => TEX[w] || m);
@@ -27,7 +42,8 @@ const Fmt = (() => {
 
   // Multi-line answers (AI replies): headings, bullet lists and line breaks too.
   function rich(s) {
-    return String(s ?? '').split('\n').map(line => {
+    // Keep multi-line $$ … $$ blocks together before splitting into lines.
+    return String(s ?? '').replace(/\$\$[\s\S]+?\$\$/g, b => b.replace(/\n/g, ' ')).split('\n').map(line => {
       let m = line.match(/^\s*#{1,6}\s+(.*)$/); if (m) return `<b class="h">${text(m[1])}</b>`;
       m = line.match(/^\s*[-*•]\s+(.*)$/); if (m) return `<span class="li">${text(m[1])}</span>`;
       return text(line);
