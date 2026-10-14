@@ -6,13 +6,23 @@ A study app for HSC Maths Extension 1, Maths Extension 2 and Physics, plus Year 
 
 ## Download the Windows app
 
-Open **PowerShell** and paste:
+Open **PowerShell** and paste this once:
 
 ```powershell
-Invoke-WebRequest https://github.com/jamalmusialla81-hub/lock-in/releases/latest/download/Lock-In-Setup.exe -OutFile "$env:TEMP\Lock-In-Setup.exe"; Start-Process "$env:TEMP\Lock-In-Setup.exe"
+irm https://raw.githubusercontent.com/jamalmusialla81-hub/lock-in/main/install.ps1 | iex
 ```
 
-Or download `Lock-In-Setup.exe` from the [latest release](https://github.com/jamalmusialla81-hub/lock-in/releases/latest) and run it.
+It installs the app and a `lockin` command. Then, in any terminal:
+
+```
+lockin            open the app
+lockin update     update to the latest version
+lockin version    show the installed version
+lockin web        open the website
+lockin uninstall  remove the app and the command
+```
+
+Prefer clicking? Download `Lock-In-Setup.exe` from the [latest release](https://github.com/jamalmusialla81-hub/lock-in/releases/latest) and run it.
 
 Windows may show "Windows protected your PC" because the app isn't code-signed. Click **More info**, then **Run anyway**.
 

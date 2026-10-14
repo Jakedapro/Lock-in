@@ -1,0 +1,27 @@
+# Tests the README install command and the `lockin` command on a real Windows machine.
+name: lockin command test
+on:
+  push:
+    branches: [main]
+    paths: ['cli/**', 'install.ps1', '.github/workflows/cli-test.yml']
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: windows-latest
+    steps:
+      - name: Install with the README command
+        shell: powershell
+        run: irm https://raw.githubusercontent.com/jamalmusialla81-hub/lock-in/main/install.ps1 | iex
+      - name: The app is installed
+        shell: powershell
+        run: if (-not (Test-Path "$env:LOCALAPPDATA\Programs\lock-in\Lock in.exe")) { throw 'Lock in.exe missing' }
+      - name: lockin version, update (already latest) and help
+        shell: cmd
+        run: |
+          set PATH=%PATH%;%LOCALAPPDATA%\LockIn\bin
+          call lockin version || exit /b 1
+          call lockin update || exit /b 1
+          call lockin help || exit /b 1
+      - name: The lockin command is on the user PATH
+        shell: powershell
+        run: if (-not ([Environment]::GetEnvironmentVariable('Path','User') -split ';' -contains "$env:LOCALAPPDATA\LockIn\bin")) { throw 'not on PATH' }
