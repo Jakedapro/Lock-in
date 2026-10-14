@@ -12,7 +12,10 @@
     });
   }
   new MutationObserver(typeset).observe(document.body, { childList: true, subtree: true });
-  (function waitForMathJax() { if (window.MathJax?.startup?.promise) window.MathJax.startup.promise.then(typeset); else setTimeout(waitForMathJax, 250); })();
+  (function waitForMathJax() {
+    if (!window.MathJax?.startup?.promise) return setTimeout(waitForMathJax, 250);
+    window.MathJax.startup.promise.then(() => { document.head.appendChild(window.MathJax.svgStylesheet()); typeset(); });
+  })();
   const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const hasGsap = typeof gsap !== 'undefined';
