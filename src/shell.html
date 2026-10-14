@@ -213,6 +213,24 @@ textarea.field { min-height: 100px; resize: vertical; }
 .av-pick[aria-pressed=true] { border-color: var(--chalk); background: var(--ink-3); }
 .av-col { width: 34px; height: 34px; border-radius: 50%; border: 3px solid transparent; background: var(--acc); }
 .av-col[aria-pressed=true] { border-color: var(--chalk); }
+#league .panel { max-width: 760px; }
+.league-teaser { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.league-tabs { padding-block: 0 12px; }
+.league-top { justify-content: space-between; margin-bottom: 8px; }
+.league-top .filters { margin: 0; }
+.league-code { font-size: 12.5px; color: var(--muted); }
+.league-code b { color: var(--chalk); letter-spacing: .12em; }
+.lb { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.lb li { display: grid; grid-template-columns: 26px auto minmax(0, 1fr) auto auto; gap: 10px; align-items: center; background: var(--ink); border: 1px solid var(--line); border-radius: 12px; padding: 8px 12px; }
+.lb li.me { border-color: var(--cyan); box-shadow: 0 0 0 1px var(--cyan) inset; }
+.lb li.empty-row { display: block; color: var(--muted); }
+.lb .rk { font-family: var(--f-display); font-weight: 900; color: var(--muted); text-align: center; }
+.lb li:nth-child(1) .rk { color: var(--gold); }
+.lb .nm { font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.lb .nm small { color: var(--muted); font-weight: 500; }
+.lb .st, .lb .xp { font-family: var(--f-mono); font-size: 13px; white-space: nowrap; }
+.lb .xp { font-weight: 700; }
+.league-forms { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; margin-top: 14px; border-top: 1px dashed var(--line); padding-top: 14px; }
 .sec-card ul { margin: 10px 0 0; padding-left: 18px; display: grid; gap: 6px; font-size: 15px; }
 .worked { background: var(--ink); border: 1px dashed var(--line); border-radius: 14px; padding: 14px; font-size: 14.5px; align-self: start; }
 .worked .wq { font-weight: 700; margin-bottom: 8px; }
@@ -339,6 +357,8 @@ footer { padding-block: 30px 50px; color: var(--muted); font-size: 13px; border-
   </section>
 
   <div class="ticker" aria-hidden="true"><div class="tk" id="ticker"></div></div>
+
+  <section class="wrap section" id="league" hidden></section>
 
   <section class="wrap section" id="subject"></section>
 

@@ -992,9 +992,75 @@ Aim for 2-5 sections with 3-6 notes each, 10-20 flashcards (key terms, people, d
     }
     showOv();
   }
-  // Leaderboards (groups) are added on top of this.
-  function renderLeague() { }
-  async function pushLeague() { }
+  /* ---------------- group leaderboards ---------------- */
+  const MAX_GROUPS = 5;
+  const league = { tab: 0, period: 'week', rows: {}, loading: false };
+  const memberRow = () => ({ nickname: S.profile.nickname, avatar: S.profile.avatar, xp: Math.round(S.xp), weekXp: Math.round(S.week.start === Logic.weekStart(new Date()) ? S.week.xp : 0), week: S.week.start || '', streak: Math.round(S.streak.n || 0) });
+  async function pushLeague() { if (me && S.profile && S.groups.length) await Cloud.pushMember(S.groups.map(g => g.code), me, memberRow()); }
+  async function loadBoard(code) {
+    league.loading = true; renderLeague();
+    try { league.rows[code] = await Cloud.board(code); } catch (e) { toast('Couldn\'t load the leaderboard. Check your connection.'); }
+    league.loading = false; renderLeague();
+  }
+  function renderLeague() {
+    const el = $('#league'); if (!el) return;
+    el.hidden = !Cloud.available;
+    if (!Cloud.available) return;
+    const head = `<div class="sec-head"><h2>Leaderboard</h2><span class="eyebrow">private groups · just you and your mates</span></div>`;
+    if (!me) { el.innerHTML = head + `<div class="panel league-teaser"><p class="note" style="margin:0">Sign in to sync your progress and race your mates for XP this week.</p><button class="btn btn-hot btn-sm" type="button" data-lg="signin">Sign in</button></div>`; bindLeague(el); return; }
+    if (!S.profile) { el.innerHTML = head + `<div class="panel league-teaser"><p class="note" style="margin:0">Pick a nickname first so your mates know it's you.</p><button class="btn btn-hot btn-sm" type="button" data-lg="profile">Set up profile</button></div>`; bindLeague(el); return; }
+    const gs = S.groups; league.tab = Math.min(league.tab, Math.max(0, gs.length - 1));
+    const g = gs[league.tab], wk = Logic.weekStart(new Date());
+    let board = '';
+    if (g) {
+      const rows = (league.rows[g.code] || []).map(r => (r.uid === me ? { ...r, ...memberRow(), uid: me } : r))
+        .map(r => ({ ...r, score: league.period === 'week' ? (r.week === wk ? r.weekXp : 0) : r.xp }))
+        .sort((a, b) => b.score - a.score).slice(0, 20);
+      board = `<div class="row league-top"><div class="filters" role="group" aria-label="Period">${[['week', 'This week'], ['all', 'All time']].map(([k, l]) => `<button class="fchip" type="button" data-lp="${k}" aria-pressed="${league.period === k}">${l}</button>`).join('')}</div>
+          <span class="mono league-code">Code <b>${esc(g.code)}</b> <button class="linkbtn" type="button" data-lg="copy">copy</button></span></div>
+        <ol class="lb">${rows.length ? rows.map((r, i) => `<li class="${r.uid === me ? 'me' : ''}"><span class="rk">${i + 1}</span>${avatarHtml(r, 'sm')}<span class="nm">${esc(r.nickname)}${r.uid === me ? ' <small>(you)</small>' : ''}</span><span class="st" title="Day streak">🔥 ${r.streak || 0}</span><span class="xp">${r.score} XP</span></li>`).join('') : `<li class="empty-row">${league.loading ? 'Loading…' : 'No one here yet.'}</li>`}</ol>
+        <div class="row" style="justify-content:space-between;margin-top:10px"><span class="note" style="font-size:12.5px">Share the code so mates can join. Scores are on the honour system.</span><span class="row"><button class="linkbtn" type="button" data-lg="refresh">Refresh</button><button class="linkbtn" type="button" data-lg="leave">Leave group</button></span></div>`;
+    }
+    el.innerHTML = head + `<div class="panel">${gs.length ? `<div class="tabs league-tabs" role="tablist">${gs.map((x, i) => `<button class="tab" type="button" role="tab" data-lt="${i}" aria-selected="${i === league.tab}">${esc(x.name)}</button>`).join('')}</div>` : `<p class="note" style="margin-top:0">Make a group and send the code to your mates, or join theirs.</p>`}
+      ${board}
+      ${gs.length < MAX_GROUPS ? `<div class="league-forms"><div class="ans"><input class="field" id="lgName" maxlength="30" placeholder="New group name, e.g. 8R Maths" aria-label="New group name"><button class="btn btn-ghost btn-sm" type="button" data-lg="create">Create group</button></div>
+        <div class="ans"><input class="field mono" id="lgCode" maxlength="6" placeholder="Join code, e.g. K7Q2XD" aria-label="Group code" autocapitalize="characters" style="text-transform:uppercase"><button class="btn btn-ghost btn-sm" type="button" data-lg="join">Join</button></div></div>` : ''}</div>`;
+    bindLeague(el);
+    if (g && !league.rows[g.code] && !league.loading) loadBoard(g.code);
+  }
+  function bindLeague(el) {
+    $$('[data-lt]', el).forEach(b => b.onclick = () => { league.tab = +b.dataset.lt; renderLeague(); });
+    $$('[data-lp]', el).forEach(b => b.onclick = () => { league.period = b.dataset.lp; renderLeague(); });
+    $$('[data-lg]', el).forEach(b => b.onclick = async () => {
+      const act = b.dataset.lg, g = S.groups[league.tab];
+      if (act === 'signin') return openAccount();
+      if (act === 'profile') return openProfile(true);
+      if (act === 'copy') return copyText(g.code, 'Code copied. Send it to your mates.', el);
+      if (act === 'refresh') return loadBoard(g.code);
+      b.disabled = true;
+      try {
+        if (act === 'create') {
+          const name = $('#lgName').value.trim().slice(0, 30); if (!name) { toast('Give your group a name'); return; }
+          const code = await Cloud.createGroup(name, me, memberRow());
+          S.groups.push({ code, name }); league.tab = S.groups.length - 1; save(); toast(`Group made. Code: ${code}`);
+          await loadBoard(code);
+        }
+        if (act === 'join') {
+          const code = $('#lgCode').value.trim().toUpperCase();
+          if (!/^[A-Z0-9]{6}$/.test(code)) { toast('Codes are 6 letters/numbers'); return; }
+          if (S.groups.some(x => x.code === code)) { league.tab = S.groups.findIndex(x => x.code === code); renderLeague(); return; }
+          const res = await Cloud.joinGroup(code, me, memberRow());
+          S.groups.push(res); league.tab = S.groups.length - 1; save(); toast(`Joined ${res.name}`);
+          await loadBoard(code);
+        }
+        if (act === 'leave') {
+          if (!b.dataset.sure) { b.dataset.sure = 1; b.textContent = 'Tap again to leave'; b.disabled = false; return; }
+          await Cloud.leaveGroup(g.code, me); S.groups = S.groups.filter(x => x.code !== g.code); delete league.rows[g.code]; league.tab = 0; save(); toast('Left the group'); renderLeague();
+        }
+      } catch (e) { toast(e.code === 'not-found' ? 'No group with that code' : e.code === 'permission-denied' ? 'Not allowed. Is the database set up?' : (e.message || 'That didn\'t work')); }
+      finally { b.disabled = false; }
+    });
+  }
 
   /* ---------------- intro motion ---------------- */
   function intro() {

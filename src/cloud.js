@@ -31,5 +31,26 @@ const Cloud = (() => {
     // users/{uid} = { nickname, avatar, state (JSON string of the app state), updatedAt }
     async load(uid) { const s = await db.doc('users/' + uid).get(); return s.exists ? s.data() : null; },
     save: (uid, data) => db.doc('users/' + uid).set({ ...data, updatedAt: now() }, { merge: true }),
+
+    // groups/{code} = { name, owner, createdAt }; groups/{code}/members/{uid} = leaderboard row
+    async createGroup(name, uid, member) {
+      for (let i = 0; i < 5; i++) {
+        const code = Logic.newGroupCode();
+        try { await db.doc('groups/' + code).set({ name, owner: uid, createdAt: now() }); }
+        catch (e) { if (e.code === 'permission-denied') continue; throw e; } // code taken by someone else's group
+        await this.joinGroup(code, uid, member);
+        return code;
+      }
+      throw new Error('Couldn\'t make a group code. Try again.');
+    },
+    async joinGroup(code, uid, member) {
+      const g = await db.doc('groups/' + code).get();
+      if (!g.exists) { const e = new Error('No group with that code'); e.code = 'not-found'; throw e; }
+      await db.doc(`groups/${code}/members/${uid}`).set({ ...member, updatedAt: now() });
+      return { code, name: g.data().name };
+    },
+    leaveGroup: (code, uid) => db.doc(`groups/${code}/members/${uid}`).delete(),
+    pushMember: (codes, uid, member) => Promise.all(codes.map(c => db.doc(`groups/${c}/members/${uid}`).set({ ...member, updatedAt: now() }))),
+    async board(code) { const s = await db.collection(`groups/${code}/members`).get(); return s.docs.map(d => ({ uid: d.id, ...d.data() })); },
   };
 })();
