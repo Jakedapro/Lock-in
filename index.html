@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"></head><body>
+<html lang="en" class="locked"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"></head><body>
 <title>Lock In</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -446,6 +446,45 @@ b.h { font-size: 1.05em; }
 #fx { position: fixed; inset: 0; pointer-events: none; z-index: 94; width: 100%; height: 100%; }
 footer { padding-block: 26px 44px; color: var(--ink-3); font-size: 14px; border-top: 1px solid var(--rule); margin-top: 24px; }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; } html { scroll-behavior: auto; } }
+
+
+.keys-sheet h3 { font-size: 19px; }
+.key-new { margin: 14px 0; padding: 16px; border-radius: 12px; background: var(--pen-soft); display: grid; gap: 10px; }
+.key-big { font: 700 clamp(18px, 5vw, 26px)/1.2 var(--f); letter-spacing: 1.5px; word-break: break-all; color: var(--ink); }
+.key-step { margin: 14px 0; padding: 16px; border-radius: 12px; border: 1.5px dashed var(--pen); }
+.key-step ol { padding-left: 20px; margin: 8px 0 12px; }
+.key-list { list-style: none; padding: 0; margin: 8px 0 0; display: grid; gap: 2px; }
+.key-list li { display: grid; grid-template-columns: 44px 1fr auto auto auto; gap: 12px; align-items: center; padding: 9px 4px; border-bottom: 1px solid var(--rule-2); }
+.key-list li.off .kl, .key-list li.off .ks { color: var(--ink-3); text-decoration: line-through; }
+.key-list small { font-size: 12px; color: var(--pen); font-weight: 700; margin-left: 4px; }
+.key-list .ks { font-size: 13.5px; color: var(--ink-3); }
+@media (max-width: 520px) { .key-list li { grid-template-columns: 40px 1fr auto; } .key-list .ks { grid-column: 2; } }
+/* ---- invite-key lock screen ---- */
+html.locked body > :not(.gate):not(script) { display: none !important; }
+html.locked body { overflow: hidden; }
+.gate { position: fixed; inset: 0; z-index: 200; display: grid; place-items: center; padding: 24px 16px; background: radial-gradient(closest-side at 50% 40%, #1E2A46 0%, #12161C 70%); color: #E7ECF2; transition: opacity .6s ease; }
+.gate.gone { opacity: 0; pointer-events: none; }
+.gate-in { width: min(420px, 100%); display: grid; justify-items: center; text-align: center; gap: 12px; }
+.gate-lock { width: 78px; height: 92px; overflow: visible; margin-bottom: 6px; }
+.gate-lock .shk { transition: transform .45s cubic-bezier(.3,1.6,.5,1); }
+.gate-lock .hole { fill: #2A3240; transition: fill .3s, filter .3s; }
+.gate.opening .shk { transform: translateY(-16px); }
+.gate.opening .hole { fill: #6BD49A; filter: drop-shadow(0 0 8px #6BD49A); }
+.gate h1 { font-size: 36px; letter-spacing: -.5px; margin: 0; }
+.gate h1 span { background: linear-gradient(90deg, #2DD4BF, #7FA2FF, #A78BFA); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.gate-sub { color: #B4BDC9; margin: 0 0 10px; }
+.gate-form { display: flex; gap: 8px; width: 100%; }
+.gate-key { flex: 1; min-width: 0; font: 700 17px/1 var(--f); letter-spacing: 1.5px; text-align: center; padding: 14px 12px; border-radius: 10px; border: 1.5px solid #343D49; background: #1B2129; color: #E7ECF2; }
+.gate-key::placeholder { color: #5D6876; letter-spacing: 1px; }
+.gate-key:focus { outline: none; border-color: #7FA2FF; box-shadow: 0 0 0 3px #7FA2FF40; }
+.gate-go { font: 700 16px var(--f); padding: 0 20px; border-radius: 10px; border: 0; background: #E7ECF2; color: #12161C; cursor: pointer; }
+.gate-go:focus-visible { outline: 3px solid #7FA2FF; outline-offset: 2px; }
+.gate-msg { min-height: 1.4em; margin: 2px 0 0; font-weight: 700; color: #FF8A7D; }
+.gate.opening .gate-msg { color: #6BD49A; }
+.gate-foot { color: #8A95A3; font-size: 14px; margin: 18px 0 0; }
+.gate.shake .gate-form { animation: gshake .4s; }
+@keyframes gshake { 20%, 60% { transform: translateX(-8px); } 40%, 80% { transform: translateX(8px); } }
+@media (max-width: 420px) { .gate-form { flex-direction: column; } .gate-go { padding: 14px; } }
 </style>
 
 <canvas id="fx" aria-hidden="true"></canvas>
@@ -532,6 +571,8 @@ footer { padding-block: 26px 44px; color: var(--ink-3); font-size: 14px; border-
 <script src="https://cdn.jsdelivr.net/npm/firebase@10.14.1/firebase-firestore-compat.js" integrity="sha384-Ke0FJhH7LyRqDxZ0wt+/OXV38yfQVu7g9VPEEGjYmB4RVOY/ta04uecRhsMwT7V3" crossorigin="anonymous"></script>
 <script>
 const EXAMS = [{"id": "y12", "name": "Maths Extension 2", "date": "2026-10-19T13:50", "when": "Mon 19 Oct, 1:50 pm"}, {"id": "e1", "name": "Maths Extension 1", "date": "2026-10-23T13:50", "when": "Fri 23 Oct, 1:50 pm"}, {"id": "geo", "name": "Geography", "date": "2026-10-26T09:00", "when": "Mon 26 Oct, P1–2"}, {"id": "maths", "name": "Maths", "date": "2026-10-29T11:00", "when": "Thu 29 Oct, P3–4"}, {"id": "phys", "name": "Physics", "date": "2026-11-05T09:25", "when": "Thu 5 Nov, 9:25 am"}];
+const KEYS = {"v": 1, "keys": [{"id": "k01", "hash": "217fb2c886771854199f02e9f346a1573630e78f342697ba8941d106b506ee03", "owner": true, "label": "Owner"}, {"id": "k02", "hash": "3a3b5c532e31e8129e71c1401279f3ce2becc1e259d2a22de6b98d7ea0de1661", "label": "Friend 1"}, {"id": "k03", "hash": "f1b4555a2a5de69cf8df25ab413d248979ea269c7172adf81aed66efc17695ce", "label": "Friend 2"}, {"id": "k04", "hash": "4a25659b4a472867ee641fc8dbd0d2b3e94bbb75f930de4c3d94a8ff44c631d9", "label": "Friend 3"}, {"id": "k05", "hash": "a15268caf66eec096600e155dc6201f87d9002fa4b10fe9f56f50dba9ffc80a3", "label": "Friend 4"}, {"id": "k06", "hash": "82fa0d38a6327b8b1853363e215d0a914fdac4bdb6eda7f82f157291d9e56cf9", "label": "Friend 5"}, {"id": "k07", "hash": "14acdaa60e9994008505b344efd7cfe2cef305376602c9d04d7407d57985f9f7", "label": "Friend 6"}, {"id": "k08", "hash": "5ca40d6089403b8a658bf84e5c2035f91516089142303ebfe760da450ac439ce", "label": "Friend 7"}, {"id": "k09", "hash": "e07a8c72b53b8b865124e74c7c6dda5e3ce1665658fd2e9f8a19ea88fb6528ce", "label": "Friend 8"}, {"id": "k10", "hash": "c8553cab2825df4ce7af381ef8266ff539f9891de5b0871a1ddd9298a472068c", "label": "Friend 9"}, {"id": "k11", "hash": "e1cf67237b5fb399f65e2e206ac513882dff81eea9d59c993d96e36ea1f878ba", "label": "Friend 10"}, {"id": "k12", "hash": "27e9d81f98347726a31c7df5aa6062702bdeb43ebadc4cd2a7de79a4574abaea", "label": "Friend 11"}, {"id": "k13", "hash": "2ac8a511be8ae246bf75dcd7c07a0896eea8aff63c470d63f81364fd6bfb80d6", "label": "Friend 12"}, {"id": "k14", "hash": "08c3a31c34543f62fea87db7276999a859ec3bc63ed5bf941ab50aa03a63c5c6", "label": "Friend 13"}, {"id": "k15", "hash": "37906a4b24bcf4cc8e5de4bf3dc3510629c2eef9fa0e1939a4b045fca7922a87", "label": "Friend 14"}, {"id": "k16", "hash": "391b0f80acbf6218f3e594aa1c9028f406673c9e51c3690eeb912251fd464942", "label": "Friend 15"}]};
+const BUILD = {"gate": true};
 </script>
 <script>
 /* ===== Lock In — text formatting: safe HTML with proper maths (powers, fractions) and bold ===== */
@@ -808,6 +849,166 @@ const Logic = (() => {
   return { LEVELS, defaults, classify, ladder, nearestLevel, weekStart, serialise, addMistake, fixMistake, clearMistake, missAgain, addSession, logActivity, heat, buildPlan, storageKey, mergeState, cloudPayload, validNickname, newGroupCode };
 })();
 if (typeof module !== 'undefined') module.exports = Logic;
+
+</script>
+<script>
+/* ===== Lock In — invite keys (no DOM) =====
+   A key looks like LOCK-7KQ2-XD9M-3HTA. The public keys.json holds only SHA-256 hashes of keys,
+   so reading the repo doesn't reveal any key. Turning a key off = setting "revoked": true. */
+const Keys = (() => {
+  const ABC = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'; // no 0/O, 1/I/L: easy to read out loud
+  const LEN = 12, SALT = 'lockin-key:';
+
+  // Plain SHA-256 of a UTF-8 string, as hex (sync, so it works in every browser and in Node tests).
+  function sha256(str) {
+    const bytes = unescape(encodeURIComponent(str)).split('').map(c => c.charCodeAt(0));
+    const K = [0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5, 0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174, 0xe49b69c1, 0xefbe4786, 0x0fc19dc6, 0x240ca1cc, 0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da, 0x983e5152, 0xa831c66d, 0xb00327c8, 0xbf597fc7, 0xc6e00bf3, 0xd5a79147, 0x06ca6351, 0x14292967, 0x27b70a85, 0x2e1b2138, 0x4d2c6dfc, 0x53380d13, 0x650a7354, 0x766a0abb, 0x81c2c92e, 0x92722c85, 0xa2bfe8a1, 0xa81a664b, 0xc24b8b70, 0xc76c51a3, 0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070, 0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3, 0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2];
+    const H = [0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19];
+    const l = bytes.length * 8;
+    bytes.push(0x80); while (bytes.length % 64 !== 56) bytes.push(0);
+    for (let i = 7; i >= 0; i--) bytes.push(i > 3 ? 0 : (l >>> (i * 8)) & 0xff);
+    const rot = (x, n) => (x >>> n) | (x << (32 - n)), W = new Array(64);
+    for (let o = 0; o < bytes.length; o += 64) {
+      for (let i = 0; i < 16; i++) W[i] = (bytes[o + i * 4] << 24) | (bytes[o + i * 4 + 1] << 16) | (bytes[o + i * 4 + 2] << 8) | bytes[o + i * 4 + 3];
+      for (let i = 16; i < 64; i++) {
+        const s0 = rot(W[i - 15], 7) ^ rot(W[i - 15], 18) ^ (W[i - 15] >>> 3), s1 = rot(W[i - 2], 17) ^ rot(W[i - 2], 19) ^ (W[i - 2] >>> 10);
+        W[i] = (W[i - 16] + s0 + W[i - 7] + s1) | 0;
+      }
+      let [a, b, c, d, e, f, g, h] = H;
+      for (let i = 0; i < 64; i++) {
+        const t1 = (h + (rot(e, 6) ^ rot(e, 11) ^ rot(e, 25)) + ((e & f) ^ (~e & g)) + K[i] + W[i]) | 0;
+        const t2 = ((rot(a, 2) ^ rot(a, 13) ^ rot(a, 22)) + ((a & b) ^ (a & c) ^ (b & c))) | 0;
+        h = g; g = f; f = e; e = (d + t1) | 0; d = c; c = b; b = a; a = (t1 + t2) | 0;
+      }
+      [a, b, c, d, e, f, g, h].forEach((v, i) => { H[i] = (H[i] + v) | 0; });
+    }
+    return H.map(v => (v >>> 0).toString(16).padStart(8, '0')).join('');
+  }
+
+  // "lock 7kq2 xd9m-3hta" -> "7KQ2XD9M3HTA" (or '' if it can't be a key).
+  function norm(s) {
+    let t = String(s || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+    if (t.startsWith('LOCK') && t.length === LEN + 4) t = t.slice(4);
+    return t.length === LEN && [...t].every(c => ABC.includes(c)) ? t : '';
+  }
+  const pretty = (n) => 'LOCK-' + n.match(/.{4}/g).join('-');
+  const hash = (key) => { const n = norm(key); return n ? sha256(SALT + n) : ''; };
+
+  // Returns the matching, switched-on entry from keys.json, or null.
+  function check(key, list) {
+    const h = hash(key); if (!h || !list || !Array.isArray(list.keys)) return null;
+    return list.keys.find(k => k.hash === h && !k.revoked) || null;
+  }
+  // A fresh random key. `rand` returns 0..1 (crypto-backed in the browser).
+  function make(rand) {
+    const r = rand || (() => { const a = new Uint32Array(1); (globalThis.crypto || require('crypto').webcrypto).getRandomValues(a); return a[0] / 2 ** 32; });
+    return pretty(Array.from({ length: LEN }, () => ABC[Math.floor(r() * ABC.length) % ABC.length]).join(''));
+  }
+
+  return { sha256, norm, pretty, hash, check, make, ABC, LEN };
+})();
+if (typeof module !== 'undefined') module.exports = Keys;
+
+</script>
+<script>
+/* ===== Lock In — the invite-key lock screen (website + desktop app) =====
+   The page starts with <html class="locked">, which hides everything except this screen.
+   A key saved on this device opens it straight away; keys.json is re-checked online so a
+   revoked key stops working. Invite links look like …/lock-in/#key=LOCK-XXXX-XXXX-XXXX. */
+const Gate = (() => {
+  const SAVED = 'lockin.key', CACHE = 'lockin.keys';
+  const RAW = 'https://raw.githubusercontent.com/jamalmusialla81-hub/lock-in/main/keys.json';
+  const enabled = typeof BUILD !== 'undefined' && BUILD.gate;
+  const get = (k) => { try { return localStorage.getItem(k); } catch (e) { return null; } };
+  const set = (k, v) => { try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch (e) { } };
+  let list = (() => { try { return JSON.parse(get(CACHE)) || KEYS; } catch (e) { return KEYS; } })();
+  let entry = null, onOpen = [], el = null, fails = 0, waitUntil = 0;
+
+  const locked = () => document.documentElement.classList.contains('locked');
+  function open(silent) {
+    document.documentElement.classList.remove('locked');
+    const g = el; el = null;
+    if (g) { if (silent) g.remove(); else { g.classList.add('gone'); setTimeout(() => g.remove(), 700); } }
+    onOpen.forEach(f => f(entry));
+  }
+  function lock(msg) {
+    entry = null; document.documentElement.classList.add('locked'); show(msg);
+  }
+  function tryKey(k) {
+    const e = Keys.check(k, list); if (!e) return false;
+    entry = e; set(SAVED, Keys.pretty(Keys.norm(k))); return true;
+  }
+
+  function show(msg) {
+    if (el) { note(msg || ''); return; }
+    el = document.createElement('div'); el.className = 'gate'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-label', 'Enter your invite key');
+    el.innerHTML = `<div class="gate-in">
+      <svg class="gate-lock" viewBox="0 0 92 108" aria-hidden="true"><path class="shk" d="M24 50V32a22 22 0 0 1 44 0v18" fill="none" stroke="#B4BDC9" stroke-width="10" stroke-linecap="round"/><rect x="8" y="46" width="76" height="58" rx="12" fill="#E7ECF2"/><path class="hole" d="M46 64a8 8 0 0 1 4.5 14.6L53 92H39l2.5-13.4A8 8 0 0 1 46 64z"/></svg>
+      <h1>Lock <span>in</span></h1>
+      <p class="gate-sub">Invite only. Enter the key a mate sent you.</p>
+      <form class="gate-form" novalidate><input class="gate-key" id="gateKey" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="19" placeholder="LOCK-XXXX-XXXX-XXXX" aria-label="Invite key"><button class="gate-go" type="submit">Unlock</button></form>
+      <p class="gate-msg" id="gateMsg" role="status" aria-live="polite"></p>
+      <p class="gate-foot">Got an invite link? Just open it and you're in.</p></div>`;
+    document.body.appendChild(el);
+    const inp = el.querySelector('#gateKey');
+    inp.addEventListener('input', () => { // type "7kq2xd9m3hta" and it becomes LOCK-7KQ2-XD9M-3HTA
+      let t = inp.value.toUpperCase().replace(/[^A-Z0-9]/g, ''); if (t.startsWith('LOCK')) t = t.slice(4);
+      t = t.slice(0, 12); inp.value = t ? 'LOCK-' + t.match(/.{1,4}/g).join('-') : '';
+    });
+    el.querySelector('form').addEventListener('submit', async (ev) => {
+      ev.preventDefault();
+      if (Date.now() < waitUntil) return note(`Too many tries. Wait ${Math.ceil((waitUntil - Date.now()) / 1000)} seconds.`);
+      if (!Keys.norm(inp.value)) return wrong('Keys look like LOCK-XXXX-XXXX-XXXX.');
+      if (!tryKey(inp.value)) {
+        note('Checking…'); await refresh(); // a brand-new key is only in the live keys.json
+        if (!tryKey(inp.value)) { if (++fails >= 5) { fails = 0; waitUntil = Date.now() + 30000; } return wrong('That key doesn\'t work. Check it with whoever sent it.'); }
+      }
+      el.classList.remove('shake'); el.classList.add('opening'); note('You\'re in.');
+      setTimeout(() => open(false), 900);
+    });
+    note(msg || ''); setTimeout(() => inp.focus(), 50);
+  }
+  function note(t) { const m = el && el.querySelector('#gateMsg'); if (m) m.textContent = t; }
+  function wrong(t) { note(t); el.classList.remove('shake'); void el.offsetWidth; el.classList.add('shake'); }
+
+  // Fetch the live keys.json. Same site first (GitHub Pages), raw GitHub for the desktop app.
+  async function refresh() {
+    const urls = location.protocol === 'file:' ? [RAW] : ['keys.json', RAW];
+    for (const u of urls) {
+      try {
+        const r = await fetch(u + '?t=' + Date.now(), { cache: 'no-store' }); if (!r.ok) continue;
+        const j = await r.json(); if (!j || !Array.isArray(j.keys)) continue;
+        list = j; set(CACHE, JSON.stringify(j)); return true;
+      } catch (e) { }
+    }
+    return false;
+  }
+
+  function start() {
+    if (!enabled) { document.documentElement.classList.remove('locked'); return; }
+    const fromLink = (location.hash.match(/(?:^#|&)key=([A-Za-z0-9-]+)/) || [])[1];
+    if (fromLink) history.replaceState(null, '', location.pathname + location.search); // don't leave the key in the address bar
+    if ((fromLink && tryKey(fromLink)) || tryKey(get(SAVED) || '')) open(true);
+    else show(fromLink ? 'That invite link\'s key doesn\'t work.' : '');
+    // Re-check online: a revoked key locks again, and a brand-new key works once keys.json updates.
+    refresh().then(ok => {
+      if (!ok) return;
+      const k = get(SAVED);
+      if (!locked() && !(k && Keys.check(k, list))) { set(SAVED, null); lock('This key has been turned off. Ask for a new one.'); }
+      else if (!locked()) entry = Keys.check(k, list);
+    });
+  }
+
+  return {
+    start, refresh, enabled,
+    onOpen: (f) => { onOpen.push(f); if (!locked()) f(entry); },
+    entry: () => entry,
+    isOwner: () => !!(entry && entry.owner),
+    keys: () => list,
+    forget() { set(SAVED, null); lock(''); },
+  };
+})();
+Gate.start();
 
 </script>
 <script>
@@ -4701,7 +4902,7 @@ if (typeof module !== 'undefined') module.exports = PH;
         <div class="heat-head"><h3>Study days</h3><span>${weekMin} min focused this week</span></div>
         <div class="heat" role="img" aria-label="Study activity over the last 12 weeks">${hm.map(d => `<i class="h${d.level}" title="${esc(new Date(d.date + 'T12:00').toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' }))}: ${d.min} min focused, ${d.marks} marks"></i>`).join('')}</div>
         <div class="heat-key" aria-hidden="true">Less <i class="h0"></i><i class="h1"></i><i class="h2"></i><i class="h3"></i><i class="h4"></i> More</div>
-        <button class="btn btn-ghost" type="button" id="shareSite">Share Lock in</button>
+        <div class="row"><button class="btn btn-ghost" type="button" id="shareSite">Share Lock in</button>${Gate.isOwner() ? '<button class="btn btn-ghost" type="button" id="keysBtn">Invite keys</button>' : ''}</div>
       </section>
       <section class="inside" aria-labelledby="inH">
         <h2 id="inH">What's inside</h2>
@@ -4710,7 +4911,8 @@ if (typeof module !== 'undefined') module.exports = PH;
       </section>
     </div>
     <section class="features" aria-labelledby="ftH"><h2 id="ftH">What it does</h2><dl>${FEATURES.map(([t, d]) => `<div><dt>${t}</dt><dd>${d}</dd></div>`).join('')}</dl></section>`;
-    $('#shareSite').onclick = () => copyText(location.href.split('#')[0], 'Link copied. Send it to your mates.', el);
+    $('#shareSite').onclick = () => copyText(location.href.split('#')[0], Gate.enabled ? 'Link copied. They\'ll need a key from you too.' : 'Link copied. Send it to your mates.', el);
+    if ($('#keysBtn', el)) $('#keysBtn', el).onclick = openKeys;
     renderPlan();
     $$('[data-subj-go]', el).forEach(b => b.onclick = () => { S.subj = b.dataset.subjGo; save(); renderTabs(); renderSubject(); });
   }
@@ -5633,6 +5835,68 @@ Aim for 2-5 sections with 3-6 notes each, 10-20 flashcards (key terms, people, d
     });
   }
 
+  /* ---------------- invite keys (owner only) ---------------- */
+  // Keys are checked against keys.json in the repo. New keys and revokes are made here, then saved by
+  // pasting the new keys.json into GitHub's editor (opened for you). Labels stay on this device only.
+  const KEYS_EDIT = 'https://github.com/jamalmusialla81-hub/lock-in/edit/main/keys.json';
+  const kget = (k, d) => { try { return JSON.parse(localStorage.getItem(k)) || d; } catch (e) { return d; } };
+  const kset = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { } };
+  const keysJson = (list) => '{\n  "v": 1,\n  "keys": [\n' + list.keys.map(k => '    ' + JSON.stringify(k)).join(',\n') + '\n  ]\n}\n';
+  function openKeys() {
+    cur = { kind: 'keys', tab: null }; ovFrame('Invite keys', 'c-lilac', null); drawKeys(); showOv();
+    Gate.refresh().then(ok => { if (ok && cur?.kind === 'keys') drawKeys(); });
+  }
+  function drawKeys(fresh) {
+    const body = $('#ovBody'), live = Gate.keys(), labels = kget('lockin.keyLabels', {}), pending = kget('lockin.keyPending', []);
+    const liveHashes = new Set(live.keys.map(k => k.hash)), waiting = pending.filter(p => !liveHashes.has(p.hash));
+    const label = (k) => labels[k.id] || k.label || (k.owner ? 'You' : k.id);
+    const nextId = () => 'k' + String(Math.max(0, ...live.keys.map(k => +k.id.slice(1) || 0), ...pending.map(p => +p.id.slice(1) || 0)) + 1).padStart(2, '0');
+    const site = location.protocol === 'file:' ? 'https://jamalmusialla81-hub.github.io/lock-in/' : location.href.split('#')[0].split('?')[0];
+    body.innerHTML = `<div class="sheet keys-sheet">
+      <p class="note">Anyone with a key can open Lock in on any device. Turn a key off and whoever has it is locked out next time they open the app.</p>
+      ${fresh ? `<div class="key-new"><span class="eyebrow">New key for ${esc(fresh.label)}</span><div class="key-big">${esc(fresh.key)}</div>
+        <div class="row"><button class="btn btn-sm" type="button" data-kc="link">Copy invite link</button><button class="btn btn-ghost btn-sm" type="button" data-kc="key">Copy key</button></div>
+        <p class="note" style="font-size:14px">It starts working once it's saved to GitHub (step below).</p></div>` : ''}
+      ${waiting.length ? `<div class="key-step"><h3>Save ${waiting.length} new key${waiting.length > 1 ? 's' : ''} to GitHub</h3><ol class="note"><li>Tap <b>Copy keys.json</b>.</li><li>Tap <b>Open GitHub</b>, select everything in the file and paste over it.</li><li>Press <b>Commit changes</b>. Keys work about a minute later.</li></ol>
+        <div class="row"><button class="btn btn-sm" type="button" data-kc="json">Copy keys.json</button><a class="btn btn-ghost btn-sm" href="${KEYS_EDIT}" target="_blank" rel="noopener">Open GitHub</a></div></div>` : ''}
+      <h3 style="margin-top:22px">Make a key</h3>
+      <div class="ans"><input class="field" id="kLabel" maxlength="30" placeholder="Who's it for? e.g. Sam" aria-label="Who the key is for"><button class="btn btn-ghost btn-sm" type="button" data-kc="new">Make key</button></div>
+      <h3 style="margin-top:22px">Keys</h3>
+      <ul class="key-list">${[...live.keys.map(k => ({ ...k, live: true })), ...waiting.map(p => ({ id: p.id, hash: p.hash, live: false }))].map(k => `<li class="${k.revoked ? 'off' : ''}">
+        <span class="mono">${esc(k.id)}</span><span class="kl">${esc(label(k))}${k.owner ? ' <small>owner</small>' : ''}</span>
+        <span class="ks">${!k.live ? 'Not saved yet' : k.revoked ? 'Turned off' : 'On'}</span>
+        ${k.live && !k.owner ? `<button class="linkbtn" type="button" data-kt="${esc(k.id)}">${k.revoked ? 'Turn on' : 'Turn off'}</button>` : '<span></span>'}
+        <button class="linkbtn" type="button" data-kn="${esc(k.id)}" aria-label="Rename ${esc(k.id)}">Rename</button></li>`).join('')}</ul>
+      <p class="note" style="font-size:13.5px;margin-top:14px">Names are only saved on this device. Keys you made here are remembered on this device too.</p>
+      <div class="row" style="margin-top:8px"><button class="linkbtn" type="button" data-kc="forget">Lock this device</button></div></div>`;
+    const draft = { v: 1, keys: [...live.keys.map(k => ({ ...k })), ...waiting.map(p => ({ id: p.id, hash: p.hash }))] };
+    $$('[data-kc]', body).forEach(b => b.onclick = () => {
+      const a = b.dataset.kc;
+      if (a === 'link') copyText(site + '#key=' + fresh.key, 'Invite link copied. Send it to them.', body);
+      if (a === 'key') copyText(fresh.key, 'Key copied', body);
+      if (a === 'json') copyText(keysJson(draft), 'keys.json copied. Now open GitHub and paste over it.', body);
+      if (a === 'new') {
+        const l = $('#kLabel', body).value.trim().slice(0, 30); if (!l) { toast('Who is it for?'); $('#kLabel', body).focus(); return; }
+        const key = Keys.make(), id = nextId();
+        kset('lockin.keyPending', [...pending, { id, key, hash: Keys.hash(key), label: l }]); kset('lockin.keyLabels', { ...labels, [id]: l });
+        drawKeys({ key, label: l });
+      }
+      if (a === 'forget') { if (b.dataset.sure) { closeOv(); Gate.forget(); } else { b.dataset.sure = 1; b.textContent = 'Tap again: you\'ll need your key to get back in'; } }
+    });
+    $$('[data-kt]', body).forEach(b => b.onclick = () => {
+      const k = draft.keys.find(x => x.id === b.dataset.kt); if (k.revoked) delete k.revoked; else k.revoked = true;
+      copyText(keysJson(draft), `keys.json copied with ${k.id} turned ${k.revoked ? 'off' : 'on'}. Paste it on GitHub to save.`, body);
+      setTimeout(() => window.open(KEYS_EDIT, '_blank', 'noopener'), 400);
+    });
+    $$('[data-kn]', body).forEach(b => b.onclick = () => {
+      const li = b.closest('li'), cell = $('.kl', li), id = b.dataset.kn;
+      cell.innerHTML = `<input class="field" maxlength="30" value="${esc(labels[id] || '')}" aria-label="Name for ${esc(id)}" style="padding:6px 8px">`;
+      const inp = $('input', cell); inp.focus();
+      const done = () => { const v = inp.value.trim(); const L = kget('lockin.keyLabels', {}); if (v) L[id] = v; else delete L[id]; kset('lockin.keyLabels', L); drawKeys(fresh); };
+      inp.onblur = done; inp.onkeydown = (e) => { if (e.key === 'Enter') inp.blur(); };
+    });
+  }
+
   /* ---------------- intro motion ---------------- */
   function intro() { } // no load animation: motion only answers what you do
 
@@ -5659,6 +5923,7 @@ Aim for 2-5 sections with 3-6 notes each, 10-20 flashcards (key terms, people, d
   renderStats(); renderMistakeCount(); renderTabs(); renderNext(); renderBoard(); renderSubject(); renderWeek(); renderUpSubjects(); renderAiNote(); renderAcct(); renderLeague(); intro();
   AI.init();
   Cloud.init(onUser);
+  Gate.onOpen(() => { if (S.subj === 'home') renderSubject(); });
 })();
 
 </script>

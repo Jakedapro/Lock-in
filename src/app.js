@@ -353,7 +353,7 @@
         <div class="heat-head"><h3>Study days</h3><span>${weekMin} min focused this week</span></div>
         <div class="heat" role="img" aria-label="Study activity over the last 12 weeks">${hm.map(d => `<i class="h${d.level}" title="${esc(new Date(d.date + 'T12:00').toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' }))}: ${d.min} min focused, ${d.marks} marks"></i>`).join('')}</div>
         <div class="heat-key" aria-hidden="true">Less <i class="h0"></i><i class="h1"></i><i class="h2"></i><i class="h3"></i><i class="h4"></i> More</div>
-        <button class="btn btn-ghost" type="button" id="shareSite">Share Lock in</button>
+        <div class="row"><button class="btn btn-ghost" type="button" id="shareSite">Share Lock in</button>${Gate.isOwner() ? '<button class="btn btn-ghost" type="button" id="keysBtn">Invite keys</button>' : ''}</div>
       </section>
       <section class="inside" aria-labelledby="inH">
         <h2 id="inH">What's inside</h2>
@@ -362,7 +362,8 @@
       </section>
     </div>
     <section class="features" aria-labelledby="ftH"><h2 id="ftH">What it does</h2><dl>${FEATURES.map(([t, d]) => `<div><dt>${t}</dt><dd>${d}</dd></div>`).join('')}</dl></section>`;
-    $('#shareSite').onclick = () => copyText(location.href.split('#')[0], 'Link copied. Send it to your mates.', el);
+    $('#shareSite').onclick = () => copyText(location.href.split('#')[0], Gate.enabled ? 'Link copied. They\'ll need a key from you too.' : 'Link copied. Send it to your mates.', el);
+    if ($('#keysBtn', el)) $('#keysBtn', el).onclick = openKeys;
     renderPlan();
     $$('[data-subj-go]', el).forEach(b => b.onclick = () => { S.subj = b.dataset.subjGo; save(); renderTabs(); renderSubject(); });
   }
@@ -1285,6 +1286,68 @@ Aim for 2-5 sections with 3-6 notes each, 10-20 flashcards (key terms, people, d
     });
   }
 
+  /* ---------------- invite keys (owner only) ---------------- */
+  // Keys are checked against keys.json in the repo. New keys and revokes are made here, then saved by
+  // pasting the new keys.json into GitHub's editor (opened for you). Labels stay on this device only.
+  const KEYS_EDIT = 'https://github.com/jamalmusialla81-hub/lock-in/edit/main/keys.json';
+  const kget = (k, d) => { try { return JSON.parse(localStorage.getItem(k)) || d; } catch (e) { return d; } };
+  const kset = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { } };
+  const keysJson = (list) => '{\n  "v": 1,\n  "keys": [\n' + list.keys.map(k => '    ' + JSON.stringify(k)).join(',\n') + '\n  ]\n}\n';
+  function openKeys() {
+    cur = { kind: 'keys', tab: null }; ovFrame('Invite keys', 'c-lilac', null); drawKeys(); showOv();
+    Gate.refresh().then(ok => { if (ok && cur?.kind === 'keys') drawKeys(); });
+  }
+  function drawKeys(fresh) {
+    const body = $('#ovBody'), live = Gate.keys(), labels = kget('lockin.keyLabels', {}), pending = kget('lockin.keyPending', []);
+    const liveHashes = new Set(live.keys.map(k => k.hash)), waiting = pending.filter(p => !liveHashes.has(p.hash));
+    const label = (k) => labels[k.id] || k.label || (k.owner ? 'You' : k.id);
+    const nextId = () => 'k' + String(Math.max(0, ...live.keys.map(k => +k.id.slice(1) || 0), ...pending.map(p => +p.id.slice(1) || 0)) + 1).padStart(2, '0');
+    const site = location.protocol === 'file:' ? 'https://jamalmusialla81-hub.github.io/lock-in/' : location.href.split('#')[0].split('?')[0];
+    body.innerHTML = `<div class="sheet keys-sheet">
+      <p class="note">Anyone with a key can open Lock in on any device. Turn a key off and whoever has it is locked out next time they open the app.</p>
+      ${fresh ? `<div class="key-new"><span class="eyebrow">New key for ${esc(fresh.label)}</span><div class="key-big">${esc(fresh.key)}</div>
+        <div class="row"><button class="btn btn-sm" type="button" data-kc="link">Copy invite link</button><button class="btn btn-ghost btn-sm" type="button" data-kc="key">Copy key</button></div>
+        <p class="note" style="font-size:14px">It starts working once it's saved to GitHub (step below).</p></div>` : ''}
+      ${waiting.length ? `<div class="key-step"><h3>Save ${waiting.length} new key${waiting.length > 1 ? 's' : ''} to GitHub</h3><ol class="note"><li>Tap <b>Copy keys.json</b>.</li><li>Tap <b>Open GitHub</b>, select everything in the file and paste over it.</li><li>Press <b>Commit changes</b>. Keys work about a minute later.</li></ol>
+        <div class="row"><button class="btn btn-sm" type="button" data-kc="json">Copy keys.json</button><a class="btn btn-ghost btn-sm" href="${KEYS_EDIT}" target="_blank" rel="noopener">Open GitHub</a></div></div>` : ''}
+      <h3 style="margin-top:22px">Make a key</h3>
+      <div class="ans"><input class="field" id="kLabel" maxlength="30" placeholder="Who's it for? e.g. Sam" aria-label="Who the key is for"><button class="btn btn-ghost btn-sm" type="button" data-kc="new">Make key</button></div>
+      <h3 style="margin-top:22px">Keys</h3>
+      <ul class="key-list">${[...live.keys.map(k => ({ ...k, live: true })), ...waiting.map(p => ({ id: p.id, hash: p.hash, live: false }))].map(k => `<li class="${k.revoked ? 'off' : ''}">
+        <span class="mono">${esc(k.id)}</span><span class="kl">${esc(label(k))}${k.owner ? ' <small>owner</small>' : ''}</span>
+        <span class="ks">${!k.live ? 'Not saved yet' : k.revoked ? 'Turned off' : 'On'}</span>
+        ${k.live && !k.owner ? `<button class="linkbtn" type="button" data-kt="${esc(k.id)}">${k.revoked ? 'Turn on' : 'Turn off'}</button>` : '<span></span>'}
+        <button class="linkbtn" type="button" data-kn="${esc(k.id)}" aria-label="Rename ${esc(k.id)}">Rename</button></li>`).join('')}</ul>
+      <p class="note" style="font-size:13.5px;margin-top:14px">Names are only saved on this device. Keys you made here are remembered on this device too.</p>
+      <div class="row" style="margin-top:8px"><button class="linkbtn" type="button" data-kc="forget">Lock this device</button></div></div>`;
+    const draft = { v: 1, keys: [...live.keys.map(k => ({ ...k })), ...waiting.map(p => ({ id: p.id, hash: p.hash }))] };
+    $$('[data-kc]', body).forEach(b => b.onclick = () => {
+      const a = b.dataset.kc;
+      if (a === 'link') copyText(site + '#key=' + fresh.key, 'Invite link copied. Send it to them.', body);
+      if (a === 'key') copyText(fresh.key, 'Key copied', body);
+      if (a === 'json') copyText(keysJson(draft), 'keys.json copied. Now open GitHub and paste over it.', body);
+      if (a === 'new') {
+        const l = $('#kLabel', body).value.trim().slice(0, 30); if (!l) { toast('Who is it for?'); $('#kLabel', body).focus(); return; }
+        const key = Keys.make(), id = nextId();
+        kset('lockin.keyPending', [...pending, { id, key, hash: Keys.hash(key), label: l }]); kset('lockin.keyLabels', { ...labels, [id]: l });
+        drawKeys({ key, label: l });
+      }
+      if (a === 'forget') { if (b.dataset.sure) { closeOv(); Gate.forget(); } else { b.dataset.sure = 1; b.textContent = 'Tap again: you\'ll need your key to get back in'; } }
+    });
+    $$('[data-kt]', body).forEach(b => b.onclick = () => {
+      const k = draft.keys.find(x => x.id === b.dataset.kt); if (k.revoked) delete k.revoked; else k.revoked = true;
+      copyText(keysJson(draft), `keys.json copied with ${k.id} turned ${k.revoked ? 'off' : 'on'}. Paste it on GitHub to save.`, body);
+      setTimeout(() => window.open(KEYS_EDIT, '_blank', 'noopener'), 400);
+    });
+    $$('[data-kn]', body).forEach(b => b.onclick = () => {
+      const li = b.closest('li'), cell = $('.kl', li), id = b.dataset.kn;
+      cell.innerHTML = `<input class="field" maxlength="30" value="${esc(labels[id] || '')}" aria-label="Name for ${esc(id)}" style="padding:6px 8px">`;
+      const inp = $('input', cell); inp.focus();
+      const done = () => { const v = inp.value.trim(); const L = kget('lockin.keyLabels', {}); if (v) L[id] = v; else delete L[id]; kset('lockin.keyLabels', L); drawKeys(fresh); };
+      inp.onblur = done; inp.onkeydown = (e) => { if (e.key === 'Enter') inp.blur(); };
+    });
+  }
+
   /* ---------------- intro motion ---------------- */
   function intro() { } // no load animation: motion only answers what you do
 
@@ -1311,4 +1374,5 @@ Aim for 2-5 sections with 3-6 notes each, 10-20 flashcards (key terms, people, d
   renderStats(); renderMistakeCount(); renderTabs(); renderNext(); renderBoard(); renderSubject(); renderWeek(); renderUpSubjects(); renderAiNote(); renderAcct(); renderLeague(); intro();
   AI.init();
   Cloud.init(onUser);
+  Gate.onOpen(() => { if (S.subj === 'home') renderSubject(); });
 })();
