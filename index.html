@@ -42,7 +42,10 @@ button { cursor: pointer; }
 .subtab[aria-selected=true] { background: var(--ink-3); color: var(--chalk); box-shadow: inset 0 0 0 1px var(--line); }
 .stat { display: flex; align-items: center; gap: 6px; font-family: var(--f-mono); font-size: 13.5px; padding: 6px 11px; border: 1px solid var(--line); border-radius: 999px; background: var(--ink-2); white-space: nowrap; }
 .stat svg { width: 15px; height: 15px; }
-@media (max-width: 640px) { .nav .xp-stat { display: none; } .logo .word { display: none; } }
+@media (max-width: 640px) { .nav .xp-stat { display: none; } .logo .word { display: none; }
+  .nav .wrap { flex-wrap: wrap; height: auto; padding-block: 8px 4px; gap: 6px 8px; }
+  .logo { margin-right: auto; }
+  .subtabs { order: 5; flex-basis: 100%; padding: 0 0 4px; } }
 
 /* hero */
 .hero { display: grid; grid-template-columns: 1.1fr 1fr; gap: 26px; align-items: start; padding-block: 40px 22px; }
