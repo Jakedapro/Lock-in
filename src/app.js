@@ -3,6 +3,16 @@
   const $ = (s, el = document) => el.querySelector(s);
   const $$ = (s, el = document) => [...el.querySelectorAll(s)];
   const fm = Fmt.text; // maths + bold formatting for content text (escapes HTML)
+  // Typeset the maths spans Fmt makes, with MathJax once it has loaded; new ones are picked up as they appear.
+  function typeset() {
+    const MJ = window.MathJax; if (!MJ || !MJ.tex2svg) return;
+    document.querySelectorAll('.m:not([data-done])').forEach(el => {
+      el.dataset.done = 1;
+      try { el.replaceChildren(MJ.tex2svg(el.dataset.tex, { display: el.classList.contains('d') })); } catch (e) { el.classList.add('bad'); }
+    });
+  }
+  new MutationObserver(typeset).observe(document.body, { childList: true, subtree: true });
+  (function waitForMathJax() { if (window.MathJax?.startup?.promise) window.MathJax.startup.promise.then(typeset); else setTimeout(waitForMathJax, 250); })();
   const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const hasGsap = typeof gsap !== 'undefined';
@@ -372,7 +382,7 @@
     let body = '';
     if (p.type === 'choice') body = `<div class="choices">${p.choices.map((c, i) => `<button class="choice" type="button" data-i="${i}">${fm(c)}</button>`).join('')}</div>`;
     else if (p.type === 'short') body = `<textarea class="field sa" placeholder="Write your answer like you would in the exam…" aria-label="Your answer"></textarea>${mode === 'practice' ? `<div class="row">${aiReady() ? '<button class="btn btn-hot btn-sm" type="button" data-k="ai">Mark it with AI</button>' : ''}<button class="btn btn-ghost btn-sm" type="button" data-k="self">${aiReady() ? 'Mark it myself' : 'Show marking guide'}</button></div>` : ''}`;
-    else body = `<div class="ans"><input class="field" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" inputmode="${p.type === 'ratio' || p.type === 'pm' ? 'text' : 'decimal'}" placeholder="${p.type === 'ratio' ? 'e.g. 3:4' : p.type === 'pm' ? 'e.g. ±5' : p.type === 'pct' ? 'e.g. 25%' : 'Answer (fractions OK, e.g. 3/8)'}" aria-label="Answer for part ${esc(p.label || '')}">${mode === 'practice' ? '<button class="btn btn-hot" type="button" data-k="check">Check</button><button class="btn btn-ghost" type="button" data-k="show">Show me</button>' : ''}</div>${p.hint ? `<div class="note" style="font-size:13px">${fm(p.hint)}</div>` : ''}`;
+    else body = `<div class="ans"><input class="field" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" inputmode="${p.type === 'ratio' || p.type === 'pm' ? 'text' : 'decimal'}" placeholder="${p.type === 'ratio' ? 'e.g. 3:4' : p.type === 'pm' ? 'e.g. ±5' : p.type === 'pct' ? 'e.g. 25%' : 'e.g. 3/8, 2√3 or 3π/4'}" aria-label="Answer for part ${esc(p.label || '')}">${mode === 'practice' ? '<button class="btn btn-hot" type="button" data-k="check">Check</button><button class="btn btn-ghost" type="button" data-k="show">Show answer</button>' : ''}</div>${p.type === 'ratio' ? '' : `<div class="keys" role="group" aria-label="Maths keys">${(p.type === 'pm' ? ['±', '√', '/'] : ['√', 'π', '^', '/', '(', ')', '−']).map(k => `<button class="key" type="button" data-ins="${k}" aria-label="Type ${k}">${k}</button>`).join('')}<span class="evalv" aria-live="polite"></span></div>`}${p.hint ? `<div class="note" style="font-size:13px">${fm(p.hint)}</div>` : ''}`;
     el.innerHTML = `${p.label ? `<div class="pl">${esc(p.label)}</div>` : ''}<div class="pbody"><div class="pq">${fm(p.q)}${mk}</div>${body}<div class="pfb"></div></div>`;
     const fb = $('.pfb', el);
     const finish = (ok, given) => {
@@ -400,7 +410,17 @@
       if (self) self.onclick = () => selfMark(p, q, ta.value, fb, el, onPart);
     } else {
       const inp = $('input', el);
-      inp.oninput = () => { p._ans = inp.value; };
+      const ev = $('.evalv', el);
+      inp.oninput = () => { // show what an expression like 3π/4 works out to
+        p._ans = inp.value;
+        if (!ev) return;
+        const v = !isFinite(X.parseAns(inp.value).v) ? MathIn.evaluate(inp.value) : NaN;
+        ev.textContent = isFinite(v) ? `= ${Math.round(v * 1e4) / 1e4}` : '';
+      };
+      $$('.key', el).forEach(k => k.onclick = () => {
+        const a = inp.selectionStart ?? inp.value.length, b = inp.selectionEnd ?? a;
+        inp.setRangeText(k.dataset.ins === '−' ? '-' : k.dataset.ins, a, b, 'end'); inp.focus(); inp.oninput();
+      });
       const go = () => { if (!inp.value.trim()) { inp.focus(); return; } finish(check(p, inp.value), inp.value); };
       inp.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); if (mode === 'practice') go(); } });
       const cb = $('[data-k=check]', el); if (cb) cb.onclick = go;
@@ -417,7 +437,7 @@
   async function explainMistake(p, q, given, box, btn) {
     btn.disabled = true; box.hidden = false; box.textContent = 'Thinking…';
     const ans = p.type === 'choice' ? p.choices[given] : given;
-    const prompt = `You are a friendly, encouraging tutor for a Year 8 student in NSW, Australia. They got an exam question wrong. In under 120 words, explain the most likely mistake in their thinking and how to get the right answer. Use simple language and show the key working. No greeting. Formatting: use **double asterisks** for key words, write powers like x^2 and fractions like 3/4, and never use LaTeX.
+    const prompt = `You are a friendly, encouraging tutor for a Year 8 student in NSW, Australia. They got an exam question wrong. In under 120 words, explain the most likely mistake in their thinking and how to get the right answer. Use simple language and show the key working. No greeting. Formatting: use **double asterisks** for key words, write all maths in LaTeX between single $ signs (e.g. $\\frac{3}{4}$, $x^2$).
 
 Question: ${q.stem || ''} ${p.q}
 Correct answer: ${p.show}
@@ -452,7 +472,7 @@ Model answer: ${p.model || '(none)'}
 Student's answer:
 """${answer.slice(0, 4000)}"""
 
-Award marks only for what the student actually wrote. Reply with ONLY this JSON:
+Award marks only for what the student actually wrote. Write any maths in the feedback as LaTeX between $ signs. Reply with ONLY this JSON:
 {"marks": <whole number 0-${p.marks}>, "met": [${p.criteria.map(() => 'true/false').join(', ')}], "feedback": "2-3 short sentences: what was good, and exactly what to add or fix for full marks"}`;
     try {
       const j = await AI.fn.json(prompt, { modelTier: 'default', cache: false });
@@ -727,7 +747,7 @@ Write 8 mcq (answer = index 0-3 of the correct option, vary its position) and 2 
     const send = async (text) => {
       const q = (text || $('#askIn', el).value).trim(); if (!q) return; $('#askIn', el).value = '';
       hist.push({ role: 'user', content: q }); draw(); const bot = document.createElement('div'); bot.className = 'msg bot'; bot.textContent = 'Thinking…'; chat.appendChild(bot);
-      const rules = `You are a friendly, patient tutor for a Year 8 student in NSW, Australia, revising "${d.title}" (${getSubj(d.subject).name}) for an exam. Keep answers short and clear, use Australian spelling, show working for maths, formatting: use **double asterisks** for key words, write powers like x^2 and fractions like 3/4, and never use LaTeX, and use these notes when relevant:\n\n${deckContext(d)}`;
+      const rules = `You are a friendly, patient tutor for a Year 8 student in NSW, Australia, revising "${d.title}" (${getSubj(d.subject).name}) for an exam. Keep answers short and clear, use Australian spelling, show working for maths, formatting: use **double asterisks** for key words, write all maths in LaTeX between single $ signs (e.g. $\\frac{3}{4}$, $x^2$), and use these notes when relevant:\n\n${deckContext(d)}`;
       const turns = [{ role: 'user', content: rules }, ...hist.slice(-10)];
       try { const { text: out } = await AI.fn(turns, { cache: false, modelTier: 'quick', onText: ({ text: t }) => { bot.innerHTML = Fmt.rich(t); } }); hist.push({ role: 'assistant', content: out }); }
       catch (e) { bot.textContent = e?.text || AI.msg(e); hist.pop(); }
@@ -836,7 +856,7 @@ Reply with ONLY this JSON:
  "mcq":[{"q":"exam-style question","options":["A","B","C","D"],"answer":0,"why":"one-sentence explanation"}],
  "short":[{"q":"exam-style short-answer question","marks":3,"criteria":["one marking point per mark"],"model":"a full-marks answer"}]}
 
-Aim for 2-5 sections with 3-6 notes each, 10-20 flashcards (key terms, people, dates, causes and effects), 8-15 mcq like a real school exam (vary which option is correct), and 2-4 short-answer questions with one criterion per mark. If the material is maths, make mcq questions that need working out.`;
+Aim for 2-5 sections with 3-6 notes each, 10-20 flashcards (key terms, people, dates, causes and effects), 8-15 mcq like a real school exam (vary which option is correct), and 2-4 short-answer questions with one criterion per mark. If the material is maths, make mcq questions that need working out, and write all maths as LaTeX between $ signs (e.g. $\\frac{1}{2}x^2$).`;
   async function aiDeck(subject, inp, log, setP) {
     const jobs = [];
     const chunks = []; let t = inp.text; while (t.length > 120) { chunks.push(t.slice(0, 24000)); t = t.slice(24000); if (chunks.length >= 6) break; }

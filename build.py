@@ -1,6 +1,9 @@
 s=open('src/shell.html').read()
 js=[open('src/'+f).read() for f in ['fmt.js','mathin.js','logic.js','cloud.js','content.js','exam.js','geo.js','viz.js','y8more.js','ext2.js','app.js']]
 libs='<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>\n'
+# MathJax renders $…$ maths as SVG (no stylesheet or font downloads). Typesetting is driven by app.js.
+libs+='<script>window.MathJax={tex:{inlineMath:[],displayMath:[]},svg:{fontCache:"global"},startup:{typeset:false}};</script>\n'
+libs+='<script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg-full.min.js" integrity="sha384-JtMul8ihXo9JAiFAXWE5nLGpycvMAV3P9jbtUNS50a4/Z7SUU5W6ewa9IBVQO9vF" crossorigin="anonymous"></script>\n'
 # Firebase (accounts + sync) only goes in the published site, not the Claude artifact.
 FB={'app':'sha384-ZaR6mWzmJtrRibZ1Vm7SoHFr8OXjyAuGAXalGDKqbxFT18oi/z+oZLIRFkpeNor1',
     'auth':'sha384-I1LYojsZ5RM1cOda44Z2h42Qa6YfsQ1XkXxREnhp4ueYBR/4d1pG1K+NZM537Vsj',

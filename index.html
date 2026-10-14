@@ -428,6 +428,8 @@ footer { padding-block: 30px 50px; color: var(--muted); font-size: 13px; border-
 <div class="toast" id="toast" hidden role="status"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script>window.MathJax={tex:{inlineMath:[],displayMath:[]},svg:{fontCache:"global"},startup:{typeset:false}};</script>
+<script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg-full.min.js" integrity="sha384-JtMul8ihXo9JAiFAXWE5nLGpycvMAV3P9jbtUNS50a4/Z7SUU5W6ewa9IBVQO9vF" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/firebase@10.14.1/firebase-app-compat.js" integrity="sha384-ZaR6mWzmJtrRibZ1Vm7SoHFr8OXjyAuGAXalGDKqbxFT18oi/z+oZLIRFkpeNor1" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/firebase@10.14.1/firebase-auth-compat.js" integrity="sha384-I1LYojsZ5RM1cOda44Z2h42Qa6YfsQ1XkXxREnhp4ueYBR/4d1pG1K+NZM537Vsj" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/firebase@10.14.1/firebase-firestore-compat.js" integrity="sha384-Ke0FJhH7LyRqDxZ0wt+/OXV38yfQVu7g9VPEEGjYmB4RVOY/ta04uecRhsMwT7V3" crossorigin="anonymous"></script>
@@ -440,11 +442,26 @@ const Fmt = (() => {
   const sup = (p) => `<span class="sr">^</span><sup class="pow">${p}</sup>`;
   const TEX = { times: '×', div: '÷', pm: '±', pi: 'π', cdot: '·', le: '≤', ge: '≥', leq: '≤', geq: '≥', approx: '≈', neq: '≠', degree: '°', circ: '°' };
 
+  // Real maths ($…$, $$…$$, \(…\), \[…\]) becomes a span that MathJax typesets in the page.
+  const MATH = /\$\$([\s\S]+?)\$\$|\\\[([\s\S]+?)\\\]|\\\(([\s\S]+?)\\\)|\$([^$\n]+?)\$/g;
+  const mathSpan = (tex, display) => { const t = esc(tex.trim()); return `<span class="m${display ? ' d' : ''}" data-tex="${t}">${t}</span>`; };
+
   // One line of text → HTML.
   function text(s) {
+    s = String(s ?? ''); let out = '', last = 0, m;
+    MATH.lastIndex = 0;
+    while ((m = MATH.exec(s))) {
+      const inline = m[4];
+      if (inline !== undefined && /^\d[\d,.]*(\s|$)/.test(inline) && !/[\\^_{}]/.test(inline)) continue; // "$45 … $9" is money, not maths
+      out += plain(s.slice(last, m.index)) + mathSpan(m[1] ?? m[2] ?? m[3] ?? inline, m[1] !== undefined || m[2] !== undefined);
+      last = MATH.lastIndex;
+    }
+    return out + plain(s.slice(last));
+  }
+
+  // Text outside maths delimiters: escape, then tidy powers, fractions, bold and stray LaTeX.
+  function plain(s) {
     let h = esc(s);
-    // LaTeX the AI sometimes writes: strip $…$ / \( \) wrappers, then convert the common commands.
-    h = h.replace(/\$([^$\n]*[\\^][^$\n]*)\$/g, '$1').replace(/\\\(|\\\)/g, '');
     h = h.replace(/\\frac\{([^{}]+)\}\{([^{}]+)\}/g, (_, a, b) => frac(a, b));
     h = h.replace(/\\sqrt\{([^{}]+)\}/g, '√$1');
     h = h.replace(/\\([a-z]+)\b/g, (m, w) => TEX[w] || m);
@@ -461,7 +478,8 @@ const Fmt = (() => {
 
   // Multi-line answers (AI replies): headings, bullet lists and line breaks too.
   function rich(s) {
-    return String(s ?? '').split('\n').map(line => {
+    // Keep multi-line $$ … $$ blocks together before splitting into lines.
+    return String(s ?? '').replace(/\$\$[\s\S]+?\$\$/g, b => b.replace(/\n/g, ' ')).split('\n').map(line => {
       let m = line.match(/^\s*#{1,6}\s+(.*)$/); if (m) return `<b class="h">${text(m[1])}</b>`;
       m = line.match(/^\s*[-*•]\s+(.*)$/); if (m) return `<span class="li">${text(m[1])}</span>`;
       return text(line);
@@ -471,6 +489,61 @@ const Fmt = (() => {
   return { text, rich, esc };
 })();
 if (typeof module !== 'undefined') module.exports = Fmt;
+
+</script>
+<script>
+/* ===== Lock In — typed maths answers: evaluates things like 3π/4, 2√3, sqrt(2), 2^5 =====
+   A small parser (no eval): numbers, + − × ÷ * / ^, brackets, √/sqrt, π/pi, e, implicit ×. */
+const MathIn = (() => {
+  function tokens(s) {
+    const t = [], src = String(s).replace(/[−–]/g, '-').replace(/×/g, '*').replace(/÷/g, '/').replace(/\s+/g, '').toLowerCase();
+    let i = 0;
+    while (i < src.length) {
+      const c = src[i], rest = src.slice(i);
+      let m;
+      if ((m = rest.match(/^\d+(\.\d+)?|^\.\d+/))) { t.push({ k: 'n', v: parseFloat(m[0]) }); i += m[0].length; }
+      else if (rest.startsWith('sqrt')) { t.push({ k: 'sqrt' }); i += 4; }
+      else if (rest.startsWith('pi')) { t.push({ k: 'n', v: Math.PI }); i += 2; }
+      else if (c === 'π') { t.push({ k: 'n', v: Math.PI }); i++; }
+      else if (c === 'e') { t.push({ k: 'n', v: Math.E }); i++; }
+      else if (c === '√') { t.push({ k: 'sqrt' }); i++; }
+      else if ('+-*/^()'.includes(c)) { t.push({ k: c }); i++; }
+      else return null;
+    }
+    return t;
+  }
+  function evaluate(s) {
+    const t = tokens(s); if (!t || !t.length) return NaN;
+    let i = 0;
+    const peek = () => t[i], take = () => t[i++];
+    const startsAtom = (x) => x && (x.k === 'n' || x.k === '(' || x.k === 'sqrt');
+    // expr = term (('+'|'-') term)*
+    function expr() { let v = term(); while (peek() && (peek().k === '+' || peek().k === '-')) { const op = take().k, r = term(); v = op === '+' ? v + r : v - r; } return v; }
+    // term = unary (('*'|'/' | implicit) unary)*
+    function term() {
+      let v = unary();
+      for (;;) {
+        const x = peek();
+        if (x && (x.k === '*' || x.k === '/')) { take(); const r = unary(); v = x.k === '*' ? v * r : v / r; }
+        else if (startsAtom(x)) v *= unary(); // 2π, 2(3+1), 2√3
+        else return v;
+      }
+    }
+    function unary() { if (peek() && peek().k === '-') { take(); return -unary(); } if (peek() && peek().k === '+') { take(); return unary(); } return power(); }
+    // power = atom ('^' unary)?   (right-associative: 2^3^2 = 2^9)
+    function power() { const b = atom(); if (peek() && peek().k === '^') { take(); return b ** unary(); } return b; }
+    function atom() {
+      const x = take(); if (!x) throw 0;
+      if (x.k === 'n') return x.v;
+      if (x.k === 'sqrt') { const v = power(); if (v < 0) throw 0; return Math.sqrt(v); }
+      if (x.k === '(') { const v = expr(); if (!take() || t[i - 1].k !== ')') throw 0; return v; }
+      throw 0;
+    }
+    try { const v = expr(); return i === t.length && Number.isFinite(v) ? v : NaN; } catch (e) { return NaN; }
+  }
+  return { evaluate };
+})();
+if (typeof module !== 'undefined') module.exports = MathIn;
 
 </script>
 <script>
@@ -1781,6 +1854,13 @@ const X = (() => {
       return /±|\+-|\+\/-|-\+/.test(s) || (nums.includes(part.value) && nums.includes(-part.value));
     }
     const p = parseAns(raw);
+    if (!isFinite(p.v)) { // typed as an expression, e.g. 3π/4, 2√3, 2^5: compare its value exactly (or to the rounding asked for)
+      const MI = typeof MathIn !== 'undefined' ? MathIn : typeof require !== 'undefined' ? require('./mathin.js') : null;
+      const v = MI ? MI.evaluate(raw.replace(/^\s*[a-z]\s*=\s*/i, '')) : NaN;
+      if (!isFinite(v)) return false;
+      const T = Math.abs(part.value) || 1, tol = Math.max(1e-6 * T, part.round != null ? 0.5 * 10 ** -(part.round + (part.type === 'pct' ? 2 : 0)) : 0, part.tol ? part.tol * T : 0);
+      return Math.abs(v - part.value) <= tol + 1e-12 || (part.type === 'pct' && Math.abs(v / 100 - part.value) <= tol + 1e-12);
+    }
     if (part.type === 'pct') {
       const cands = p.percent ? [p.v] : [p.v / 100, p.v]; // "25" in a % question means 25%; also accept 0.25
       return cands.some((c, i) => near(c, part.value, i === 0 && !p.percent ? { ...p, dec: p.dec + 2 } : p, part));
@@ -3269,6 +3349,16 @@ if (typeof module !== 'undefined') module.exports = E2;
   const $ = (s, el = document) => el.querySelector(s);
   const $$ = (s, el = document) => [...el.querySelectorAll(s)];
   const fm = Fmt.text; // maths + bold formatting for content text (escapes HTML)
+  // Typeset the maths spans Fmt makes, with MathJax once it has loaded; new ones are picked up as they appear.
+  function typeset() {
+    const MJ = window.MathJax; if (!MJ || !MJ.tex2svg) return;
+    document.querySelectorAll('.m:not([data-done])').forEach(el => {
+      el.dataset.done = 1;
+      try { el.replaceChildren(MJ.tex2svg(el.dataset.tex, { display: el.classList.contains('d') })); } catch (e) { el.classList.add('bad'); }
+    });
+  }
+  new MutationObserver(typeset).observe(document.body, { childList: true, subtree: true });
+  (function waitForMathJax() { if (window.MathJax?.startup?.promise) window.MathJax.startup.promise.then(typeset); else setTimeout(waitForMathJax, 250); })();
   const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const hasGsap = typeof gsap !== 'undefined';
@@ -3638,7 +3728,7 @@ if (typeof module !== 'undefined') module.exports = E2;
     let body = '';
     if (p.type === 'choice') body = `<div class="choices">${p.choices.map((c, i) => `<button class="choice" type="button" data-i="${i}">${fm(c)}</button>`).join('')}</div>`;
     else if (p.type === 'short') body = `<textarea class="field sa" placeholder="Write your answer like you would in the exam…" aria-label="Your answer"></textarea>${mode === 'practice' ? `<div class="row">${aiReady() ? '<button class="btn btn-hot btn-sm" type="button" data-k="ai">Mark it with AI</button>' : ''}<button class="btn btn-ghost btn-sm" type="button" data-k="self">${aiReady() ? 'Mark it myself' : 'Show marking guide'}</button></div>` : ''}`;
-    else body = `<div class="ans"><input class="field" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" inputmode="${p.type === 'ratio' || p.type === 'pm' ? 'text' : 'decimal'}" placeholder="${p.type === 'ratio' ? 'e.g. 3:4' : p.type === 'pm' ? 'e.g. ±5' : p.type === 'pct' ? 'e.g. 25%' : 'Answer (fractions OK, e.g. 3/8)'}" aria-label="Answer for part ${esc(p.label || '')}">${mode === 'practice' ? '<button class="btn btn-hot" type="button" data-k="check">Check</button><button class="btn btn-ghost" type="button" data-k="show">Show me</button>' : ''}</div>${p.hint ? `<div class="note" style="font-size:13px">${fm(p.hint)}</div>` : ''}`;
+    else body = `<div class="ans"><input class="field" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" inputmode="${p.type === 'ratio' || p.type === 'pm' ? 'text' : 'decimal'}" placeholder="${p.type === 'ratio' ? 'e.g. 3:4' : p.type === 'pm' ? 'e.g. ±5' : p.type === 'pct' ? 'e.g. 25%' : 'e.g. 3/8, 2√3 or 3π/4'}" aria-label="Answer for part ${esc(p.label || '')}">${mode === 'practice' ? '<button class="btn btn-hot" type="button" data-k="check">Check</button><button class="btn btn-ghost" type="button" data-k="show">Show answer</button>' : ''}</div>${p.type === 'ratio' ? '' : `<div class="keys" role="group" aria-label="Maths keys">${(p.type === 'pm' ? ['±', '√', '/'] : ['√', 'π', '^', '/', '(', ')', '−']).map(k => `<button class="key" type="button" data-ins="${k}" aria-label="Type ${k}">${k}</button>`).join('')}<span class="evalv" aria-live="polite"></span></div>`}${p.hint ? `<div class="note" style="font-size:13px">${fm(p.hint)}</div>` : ''}`;
     el.innerHTML = `${p.label ? `<div class="pl">${esc(p.label)}</div>` : ''}<div class="pbody"><div class="pq">${fm(p.q)}${mk}</div>${body}<div class="pfb"></div></div>`;
     const fb = $('.pfb', el);
     const finish = (ok, given) => {
@@ -3666,7 +3756,17 @@ if (typeof module !== 'undefined') module.exports = E2;
       if (self) self.onclick = () => selfMark(p, q, ta.value, fb, el, onPart);
     } else {
       const inp = $('input', el);
-      inp.oninput = () => { p._ans = inp.value; };
+      const ev = $('.evalv', el);
+      inp.oninput = () => { // show what an expression like 3π/4 works out to
+        p._ans = inp.value;
+        if (!ev) return;
+        const v = !isFinite(X.parseAns(inp.value).v) ? MathIn.evaluate(inp.value) : NaN;
+        ev.textContent = isFinite(v) ? `= ${Math.round(v * 1e4) / 1e4}` : '';
+      };
+      $$('.key', el).forEach(k => k.onclick = () => {
+        const a = inp.selectionStart ?? inp.value.length, b = inp.selectionEnd ?? a;
+        inp.setRangeText(k.dataset.ins === '−' ? '-' : k.dataset.ins, a, b, 'end'); inp.focus(); inp.oninput();
+      });
       const go = () => { if (!inp.value.trim()) { inp.focus(); return; } finish(check(p, inp.value), inp.value); };
       inp.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); if (mode === 'practice') go(); } });
       const cb = $('[data-k=check]', el); if (cb) cb.onclick = go;
@@ -3683,7 +3783,7 @@ if (typeof module !== 'undefined') module.exports = E2;
   async function explainMistake(p, q, given, box, btn) {
     btn.disabled = true; box.hidden = false; box.textContent = 'Thinking…';
     const ans = p.type === 'choice' ? p.choices[given] : given;
-    const prompt = `You are a friendly, encouraging tutor for a Year 8 student in NSW, Australia. They got an exam question wrong. In under 120 words, explain the most likely mistake in their thinking and how to get the right answer. Use simple language and show the key working. No greeting. Formatting: use **double asterisks** for key words, write powers like x^2 and fractions like 3/4, and never use LaTeX.
+    const prompt = `You are a friendly, encouraging tutor for a Year 8 student in NSW, Australia. They got an exam question wrong. In under 120 words, explain the most likely mistake in their thinking and how to get the right answer. Use simple language and show the key working. No greeting. Formatting: use **double asterisks** for key words, write all maths in LaTeX between single $ signs (e.g. $\\frac{3}{4}$, $x^2$).
 
 Question: ${q.stem || ''} ${p.q}
 Correct answer: ${p.show}
@@ -3718,7 +3818,7 @@ Model answer: ${p.model || '(none)'}
 Student's answer:
 """${answer.slice(0, 4000)}"""
 
-Award marks only for what the student actually wrote. Reply with ONLY this JSON:
+Award marks only for what the student actually wrote. Write any maths in the feedback as LaTeX between $ signs. Reply with ONLY this JSON:
 {"marks": <whole number 0-${p.marks}>, "met": [${p.criteria.map(() => 'true/false').join(', ')}], "feedback": "2-3 short sentences: what was good, and exactly what to add or fix for full marks"}`;
     try {
       const j = await AI.fn.json(prompt, { modelTier: 'default', cache: false });
@@ -3993,7 +4093,7 @@ Write 8 mcq (answer = index 0-3 of the correct option, vary its position) and 2 
     const send = async (text) => {
       const q = (text || $('#askIn', el).value).trim(); if (!q) return; $('#askIn', el).value = '';
       hist.push({ role: 'user', content: q }); draw(); const bot = document.createElement('div'); bot.className = 'msg bot'; bot.textContent = 'Thinking…'; chat.appendChild(bot);
-      const rules = `You are a friendly, patient tutor for a Year 8 student in NSW, Australia, revising "${d.title}" (${getSubj(d.subject).name}) for an exam. Keep answers short and clear, use Australian spelling, show working for maths, formatting: use **double asterisks** for key words, write powers like x^2 and fractions like 3/4, and never use LaTeX, and use these notes when relevant:\n\n${deckContext(d)}`;
+      const rules = `You are a friendly, patient tutor for a Year 8 student in NSW, Australia, revising "${d.title}" (${getSubj(d.subject).name}) for an exam. Keep answers short and clear, use Australian spelling, show working for maths, formatting: use **double asterisks** for key words, write all maths in LaTeX between single $ signs (e.g. $\\frac{3}{4}$, $x^2$), and use these notes when relevant:\n\n${deckContext(d)}`;
       const turns = [{ role: 'user', content: rules }, ...hist.slice(-10)];
       try { const { text: out } = await AI.fn(turns, { cache: false, modelTier: 'quick', onText: ({ text: t }) => { bot.innerHTML = Fmt.rich(t); } }); hist.push({ role: 'assistant', content: out }); }
       catch (e) { bot.textContent = e?.text || AI.msg(e); hist.pop(); }
@@ -4102,7 +4202,7 @@ Reply with ONLY this JSON:
  "mcq":[{"q":"exam-style question","options":["A","B","C","D"],"answer":0,"why":"one-sentence explanation"}],
  "short":[{"q":"exam-style short-answer question","marks":3,"criteria":["one marking point per mark"],"model":"a full-marks answer"}]}
 
-Aim for 2-5 sections with 3-6 notes each, 10-20 flashcards (key terms, people, dates, causes and effects), 8-15 mcq like a real school exam (vary which option is correct), and 2-4 short-answer questions with one criterion per mark. If the material is maths, make mcq questions that need working out.`;
+Aim for 2-5 sections with 3-6 notes each, 10-20 flashcards (key terms, people, dates, causes and effects), 8-15 mcq like a real school exam (vary which option is correct), and 2-4 short-answer questions with one criterion per mark. If the material is maths, make mcq questions that need working out, and write all maths as LaTeX between $ signs (e.g. $\\frac{1}{2}x^2$).`;
   async function aiDeck(subject, inp, log, setP) {
     const jobs = [];
     const chunks = []; let t = inp.text; while (t.length > 120) { chunks.push(t.slice(0, 24000)); t = t.slice(24000); if (chunks.length >= 6) break; }
