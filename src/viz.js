@@ -161,6 +161,17 @@ const V = (() => {
     return `<div class="viz"><div class="viz-in topo" style="max-width:560px"><svg viewBox="0 0 ${W} ${totalH}" role="img" aria-label="Topographic map with grid, contours, river and features">${s}</svg></div></div>`;
   }
 
-  const R = { spinner, venn, table, diceGrid, travel, rects, sim, box, tri, cyl, climate, pie, topo };
+  function dotplot({ from, counts, label }) {
+    const W = 420, H = 60 + Math.max(...counts) * 22, L = 30, step = (W - 2 * L) / (counts.length - 1), base = H - 34;
+    let s = `<line x1="${L - 10}" y1="${base}" x2="${W - L + 10}" y2="${base}" stroke="${ink}" stroke-width="1.5"/>`;
+    counts.forEach((c, i) => {
+      const x = L + i * step;
+      s += `<line x1="${x}" y1="${base}" x2="${x}" y2="${base + 6}" stroke="${ink}"/><text x="${x}" y="${base + 20}" fill="${mute}" font-size="12" text-anchor="middle" ${F}>${from + i}</text>`;
+      for (let k = 0; k < c; k++) s += `<circle cx="${x}" cy="${base - 12 - k * 22}" r="8" fill="var(--green)"/>`;
+    });
+    return wrap(`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Dot plot">${s}</svg><div class="viz-cap">${esc(label || '')}</div>`, 440);
+  }
+
+  const R = { dotplot, spinner, venn, table, diceGrid, travel, rects, sim, box, tri, cyl, climate, pie, topo };
   return { render: (v) => (v && R[v.type] ? R[v.type](v) : '') };
 })();

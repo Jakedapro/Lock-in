@@ -1,6 +1,6 @@
 # Lock In
 
-Year 8 Term 4 exam study site: Geography (map skills + Water in the World), Maths (Ch 8, 9, 10, 12) and History via uploads.
+Year 8 Term 4 exam study site: Geography (map skills + Water in the World), Maths (Ch 8, 9, 10, 12 for the exam, plus Ch 3 and 7), Year 12 Maths Extension 2, and anything else via uploads.
 
 Live: https://jamalmusialla81-hub.github.io/lock-in/
 
@@ -8,7 +8,9 @@ Live: https://jamalmusialla81-hub.github.io/lock-in/
 - Edit the files in `src/`, then run `python3 build.py` to rebuild both:
   - `logic.js` rules with no UI: level ladder, mistakes list, sync merge (tested)
   - `cloud.js` Google sign-in, sync and group leaderboards (Firebase project `lockin-jm8`)
-  - `content.js` maths notes, flashcards, drills
+  - `content.js` maths notes, flashcards, drills (Ch 8–10)
+  - `y8more.js` Ch 3 Algebra and Ch 7 Investigating data decks
+  - `ext2.js` Year 12 Maths Extension 2 decks
   - `exam.js` exam-style maths questions + answer checker
   - `geo.js` Geography decks, map / climate / scale question generators
   - `viz.js` SVG diagrams (topographic map, climate graph, etc.)

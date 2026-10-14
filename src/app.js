@@ -36,13 +36,15 @@
   /* ---------------- subjects & decks ---------------- */
   const SUBJ = [
     { id: 'geo', name: 'Geography', hue: 'green', exam: new Date(2026, 9, 26, 9, 0), when: 'Mon 26 Oct · P1–2', format: '45 minutes · 30 multiple choice (25 on geographical tools & skills, 5 on Water in the World) + 3 short answers.', mock: 'geo' },
-    { id: 'maths', name: 'Maths', hue: 'gold', exam: new Date(2026, 9, 29, 11, 0), when: 'Thu 29 Oct · P3–4', format: 'Chapters 8, 9, 10 and 12 · multi-part questions like the Test Yourself pages.', mock: 'maths' },
-    { id: 'hist', name: 'History', hue: 'coral', exam: null, when: '', format: 'Upload your History notes or textbook pages and the AI builds notes, flashcards and exam questions.' },
+    { id: 'maths', name: 'Maths', hue: 'gold', exam: new Date(2026, 9, 29, 11, 0), when: 'Thu 29 Oct · P3–4', format: 'Exam: chapters 8, 9, 10 and 12 · multi-part questions like the Test Yourself pages. Ch 3 and Ch 7 are extra practice.', mock: 'maths' },
+    { id: 'y12', name: 'Year 12 Maths', hue: 'lilac', exam: null, when: '', format: 'HSC Mathematics Extension 2: proof, complex numbers, induction, integration, vectors and mechanics.' },
   ];
   const BUILTIN = [
     G.mapDeck, G.waterDeck,
+    ...Y8.DECKS,
     ...M.DECKS.map(d => ({ ...d, subject: 'maths', bank: X.BANK[d.id], drills: M.GEN[d.gen] })),
     { ...X.ch12, subject: 'maths', bank: X.BANK.sim },
+    ...E2.DECKS,
   ].map(d => ({ ...d, subject: d.subject || 'maths', bank: typeof d.bank === 'string' ? G.BANK[d.bank] : d.bank }));
   const extraQ = (id) => (S.extra[id] ||= { concepts: [], short: [] });
   const allDecks = () => [...BUILTIN, ...S.custom];
@@ -640,7 +642,7 @@ Write 8 mcq (answer = index 0-3 of the correct option, vary its position) and 2 
       shuffle(shortOf(water)).slice(0, 3).forEach(s => blocks.push(shortQ(s, water)));
       return { title: 'Geography practice exam', minutes: 45, blocks, acc: 'c-green', intro: 'Section 1: Geographical tools and skills (25 multiple choice). Section 2: Water in the World (5 multiple choice + 3 short answers). 45 minutes, like the real thing.' };
     }
-    const md = decksOf('maths');
+    const md = decksOf('maths').filter(d => d.inExam !== false); // only chapters in the real exam
     md.forEach(d => {
       if (!d.bank) return;
       const lo = d.bank.map(f => bankQ(f, d)).filter(q => q.level !== 'C'), hi = d.bank.map(f => bankQ(f, d)).filter(q => q.level !== 'F');
