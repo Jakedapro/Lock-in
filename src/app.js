@@ -184,7 +184,7 @@
     const s = getSubj(S.subj), ds = decksOf(s.id), el = $('#subject');
     el.className = 'wrap section c-' + s.hue;
     const counts = (d) => `${d.cards?.length || 0} cards · ${(d.bank ? '∞' : (conceptsOf(d).length + shortOf(d).length))} questions`;
-    el.innerHTML = `<div class="subj-head"><div><div class="eyebrow">${s.exam ? 'Exam · ' + esc(s.when) : 'Subject'}</div><h2>${esc(s.name)}<span>.</span></h2><div class="subj-meta">${esc(s.format)}</div></div>
+    el.innerHTML = `<div class="subj-head"><div><div class="eyebrow">${s.exam ? 'Exam · ' + esc(s.when) : 'Subject'}</div><h2>${esc(s.name)}<span>.</span></h2><div class="subj-meta">${esc(s.format)}</div>${mistakesOf(s.id).length ? `<button class="linkbtn mist-link" type="button" data-act="mistakes" data-s="${esc(s.id)}">${mistakesOf(s.id).length} mistake${mistakesOf(s.id).length > 1 ? 's' : ''} to fix →</button>` : ''}</div>
       <div class="subj-actions">${s.mock ? `<button class="btn btn-acc" type="button" data-act="mock" data-s="${s.id}">Practice exam${s.mock === 'geo' ? ' (45 min)' : ''}</button>` : ''}${ds.length ? `<button class="btn btn-ghost" type="button" data-act="cards" data-s="${esc(s.id)}">All flashcards</button>` : ''}<button class="btn btn-ghost" type="button" data-act="upload" data-s="${esc(s.id)}">+ Upload</button></div></div>
       ${ds.length ? `<div class="decks">${ds.map(d => { const m = mastery(d.id); return `<button class="deck ${hue(d)}" type="button" data-open="${esc(d.id)}">
           <div class="top"><span class="chip">${esc(d.chapter || 'Your deck')}</span><span class="lvl-chip lvl-${levelOf(d)}" title="Your level: ${LNAME[levelOf(d)]}">${levelOf(d)}</span>${d.custom ? `<span class="chip" style="color:var(--muted)">${d.ai ? 'AI' : 'Quick'}</span>` : ''}</div>
@@ -207,6 +207,7 @@
     if (act === 'mock') openMock(a.dataset.s);
     if (act === 'cards') openSubjectCards(a.dataset.s);
     if (act === 'weak') openDeck(a.dataset.d, 'practice', a.dataset.t);
+    if (act === 'mistakes') openMistakes(a.dataset.s);
     if (act === 'upload') { upSubj = a.dataset.s; renderUpSubjects(); $('#upload').scrollIntoView({ behavior: reduce ? 'auto' : 'smooth' }); }
   });
 
@@ -522,8 +523,63 @@ Award marks only for what the student actually wrote. Reply with ONLY this JSON:
     const more = $('#aiMore', el); if (more) more.onclick = () => aiMoreQuestions(d, more, () => toast('New questions added to this deck'));
     drawLvl(); next();
   }
-  // Mistakes hook (filled in by the mistakes review).
-  function noteResult() { }
+  /* ---------------- mistakes ---------------- */
+  const missed = (q) => q.parts.some(p => (p._got || 0) < (p.marks || 1));
+  const missedN = (ex) => ex.blocks.filter(q => allDone(q) && missed(q)).length;
+  const mistakesOf = (sid) => S.mistakes.filter(m => { const d = getDeck(m.deckId); return d && (!sid || d.subject === sid); });
+  function renderMistakeCount() { const n = mistakesOf().length, b = $('#mistN'); if (b) { b.textContent = n; $('#mistBtn').classList.toggle('has', n > 0); } }
+  // Called once a question is fully marked. `redo` = {id, fresh} when it came from the mistakes list.
+  function noteResult(q, d, redo) {
+    if (redo && !missed(q)) {
+      const r = Logic.fixMistake(S.mistakes, redo.id); S.mistakes = r.list;
+      toast(r.removed ? 'Cleared from your mistakes' : 'Fixed! Get it right once more to clear it');
+    } else if (redo && !redo.fresh) S.mistakes = Logic.missAgain(S.mistakes, redo.id);
+    else if (missed(q)) S.mistakes = Logic.addMistake(S.mistakes, { deckId: d.id, q, gen: q.gen }, Date.now());
+    else return;
+    save(); renderMistakeCount();
+  }
+  function freshQ(m) {
+    const d = getDeck(m.deckId); if (!d || !m.gen) return null;
+    if (m.gen.startsWith('drill:')) return d.drills?.[m.gen.slice(6)] ? drillQ(d, m.gen.slice(6)) : null;
+    const fn = (d.bank || []).find(f => f.name === m.gen);
+    return fn ? bankQ(fn, d, m.q.level) : null;
+  }
+  const ago = (t) => { const m = Math.round((Date.now() - t) / 6e4); return m < 1 ? 'just now' : m < 60 ? m + ' min ago' : m < 1440 ? Math.round(m / 60) + ' h ago' : Math.round(m / 1440) + ' d ago'; };
+  const firstLine = (q) => { const t = (q.stem || q.parts[0]?.q || '').replace(/\s+/g, ' '); return t.length > 110 ? t.slice(0, 110) + '…' : t; };
+  function openMistakes(sid) {
+    cur = { kind: 'mistakes', tab: null, sid: sid || null };
+    ovFrame('Mistakes to fix', 'c-coral', null); drawMistakes(); showOv();
+  }
+  function drawMistakes() {
+    const body = $('#ovBody'), list = mistakesOf(cur.sid), subs = subjects().filter(s => mistakesOf(s.id).length);
+    renderMistakeCount();
+    if (!mistakesOf().length) { body.innerHTML = `<div class="empty"><h3>No mistakes to fix</h3><p>Anything you get wrong in practice, drills or practice exams lands here. Get it right twice and it's cleared.</p></div>`; return; }
+    const groups = {}; list.slice().sort((a, b) => a.at - b.at).forEach(m => (groups[m.deckId] ||= []).push(m));
+    body.innerHTML = `<p class="note" style="margin:0 0 12px">Get each one right <b>twice</b> to clear it. <b>Fresh version</b> gives you the same kind of question with new numbers.</p>
+      <div class="filters" role="group" aria-label="Subject"><button class="fchip" type="button" data-ms="" aria-pressed="${!cur.sid}">All · ${mistakesOf().length}</button>${subs.map(s => `<button class="fchip" type="button" data-ms="${esc(s.id)}" aria-pressed="${cur.sid === s.id}">${esc(s.name)} · ${mistakesOf(s.id).length}</button>`).join('')}</div>
+      <div class="row" style="margin:6px 0 16px">${list.length ? `<button class="btn btn-hot" type="button" id="redoAll">Redo all ${list.length} →</button>` : ''}</div>
+      ${Object.entries(groups).map(([id, ms]) => { const d = getDeck(id); return `<div class="mgroup ${hue(d)}"><h3>${esc(d.title)} <span class="mono">${ms.length}</span></h3>${ms.map(m => `<div class="mrow"><div class="mtxt"><div class="mq">${esc(firstLine(m.q))}</div><div class="mmeta">${m.q.level ? `<span class="lvl-chip lvl-${m.q.level}">${m.q.level}</span>` : ''}${ago(m.at)}${m.fixes ? ' · 1 of 2 fixed' : ''}</div></div><div class="row"><button class="btn btn-sm btn-ghost" type="button" data-redo="${m.id}">Redo</button>${freshQ(m) ? `<button class="btn btn-sm btn-ghost" type="button" data-fresh="${m.id}">Fresh version</button>` : ''}</div></div>`).join('')}</div>`; }).join('')}`;
+    $$('[data-ms]', body).forEach(b => b.onclick = () => { cur.sid = b.dataset.ms || null; drawMistakes(); });
+    $$('[data-redo]', body).forEach(b => b.onclick = () => redoMistakes([b.dataset.redo], false));
+    $$('[data-fresh]', body).forEach(b => b.onclick = () => redoMistakes([b.dataset.fresh], true));
+    const ra = $('#redoAll', body); if (ra) ra.onclick = () => redoMistakes(list.slice().sort((a, b) => a.at - b.at).map(m => m.id), false);
+  }
+  // Walks through the given mistakes one at a time.
+  function redoMistakes(ids, fresh) {
+    const body = $('#ovBody'); let i = 0;
+    const show = () => {
+      const m = S.mistakes.find(x => x.id === ids[i]);
+      if (!m) { if (++i < ids.length) return show(); drawMistakes(); return; }
+      const d = getDeck(m.deckId), q = (fresh && freshQ(m)) || JSON.parse(JSON.stringify(m.q));
+      body.innerHTML = `<div class="row" style="justify-content:space-between;margin-bottom:10px"><span class="eyebrow">${esc(d.title)} · ${i + 1} of ${ids.length}${fresh ? ' · fresh version' : ''}</span><button class="linkbtn" type="button" id="mBack">← All mistakes</button></div><div id="qHost"></div>
+        <div class="qnav"><button class="btn btn-hot" type="button" id="mNext">${i + 1 < ids.length ? 'Next mistake →' : 'Done'}</button></div>`;
+      $('#qHost', body).appendChild(renderCard(q, { mode: 'practice', onPart: (p) => { record(d.id, q.tags, p._got || 0, p.marks || 1); if (allDone(q) && !q._counted) { q._counted = true; noteResult(q, d, { id: m.id, fresh }); } } }));
+      $('#mBack', body).onclick = drawMistakes;
+      $('#mNext', body).onclick = () => { i++; if (i < ids.length) show(); else drawMistakes(); };
+      ov.scrollTo({ top: 0 });
+    };
+    show();
+  }
   async function aiMoreQuestions(d, btn, done) {
     btn.disabled = true; const old = btn.textContent; btn.textContent = 'Writing questions… (about a minute)';
     const notes = deckContext(d);
@@ -547,15 +603,18 @@ Write 8 mcq (answer = index 0-3 of the correct option, vary its position) and 2 
   const cleanShort = (arr) => (Array.isArray(arr) ? arr : []).filter(s => s && s.q).slice(0, 20).map(s => ({ q: String(s.q).slice(0, 400), marks: Math.max(1, Math.min(8, Math.round(+s.marks || 3))), criteria: (Array.isArray(s.criteria) ? s.criteria : []).slice(0, 8).map(c => String(c).slice(0, 240)), model: String(s.model || '').slice(0, 1500), tags: [] }));
 
   /* ---------------- quick drills (maths) ---------------- */
+  function drillQ(d, key) {
+    const r = d.drills[key]();
+    const part = { label: '', q: r.q, type: r.type, value: r.value, show: r.show, steps: r.steps, marks: 1, hint: r.hint, choices: r.choices };
+    return { stem: '', level: 'F', gen: 'drill:' + key, tags: [r.tag], deckId: d.id, deckTitle: d.title, parts: [part], visual: null };
+  }
   function viewDrills(el, d) {
     const sess = { ok: 0, n: 0 };
     el.innerHTML = `<p class="note" style="margin:0 0 6px">Fast one-step questions to warm up. Exam questions are the main event.</p><div class="session"><span>Session <b id="dOk">0</b>/<b id="dN">0</b></span></div><div id="qHost"></div><div class="qnav"><button class="btn btn-hot" type="button" id="nextQ">Next →</button></div>`;
     const host = $('#qHost', el);
     const next = () => {
-      const fn = pick(Object.values(d.drills)); const r = fn();
-      const part = { label: '', q: r.q, type: r.type, value: r.value, show: r.show, steps: r.steps, marks: 1, hint: r.hint, choices: r.choices };
-      const q = { stem: '', tags: [r.tag], deckId: d.id, parts: [part], visual: null };
-      host.innerHTML = ''; host.appendChild(renderCard(q, { mode: 'practice', onPart: (p) => { sess.n++; if (p._got) sess.ok++; $('#dOk', el).textContent = sess.ok; $('#dN', el).textContent = sess.n; record(d.id, [r.tag], p._got, 1); } }));
+      const q = drillQ(d, pick(Object.keys(d.drills)));
+      host.innerHTML = ''; host.appendChild(renderCard(q, { mode: 'practice', onPart: (p) => { sess.n++; if (p._got) sess.ok++; $('#dOk', el).textContent = sess.ok; $('#dN', el).textContent = sess.n; record(d.id, q.tags, p._got, 1); noteResult(q, d); } }));
     };
     $('#nextQ', el).onclick = next; next();
   }
@@ -620,6 +679,7 @@ Write 8 mcq (answer = index 0-3 of the correct option, vary its position) and 2 
       s.p._got = null; selfMark(s.p, s.q, ans, fb, s.el, () => showResults(body));
     }
     ex.blocks.forEach(q => q.parts.forEach(p => { if (p._got != null) record(q.deckId, q.tags, p._got, p.marks || 1); }));
+    ex.blocks.forEach(q => { const d = getDeck(q.deckId); if (d && allDone(q)) noteResult(q, d); });
     btn.remove(); $('#timer')?.remove();
     showResults(body);
   }
@@ -632,7 +692,8 @@ Write 8 mcq (answer = index 0-3 of the correct option, vary its position) and 2 
     if (!res) { res = document.createElement('div'); res.id = 'examResult'; res.className = 'result'; body.prepend(res); }
     res.innerHTML = `<div class="eyebrow">Your score</div><div class="score">${got}/${out}</div><p style="font-size:18px;font-weight:800;margin:6px 0">${pct}% · ${msg}</p>${pending ? `<p class="note">+ ${pending} marks of short answers still to self-mark below.</p>` : ''}
       <div class="bars">${Object.entries(byDeck).map(([k, [g, o]]) => { const v = o ? g / o : 0; return `<div class="bar"><span>${esc(k)}</span><div class="tr"><i style="width:${v * 100}%;background:${v >= .8 ? 'var(--good)' : v >= .5 ? 'var(--gold)' : 'var(--bad)'}"></i></div><span class="n">${g}/${o}</span></div>`; }).join('')}</div>
-      <div class="row" style="margin-top:16px"><button class="btn btn-hot" type="button" id="again">New practice exam</button></div>`;
+      <div class="row" style="margin-top:16px">${missedN(ex) ? `<button class="btn btn-acc" type="button" id="fixMist">Fix my ${missedN(ex)} mistake${missedN(ex) > 1 ? 's' : ''} →</button>` : ''}<button class="btn btn-hot" type="button" id="again">New practice exam</button></div>`;
+    const fm = $('#fixMist', res); if (fm) fm.onclick = () => { closeOv(); openMistakes(); };
     $('#again', res).onclick = () => { const sid = ex.title.startsWith('Geo') ? 'geo' : 'maths'; closeOv(); openMock(sid); };
     ov.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
     if (pct >= 70 && !pending) { burst(innerWidth / 2, 160, 160); }
@@ -844,7 +905,8 @@ Aim for 2-5 sections with 3-6 notes each, 10-20 flashcards (key terms, people, d
       .from('#subject .decks', { y: 30, opacity: .3, duration: .6, clearProps: 'transform,opacity' }, '-=.5');
   }
 
+  $('#mistBtn').onclick = () => openMistakes();
   if (!subjects().some(s => s.id === S.subj)) S.subj = 'geo';
-  renderStats(); renderTabs(); renderNext(); renderBoard(); renderTicker(); renderSubject(); renderWeek(); renderUpSubjects(); renderAiNote(); intro();
+  renderStats(); renderMistakeCount(); renderTabs(); renderNext(); renderBoard(); renderTicker(); renderSubject(); renderWeek(); renderUpSubjects(); renderAiNote(); intro();
   AI.init();
 })();
