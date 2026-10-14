@@ -32,6 +32,7 @@
     return Logic.defaults(st);
   }
   let S = loadLocal(KEY);
+  if (!localStorage.getItem('lockin.seenHome')) { S.subj = 'home'; try { localStorage.setItem('lockin.seenHome', '1'); } catch (e) { } }
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { } if (me) queueSync(); };
   const today = () => new Date().toLocaleDateString('en-CA');
   function bumpStreak() { const t = today(); if (S.streak.last === t) return; const y = new Date(Date.now() - 864e5).toLocaleDateString('en-CA'); S.streak.n = S.streak.last === y ? S.streak.n + 1 : 1; S.streak.last = t; }
@@ -50,7 +51,9 @@
   const SUBJ = [
     { id: 'geo', name: 'Geography', hue: 'green', exam: new Date(2026, 9, 26, 9, 0), when: 'Mon 26 Oct, P1–2', format: '45 minutes. 30 multiple choice (25 on geographical tools & skills, 5 on Water in the World) + 3 short answers.', mock: 'geo' },
     { id: 'maths', name: 'Maths', hue: 'gold', exam: new Date(2026, 9, 29, 11, 0), when: 'Thu 29 Oct, P3–4', format: 'The exam covers chapters 8, 9, 10 and 12, with multi-part questions like the Test Yourself pages. Ch 3 and Ch 7 are extra practice.', mock: 'maths' },
-    { id: 'y12', name: 'Year 12 Maths', hue: 'lilac', exam: null, when: '', format: 'HSC Mathematics Extension 2: proof, complex numbers, induction, integration, vectors and mechanics.' },
+    { id: 'y12', name: 'Maths Extension 2', hue: 'lilac', exam: new Date(2026, 9, 19, 13, 50), when: 'Mon 19 Oct, 1:50 pm', format: 'HSC: proof, complex numbers, induction, integration, vectors and mechanics. The real paper is 3 hours.', mock: 'gen' },
+    { id: 'e1', name: 'Maths Extension 1', hue: 'cyan', exam: new Date(2026, 9, 23, 13, 50), when: 'Fri 23 Oct, 1:50 pm', format: 'HSC. Upload your notes or past papers to build decks for this subject.' },
+    { id: 'phys', name: 'Physics', hue: 'coral', exam: new Date(2026, 10, 5, 9, 25), when: 'Thu 5 Nov, 9:25 am', format: 'HSC. Upload your notes or past papers to build decks for this subject.' },
   ];
   const BUILTIN = [
     G.mapDeck, G.waterDeck,
@@ -135,39 +138,39 @@
   const pad = (n) => String(n).padStart(2, '0');
   const nextExam = () => SUBJ.filter(s => s.exam && s.exam > Date.now()).sort((a, b) => a.exam - b.exam)[0];
   const daysTo = (d) => Math.max(0, Math.ceil((d - Date.now()) / 864e5));
-  // Seven-segment digits like a Casio screen. Unlit segments stay faintly visible, as on a real LCD.
-  const SEGS = { 0: 'abcdef', 1: 'bc', 2: 'abged', 3: 'abgcd', 4: 'fgbc', 5: 'afgcd', 6: 'afgedc', 7: 'abc', 8: 'abcdefg', 9: 'abcdfg' };
-  const hSeg = (y) => `4,${y} 6,${y - 2} 22,${y - 2} 24,${y} 22,${y + 2} 6,${y + 2}`;
-  const vSeg = (x, y1, y2) => `${x},${y1} ${x + 2},${y1 + 2} ${x + 2},${y2 - 2} ${x},${y2} ${x - 2},${y2 - 2} ${x - 2},${y1 + 2}`;
-  const SEG_PTS = { a: hSeg(3), g: hSeg(25), d: hSeg(47), f: vSeg(3, 4, 24), b: vSeg(25, 4, 24), e: vSeg(3, 26, 46), c: vSeg(25, 26, 46) };
-  function lcdSvg(str, label) {
-    let x = 0, out = '';
-    for (const ch of str) {
-      if (ch === ':') { out += `<rect class="on" x="${x + 3}" y="15" width="4" height="4"/><rect class="on" x="${x + 1}" y="33" width="4" height="4"/>`; x += 11; continue; }
-      const lit = SEGS[ch] || '';
-      out += `<g transform="translate(${x} 0) skewX(-7)">${Object.entries(SEG_PTS).map(([k, pts]) => `<polygon class="${lit.includes(k) ? 'on' : 'off'}" points="${pts}"/>`).join('')}</g>`;
-      x += 33;
-    }
-    return `<svg class="lcd-digits" viewBox="-6 -2 ${x + 6} 54" role="img" aria-label="${esc(label)}">${out}</svg>`;
-  }
+  // Hero: what's next, in a sentence, then every exam on a ruler from today to the last one.
+  const DAY = 864e5, dayStart = (t) => { const d = new Date(t); d.setHours(0, 0, 0, 0); return d.getTime(); };
+  const shortDate = (t) => new Date(t).toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' });
+  const hasPractice = (s) => s.mock === 'geo' || s.mock === 'maths' || (s.mock && decksOf(s.id).some(d => d.bank));
   function renderNext() {
-    const s = nextExam(), box = $('#next');
-    if (!s) { box.innerHTML = `<h1 class="hero-h">Exams are done</h1><div class="calc"><div class="lcd"><div class="lcd-top"><span>Go outside</span></div>${lcdSvg('00:00:00:00', 'No exams left')}</div></div>`; return; }
-    box.innerHTML = `<h1 class="hero-h">${esc(s.name)} exam in</h1>
-      <div class="calc c-${s.hue}">
-        <div class="lcd" id="lcd"><div class="lcd-top"><span>${esc(s.name)}</span><span>${esc(s.when)}</span></div><div id="lcdNum"></div></div>
-        <div class="lcd-units" aria-hidden="true"><span>days</span><span>hours</span><span>min</span><span>sec</span></div>
-        <div class="calc-keys"><button class="ckey ckey-shift" type="button" data-act="mock" data-s="${s.id}">Start a practice exam</button><button class="ckey" type="button" data-act="cards" data-s="${s.id}">Flashcards</button></div>
-      </div>`;
-    tickCount();
+    const box = $('#next'), now = Date.now();
+    const up = SUBJ.filter(s => s.exam && s.exam > now).sort((a, b) => a.exam - b.exam);
+    if (!up.length) { box.innerHTML = '<h1 class="hero-h">No exams left. Go outside.</h1>'; return; }
+    const s = up[0], d = daysTo(s.exam), when = d <= 0 ? 'today' : d === 1 ? 'tomorrow' : `in ${d} days`;
+    const t0 = dayStart(now), span = Math.max(7, Math.round((dayStart(up[up.length - 1].exam) - t0) / DAY) + 2);
+    const at = (t) => Math.min(100, (Math.round((dayStart(t) - t0) / DAY) / span) * 100);
+    let ticks = '';
+    for (let i = 0; i <= span; i++) {
+      const t = t0 + i * DAY, mon = new Date(t).getDay() === 1;
+      ticks += `<span class="tick${mon ? ' major' : ''}" style="left:${(i / span) * 100}%">${mon ? `<em>${new Date(t).getDate()} ${new Date(t).toLocaleDateString('en-AU', { month: 'short' })}</em>` : ''}</span>`;
+    }
+    // Stack labels right to left: a label that overhangs a later exam's marker sits above that marker's label,
+    // so marker lines never cross text. The result steps down to the right, with the next exam on top.
+    const boxW = box.clientWidth || 600, placed = [];
+    for (const e of up.slice().reverse()) {
+      const x = at(e.exam), w = (Math.max(e.name.length * 8.4, 92) + 16) / boxW * 100, flip = x + w > 100;
+      const span = flip ? [x - w, x] : [x, x + w];
+      const clash = placed.filter(p => (p.x >= span[0] && p.x <= span[1]) || (p.span[0] < span[1] && span[0] < p.span[1]));
+      placed.unshift({ e, x, span, flip, row: clash.length ? Math.max(...clash.map(p => p.row)) + 1 : 0 });
+    }
+    const marks = placed.map(({ e, x, flip, row }) => `<li class="rmark c-${e.hue}${e === s ? ' next' : ''}" style="left:${x}%;--row:${row}"><span class="pin"></span><span class="rlabel${flip ? ' flip' : ''}"><b>${esc(e.name)}</b>${esc(shortDate(e.exam))}</span></li>`).join('');
+    const rowEnd = { length: Math.max(1, ...placed.map(p => p.row + 1)) };
+    box.innerHTML = `<h1 class="hero-h">${esc(s.name)} is ${when}.</h1>
+      <p class="hero-sub">${esc(s.when)}.${up.length > 1 ? ` After that: ${up.slice(1, 3).map(e => `${esc(e.name)} in ${daysTo(e.exam)} days`).join(', ')}.` : ''}</p>
+      <div class="ruler" style="--rows:${rowEnd.length}"><div class="ticks" aria-hidden="true"><span class="today">Today</span>${ticks}</div><ol class="rmarks" aria-label="Exam timeline">${marks}</ol></div>
+      <div class="hero-actions">${hasPractice(s) ? `<button class="btn" type="button" data-act="mock" data-s="${s.id}">Start a ${esc(s.name)} practice exam</button><button class="btn btn-ghost" type="button" data-act="cards" data-s="${s.id}">Flashcards</button>` : `<button class="btn" type="button" data-act="upload" data-s="${s.id}">Add ${esc(s.name)} notes</button>`}</div>`;
   }
-  function tickCount() {
-    const s = nextExam(), el = $('#lcdNum'); if (!s || !el) return;
-    let ms = s.exam - Date.now(); if (ms <= 0) { renderNext(); return; }
-    const d = Math.floor(ms / 864e5); ms -= d * 864e5; const h = Math.floor(ms / 36e5); ms -= h * 36e5; const m = Math.floor(ms / 6e4); const sec = Math.floor((ms - m * 6e4) / 1e3);
-    el.innerHTML = lcdSvg(`${pad(d)}:${pad(h)}:${pad(m)}:${pad(sec)}`, `${d} days, ${h} hours and ${m} minutes`);
-  }
-  setInterval(tickCount, 1000);
+  setInterval(renderNext, 60000);
   function weakest() {
     let best = null;
     allDecks().forEach(d => {
@@ -206,10 +209,49 @@
 
   /* ---------------- subject tabs + panel ---------------- */
   function renderTabs() {
-    $('#subtabs').innerHTML = subjects().map(s => `<button class="subtab" role="tab" type="button" data-subj="${esc(s.id)}" aria-selected="${S.subj === s.id}">${esc(s.name)}</button>`).join('');
+    $('#subtabs').innerHTML = [{ id: 'home', name: 'Home' }, ...subjects()].map(s => `<button class="subtab" role="tab" type="button" data-subj="${esc(s.id)}" aria-selected="${S.subj === s.id}">${esc(s.name)}</button>`).join('');
   }
   $('#subtabs').addEventListener('click', e => { const b = e.target.closest('[data-subj]'); if (!b) return; S.subj = b.dataset.subj; save(); renderTabs(); renderSubject(); $('#subject').scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' }); });
+  /* ---------------- home: report card, what's inside, what it does ---------------- */
+  const GRADE = (m) => (m >= 85 ? 'A' : m >= 70 ? 'B' : m >= 50 ? 'C' : m >= 25 ? 'D' : m > 0 ? 'E' : '–');
+  const FEATURES = [
+    ['Levels that move with you', 'Three right in a row moves you up from Foundation to Standard to Complex. Two wrong drops you back.'],
+    ['A list of your mistakes', 'Every question you get wrong is saved, diagrams and all, until you get it right twice.'],
+    ['Practice exams', 'Timed papers built fresh every time, marked the moment you finish.'],
+    ['Maths that looks like maths', 'Fractions, integrals and vectors set like a textbook. Type answers like 3π/4 or 2√3.'],
+    ['Questions that never run out', 'Every exam question is generated with new numbers and comes with full working.'],
+    ['Your own decks', 'Upload a textbook PDF or photos of your book and get notes, flashcards and questions.'],
+    ['AI marking', 'In the Claude version, short answers are marked against the criteria and you can ask about any topic.'],
+    ['Leaderboards with mates', 'Make a private group, share the code, and race for XP each week.'],
+  ];
+  function renderHome(el) {
+    el.className = 'wrap section home';
+    const subs = subjects().filter(s => decksOf(s.id).length), all = allDecks();
+    const n = (f) => all.reduce((a, d) => a + f(d), 0);
+    const cards = n(d => (d.cards || []).length), topics = n(d => (d.sections || []).length), gens = n(d => (d.bank || []).length + Object.keys(d.drills || {}).length);
+    const answered = Object.values(S.p).reduce((a, p) => a + (p.att || 0), 0), cleared = Object.keys(S.cleared).length;
+    const avg = (ds) => Math.round(ds.reduce((a, d) => a + mastery(d.id), 0) / ds.length);
+    const best = (ds) => ds.map(levelOf).sort((a, b) => Logic.LEVELS.indexOf(b) - Logic.LEVELS.indexOf(a))[0];
+    el.innerHTML = `<div class="home-grid">
+      <section class="report" aria-labelledby="rcH">
+        <h2 id="rcH">Report card</h2><p class="sec-sub">${esc(S.profile?.nickname || 'You')}, ${new Date().toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+        <table class="rc"><thead><tr><th scope="col">Subject</th><th scope="col">Mastery</th><th scope="col">Level</th><th scope="col">Grade</th></tr></thead>
+          <tbody>${subs.map(s => { const ds = decksOf(s.id), m = avg(ds), L = best(ds); return `<tr class="c-${s.hue}"><th scope="row"><button class="linkbtn" type="button" data-subj-go="${esc(s.id)}">${esc(s.name)}</button></th><td><span class="rbar"><i style="width:${m}%"></i></span> ${m}%</td><td><span class="d-level lvl-${L}">${LNAME[L]}</span></td><td class="grade">${GRADE(m)}</td></tr>`; }).join('')}</tbody></table>
+        <dl class="tallies"><div><dt>XP</dt><dd>${S.xp}</dd></div><div><dt>Day streak</dt><dd>${S.streak.n}</dd></div><div><dt>Marks attempted</dt><dd>${answered}</dd></div><div><dt>Mistakes cleared</dt><dd>${cleared}</dd></div></dl>
+        <button class="btn btn-ghost" type="button" id="shareSite">Share Lock in</button>
+      </section>
+      <section class="inside" aria-labelledby="inH">
+        <h2 id="inH">What's inside</h2>
+        <p class="sec-sub">${all.length} decks, ${cards} flashcards, ${topics} topics of notes and ${gens} question generators that never run out.</p>
+        ${subs.map(s => `<div class="in-sub c-${s.hue}"><h3>${esc(s.name)}${s.exam ? `<small>${esc(shortDate(s.exam))}</small>` : ''}</h3><ul>${decksOf(s.id).map(d => `<li><button class="linkbtn" type="button" data-open="${esc(d.id)}">${esc(d.title)}</button><span>${esc(d.chapter || '')}</span></li>`).join('')}</ul></div>`).join('')}
+      </section>
+    </div>
+    <section class="features" aria-labelledby="ftH"><h2 id="ftH">What it does</h2><dl>${FEATURES.map(([t, d]) => `<div><dt>${t}</dt><dd>${d}</dd></div>`).join('')}</dl></section>`;
+    $('#shareSite').onclick = () => copyText(location.href.split('#')[0], 'Link copied. Send it to your mates.', el);
+    $$('[data-subj-go]', el).forEach(b => b.onclick = () => { S.subj = b.dataset.subjGo; save(); renderTabs(); renderSubject(); });
+  }
   function renderSubject() {
+    if (S.subj === 'home') return renderHome($('#subject'));
     const s = getSubj(S.subj), ds = decksOf(s.id), el = $('#subject'), nm = mistakesOf(s.id).length;
     el.className = 'wrap section c-' + s.hue;
     el.innerHTML = `<div class="subj-head"><div><h2>${esc(s.name)}</h2><p class="subj-meta">${s.exam ? `Exam ${esc(s.when)}. ` : ''}${esc(s.format)}</p>${nm ? `<button class="linkbtn mist-link" type="button" data-act="mistakes" data-s="${esc(s.id)}">${nm} mistake${nm > 1 ? 's' : ''} to fix</button>` : ''}</div>
@@ -654,6 +696,14 @@ Write 8 mcq (answer = index 0-3 of the correct option, vary its position) and 2 
   /* ---------------- practice exams ---------------- */
   function buildMock(sid) {
     const blocks = [];
+    if (sid !== 'geo' && sid !== 'maths') { // any other subject: two bank questions per deck plus a quick multiple choice
+      const s = getSubj(sid);
+      decksOf(sid).filter(d => d.bank).forEach(d => {
+        blocks.push(bankQ(pick(d.bank), d, 'S'), bankQ(pick(d.bank), d, 'C'));
+        const c = conceptsOf(d); if (c.length) blocks.push(mcqQ(pick(c), d));
+      });
+      return { sid, title: `${s.name} practice exam`, minutes: 60, blocks: shuffle(blocks), acc: 'c-' + s.hue, intro: 'Two questions from every topic plus quick multiple choice. 60 minutes, so about a third of the real paper.' };
+    }
     if (sid === 'geo') {
       const maps = G.mapDeck, water = G.waterDeck;
       blocks.push(bankQ(G.BANK.maps[0], maps, 'C'));
@@ -662,7 +712,7 @@ Write 8 mcq (answer = index 0-3 of the correct option, vary its position) and 2 
       shuffle(conceptsOf(maps)).slice(0, 7).forEach(c => blocks.push(mcqQ(c, maps)));
       shuffle(conceptsOf(water)).slice(0, 5).forEach(c => blocks.push(mcqQ(c, water)));
       shuffle(shortOf(water)).slice(0, 3).forEach(s => blocks.push(shortQ(s, water)));
-      return { title: 'Geography practice exam', minutes: 45, blocks, acc: 'c-green', intro: 'Section 1: Geographical tools and skills (25 multiple choice). Section 2: Water in the World (5 multiple choice + 3 short answers). 45 minutes, like the real thing.' };
+      return { sid, title: 'Geography practice exam', minutes: 45, blocks, acc: 'c-green', intro: 'Section 1: Geographical tools and skills (25 multiple choice). Section 2: Water in the World (5 multiple choice + 3 short answers). 45 minutes, like the real thing.' };
     }
     const md = decksOf('maths').filter(d => d.inExam !== false); // only chapters in the real exam
     md.forEach(d => {
@@ -672,7 +722,7 @@ Write 8 mcq (answer = index 0-3 of the correct option, vary its position) and 2 
       blocks.push(a, b);
     });
     md.forEach(d => { const c = conceptsOf(d); if (c.length) blocks.push(mcqQ(pick(c), d)); });
-    return { title: 'Maths practice exam', minutes: 60, blocks: shuffle(blocks), acc: 'c-gold', intro: 'Two multi-part questions from each chapter (8, 9, 10, 12) plus quick multiple choice. 60 minutes. Calculator allowed.' };
+    return { sid, title: 'Maths practice exam', minutes: 60, blocks: shuffle(blocks), acc: 'c-gold', intro: 'Two multi-part questions from each chapter (8, 9, 10, 12) plus quick multiple choice. 60 minutes. Calculator allowed.' };
   }
   function openMock(sid) {
     const ex = buildMock(sid);
@@ -726,7 +776,7 @@ Write 8 mcq (answer = index 0-3 of the correct option, vary its position) and 2 
       <div class="bars">${Object.entries(byDeck).map(([k, [g, o]]) => { const v = o ? g / o : 0; return `<div class="bar"><span>${esc(k)}</span><div class="tr"><i style="width:${v * 100}%;background:${v >= .8 ? 'var(--good)' : v >= .5 ? 'var(--gold)' : 'var(--bad)'}"></i></div><span class="n">${g}/${o}</span></div>`; }).join('')}</div>
       <div class="row" style="margin-top:16px">${missedN(ex) ? `<button class="btn btn-acc" type="button" id="fixMist">Fix my ${missedN(ex)} mistake${missedN(ex) > 1 ? 's' : ''}</button>` : ''}<button class="btn btn-hot" type="button" id="again">New practice exam</button></div>`;
     const fm = $('#fixMist', res); if (fm) fm.onclick = () => { closeOv(); openMistakes(); };
-    $('#again', res).onclick = () => { const sid = ex.title.startsWith('Geo') ? 'geo' : 'maths'; closeOv(); openMock(sid); };
+    $('#again', res).onclick = () => { closeOv(); openMock(ex.sid); };
     ov.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
     if (pct >= 70 && !pending) { burst(innerWidth / 2, 160, 160); }
   }
@@ -790,7 +840,7 @@ Write 8 mcq (answer = index 0-3 of the correct option, vary its position) and 2 
   }
 
   /* ---------------- upload ---------------- */
-  let upSubj = S.subj, files = [];
+  let upSubj = S.subj === 'home' ? 'geo' : S.subj, files = [];
   function renderUpSubjects() {
     const list = [...subjects(), { id: '__new', name: '+ New subject' }];
     $('#upSubjects').innerHTML = list.map(s => `<button class="pill ${s.hue ? 'c-' + s.hue : ''}" type="button" data-us="${esc(s.id)}" aria-pressed="${upSubj === s.id}">${esc(s.name)}</button>`).join('');
@@ -1119,15 +1169,13 @@ Aim for 2-5 sections with 3-6 notes each, 10-20 flashcards (key terms, people, d
   }
 
   /* ---------------- intro motion ---------------- */
-  function intro() { // the calculator screen switches on: every segment lights, then settles
-    const l = $('#lcd'); if (!l || reduce) return;
-    l.classList.add('boot'); setTimeout(() => l.classList.remove('boot'), 650);
-  }
+  function intro() { } // no load animation: motion only answers what you do
+
 
 
   $('#mistBtn').onclick = () => openMistakes();
   $('#acctBtn').onclick = () => (me && !S.profile ? openProfile(true) : openAccount());
-  if (!subjects().some(s => s.id === S.subj)) S.subj = 'geo';
+  if (S.subj !== 'home' && !subjects().some(s => s.id === S.subj)) S.subj = 'home';
   renderStats(); renderMistakeCount(); renderTabs(); renderNext(); renderBoard(); renderSubject(); renderWeek(); renderUpSubjects(); renderAiNote(); renderAcct(); renderLeague(); intro();
   AI.init();
   Cloud.init(onUser);
