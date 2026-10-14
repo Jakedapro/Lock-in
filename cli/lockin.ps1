@@ -1,7 +1,7 @@
-﻿# Lock in command line (Windows).  Usage: lockin [open|update|version|web|banner|uninstall|help]
+﻿# Lock in command line (Windows).  Usage: lockin [open|update|version|focus [min]|exams|web|banner|uninstall|help]
 # Installed by install.ps1 into %LOCALAPPDATA%\LockIn\bin, next to lockin.cmd, which is on your PATH.
 # Saved as UTF-8 with a byte order mark so Windows PowerShell 5 reads the block characters correctly.
-param([string]$Command = 'start')
+param([string]$Command = 'start', [string]$Arg = '')
 $ErrorActionPreference = 'Stop'
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 $ProgressPreference = 'SilentlyContinue' # makes downloads much faster in Windows PowerShell
@@ -197,10 +197,73 @@ function Show-Intro([switch]$Launch) {
   Write-Host ''
 }
 
+# ---------------------------------------------------------------- focus timer in the terminal
+$Digits = @{
+  '0' = @('█████', '█   █', '█   █', '█   █', '█████'); '1' = @('  ██ ', ' ███ ', '  ██ ', '  ██ ', '█████')
+  '2' = @('█████', '    █', '█████', '█    ', '█████'); '3' = @('█████', '    █', ' ████', '    █', '█████')
+  '4' = @('█   █', '█   █', '█████', '    █', '    █'); '5' = @('█████', '█    ', '█████', '    █', '█████')
+  '6' = @('█████', '█    ', '█████', '█   █', '█████'); '7' = @('█████', '    █', '   █ ', '  █  ', '  █  ')
+  '8' = @('█████', '█   █', '█████', '█   █', '█████'); '9' = @('█████', '█   █', '█████', '    █', '█████')
+  ':' = @('   ', ' █ ', '   ', ' █ ', '   ')
+}
+function Show-Focus([int]$Minutes) {
+  if ($Minutes -lt 1 -or $Minutes -gt 180) { Write-Host 'Pick between 1 and 180 minutes, e.g. lockin focus 25'; exit 1 }
+  $total = $Minutes * 60; $end = (Get-Date).AddSeconds($total); $paused = $null
+  if (-not $Fancy) {
+    Write-Host "Focus for $Minutes minutes. Ctrl+C to stop."
+    while ((Get-Date) -lt $end) { $left = [int]($end - (Get-Date)).TotalMinutes; Write-Host "  $left min left"; Start-Sleep -Seconds ([Math]::Min(60, [Math]::Max(1, ($end - (Get-Date)).TotalSeconds))) }
+    Write-Host 'Done. Take a 5 minute break.'; return
+  }
+  $tip = $Tips | Get-Random
+  try { [Console]::TreatControlCAsInput = $true } catch { }
+  [Console]::Write("$Esc[?25l"); Write-Host ''
+  Write-Typed "  locked in for $Minutes minutes. phone in another room." "$Bold$(Rgb @(45, 212, 191))" 10
+  Write-Host "  $Dim[space] pause   [q] stop$Reset"; Write-Host ''
+  $lines = 8; $first = $true; $stopped = $false
+  try {
+    while ($true) {
+      $now = Get-Date
+      $leftS = if ($paused) { [int]($end - $paused).TotalSeconds } else { [int][Math]::Ceiling(($end - $now).TotalSeconds) }
+      if ($leftS -le 0) { break }
+      $t = '{0:00}:{1:00}' -f [Math]::Floor($leftS / 60), ($leftS % 60)
+      if (-not $first) { [Console]::Write("$Esc[${lines}F") }; $first = $false
+      $done = 1 - $leftS / $total
+      for ($r = 0; $r -lt 5; $r++) {
+        $row = ($t.ToCharArray() | ForEach-Object { $Digits[[string]$_][$r] }) -join '  '
+        $sb = New-Object Text.StringBuilder; [void]$sb.Append('    ')
+        for ($x = 0; $x -lt $row.Length; $x++) { $ch = $row[$x]; if ($ch -eq ' ') { [void]$sb.Append(' ') } else { [void]$sb.Append((Rgb (Get-Gradient ($x / $row.Length))) + $ch) } }
+        [Console]::WriteLine($sb.ToString() + "$Reset$Esc[K")
+      }
+      $n = 40; $f = [int][Math]::Round($done * $n)
+      $bar = (0..($n - 1) | ForEach-Object { if ($_ -lt $f) { (Rgb (Get-Gradient ($_ / $n))) + '━' } else { "$Dim━$Reset" } }) -join ''
+      [Console]::WriteLine("    $bar$Reset  $([int]($done * 100))%$Esc[K")
+      [Console]::WriteLine("$Esc[K")
+      [Console]::WriteLine("    $(if ($paused) { "$Bold$(Rgb @(251, 191, 36))paused$Reset" } else { "$Dim$tip$Reset" })$Esc[K")
+      $until = (Get-Date).AddMilliseconds(500)
+      while ((Get-Date) -lt $until) {
+        if ([Console]::KeyAvailable) {
+          $k = [Console]::ReadKey($true)
+          if ($k.Key -eq 'Q' -or $k.Key -eq 'Escape' -or ($k.Key -eq 'C' -and $k.Modifiers -band [ConsoleModifiers]::Control)) { $stopped = $true; break }
+          if ($k.Key -eq 'Spacebar') { if ($paused) { $end = $end.Add((Get-Date) - $paused); $paused = $null } else { $paused = Get-Date } }
+        }
+        Start-Sleep -Milliseconds 50
+      }
+      if ($stopped) { break }
+    }
+  } finally { [Console]::Write("$Esc[?25h"); try { [Console]::TreatControlCAsInput = $false } catch { } }
+  Write-Host ''
+  if ($stopped) { $mins = [int](($total - [Math]::Max(0, ($end - (Get-Date)).TotalSeconds)) / 60); Write-Host "  stopped after $mins minute$(if ($mins -ne 1) { 's' })." ; return }
+  foreach ($hz in 880, 988, 1175) { try { [Console]::Beep($hz, 160) } catch { } }
+  Write-Typed "  $Minutes minutes locked in. take 5: stand up, drink water." "$Bold$(Rgb @(52, 211, 153))" 14
+  Write-Host ''
+}
+
 # ---------------------------------------------------------------- commands
 switch ($Command.ToLower()) {
   'start' { Show-Intro -Launch }
   'banner' { Show-Intro }
+  'focus' { Show-Focus $(if ($Arg -match '^\d+$') { [int]$Arg } else { 25 }) }
+  'exams' { try { Show-Exams } catch { Write-Host "Couldn't load the exam dates." }; Write-Host '' }
   'open' {
     $exe = Get-AppExe
     if (-not $exe) { Write-Host "Lock in isn't installed yet. Run: lockin update"; exit 1 }
@@ -227,6 +290,8 @@ lockin             the intro, then open the app
 lockin open        open the app straight away
 lockin update      install or update to the latest version
 lockin version     show the installed version
+lockin focus 25    a focus timer right here in the terminal (any minutes)
+lockin exams       countdown to every exam
 lockin banner      just the intro (no app)
 lockin web         open the website
 lockin uninstall   remove the app and this command

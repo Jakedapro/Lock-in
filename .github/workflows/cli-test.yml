@@ -37,6 +37,10 @@ jobs:
           Copy-Item cli\lockin.ps1 "$env:LOCALAPPDATA\LockIn\bin\lockin.ps1" -Force
           & "$env:LOCALAPPDATA\LockIn\bin\lockin.cmd" banner
           if ($LASTEXITCODE) { throw 'lockin banner failed' }
+          & "$env:LOCALAPPDATA\LockIn\bin\lockin.cmd" exams
+          if ($LASTEXITCODE) { throw 'lockin exams failed' }
+          & "$env:LOCALAPPDATA\LockIn\bin\lockin.cmd" focus 1
+          if ($LASTEXITCODE) { throw 'lockin focus failed' }
       - name: The lockin command is on the user PATH
         shell: powershell
         run: if (-not ([Environment]::GetEnvironmentVariable('Path','User') -split ';' -contains "$env:LOCALAPPDATA\LockIn\bin")) { throw 'not on PATH' }
