@@ -298,31 +298,49 @@
   }
 
   /* ---------------- questions: building ---------------- */
-  const mcqQ = (c, d) => { const idx = shuffle(c.options.map((_, i) => i)); const ch = idx.map(i => c.options[i]); return { stem: '', tags: c.tags || [], deckId: d.id, deckTitle: d.title, parts: [{ label: '', q: c.q, type: 'choice', choices: ch, value: idx.indexOf(c.answer), show: c.options[c.answer], steps: c.why ? [c.why] : [], marks: 1 }] }; };
-  const shortQ = (s, d) => ({ stem: '', tags: s.tags || [], deckId: d.id, deckTitle: d.title, parts: [{ label: '', q: s.q, type: 'short', marks: s.marks || 3, criteria: s.criteria || [], model: s.model || '', steps: [] }] });
-  const bankQ = (fn, d) => ({ ...fn(), deckId: d.id, deckTitle: d.title });
+  const mcqQ = (c, d) => { const idx = shuffle(c.options.map((_, i) => i)); const ch = idx.map(i => c.options[i]); return { stem: '', level: 'F', gen: null, tags: c.tags || [], deckId: d.id, deckTitle: d.title, parts: [{ label: '', q: c.q, type: 'choice', choices: ch, value: idx.indexOf(c.answer), show: c.options[c.answer], steps: c.why ? [c.why] : [], marks: 1 }] }; };
+  const shortQ = (s, d) => ({ stem: '', level: 'C', gen: null, tags: s.tags || [], deckId: d.id, deckTitle: d.title, parts: [{ label: '', q: s.q, type: 'short', marks: s.marks || 3, criteria: s.criteria || [], model: s.model || '', steps: [] }] });
+  const bankQ = (fn, d, level) => ({ ...fn(level), deckId: d.id, deckTitle: d.title, gen: fn.name });
+  // What each bank generator can make: levels and topic tags (sampled once per generator).
+  const genInfo = new Map();
+  function infoOf(fn) {
+    if (!genInfo.has(fn)) {
+      const levels = new Set(), tags = new Set();
+      Logic.LEVELS.forEach(L => { for (let i = 0; i < 3; i++) { try { const q = fn(L); levels.add(q.level); (q.tags || []).forEach(t => tags.add(t)); } catch (e) { } } });
+      genInfo.set(fn, { levels, tags });
+    }
+    return genInfo.get(fn);
+  }
   function hasPracticeFor(d, code) {
     if (!code) return false;
-    if ((d.short || []).some(s => (s.tags || []).includes(code))) return true;
-    if (d.bank) { d._tagCache ||= new Set(d.bank.flatMap(fn => { try { return fn().tags || []; } catch (e) { return []; } })); return d._tagCache.has(code); }
-    return false;
+    if (shortOf(d).some(s => (s.tags || []).includes(code))) return true;
+    return !!d.bank && d.bank.some(fn => infoOf(fn).tags.has(code));
   }
-  const queues = {};
-  function nextQuestion(d, filter = 'all', level = 'all') {
+  const bankFor = (d, filter, L) => (d.bank || []).filter(fn => { const i = infoOf(fn); return i.levels.has(L) && (filter === 'all' || i.tags.has(filter)); });
+  function levelsFor(d, filter = 'all') {
     const cs = conceptsOf(d), ss = shortOf(d).filter(s => filter === 'all' || (s.tags || []).includes(filter));
+    return Logic.LEVELS.filter(L => bankFor(d, filter, L).length || (L === 'F' && cs.length && filter === 'all') || (L === 'C' && ss.length));
+  }
+  const deckLevels = (d) => { const l = levelsFor(d); return l.length ? l : ['F']; };
+  const queues = {};
+  const LNAME = { F: 'Foundation', S: 'Standard', C: 'Complex' };
+  function nextQuestion(d, filter = 'all', level = 'F') {
+    const avail = levelsFor(d, filter); if (!avail.length) return null;
+    const use = Logic.nearestLevel(level, avail);
+    const cs = conceptsOf(d), ss = shortOf(d).filter(s => filter === 'all' || (s.tags || []).includes(filter));
+    const fns = bankFor(d, filter, use);
     const opts = [];
-    if (d.bank) opts.push(['bank', 6]);
-    if (cs.length && filter === 'all') opts.push(['mcq', d.bank ? 2 : 6]);
-    if (ss.length) opts.push(['short', d.bank ? 1.2 : 2]);
+    if (fns.length) opts.push(['bank', 6]);
+    if (use === 'F' && cs.length && filter === 'all') opts.push(['mcq', fns.length ? 2 : 6]);
+    if (use === 'C' && ss.length) opts.push(['short', fns.length ? 1.2 : 2]);
     let r = Math.random() * opts.reduce((a, o) => a + o[1], 0), kind = opts[0]?.[0];
     for (const [k, w] of opts) { if ((r -= w) < 0) { kind = k; break; } }
-    if (kind === 'bank') {
-      for (let i = 0; i < 40; i++) { const q = bankQ(pick(d.bank), d); if ((filter === 'all' || (q.tags || []).includes(filter)) && (level === 'all' || q.level === level)) return q; }
-      if (ss.length) kind = 'short'; else if (cs.length) kind = 'mcq';
-    }
-    if (kind === 'short') { const k = d.id + ':s:' + filter; if (!queues[k]?.length) queues[k] = shuffle(ss); return shortQ(queues[k].pop(), d); }
-    if (kind === 'mcq') { const k = d.id + ':m'; if (!queues[k]?.length) queues[k] = shuffle(cs); return mcqQ(queues[k].pop(), d); }
-    return null;
+    let q = null;
+    if (kind === 'bank') { for (let i = 0; i < 40 && !q; i++) { const c = bankQ(pick(fns), d, use); if (c.level === use && (filter === 'all' || (c.tags || []).includes(filter))) q = c; } }
+    if (!q && kind !== 'mcq' && use === 'C' && ss.length) { const k = d.id + ':s:' + filter; if (!queues[k]?.length) queues[k] = shuffle(ss); q = shortQ(queues[k].pop(), d); }
+    if (!q && cs.length && filter === 'all') { const k = d.id + ':m'; if (!queues[k]?.length) queues[k] = shuffle(cs); q = mcqQ(queues[k].pop(), d); }
+    if (q && use !== level) q.levelNote = `No ${LNAME[level]} questions here, showing ${LNAME[use]}`;
+    return q;
   }
 
   /* ---------------- questions: rendering & marking ---------------- */
@@ -514,7 +532,7 @@ Write 8 mcq (answer = index 0-3 of the correct option, vary its position) and 2 
     const blocks = [];
     if (sid === 'geo') {
       const maps = G.mapDeck, water = G.waterDeck;
-      blocks.push(bankQ(G.BANK.maps[0], maps));
+      blocks.push(bankQ(G.BANK.maps[0], maps, 'C'));
       blocks.push(bankQ(G.BANK.maps[3], maps)); // climate graph
       blocks.push(bankQ(G.BANK.maps[2], maps)); // scale
       shuffle(conceptsOf(maps)).slice(0, 7).forEach(c => blocks.push(mcqQ(c, maps)));

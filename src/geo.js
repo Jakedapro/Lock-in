@@ -58,7 +58,7 @@ const G = (() => {
     return { i, ang, clean: diff < 12 };
   }
 
-  function mapQuestion() {
+  function mapQuestion(lvl) {
     const m = makeMap(); const f = m.feats;
     const parts = [];
     const A = f[0], B = f[1];
@@ -108,7 +108,8 @@ const G = (() => {
     // forest area
     parts.push(C('j', 'About how much area does the forest (green) cover? Each grid square is 1 km².', [m.forest.w * m.forest.h, m.forest.w * m.forest.h + 1, m.forest.w + m.forest.h + 2, m.forest.w * m.forest.h * 2 + 1].map(v => `${v} km²`), `${m.forest.w * m.forest.h} km²`, [`The forest covers ${m.forest.w} × ${m.forest.h} = ${m.forest.w * m.forest.h} grid squares`, '1 km² each']));
 
-    return { level: 'S', tags: ['G1', 'G2', 'G3'], stem: `Use the topographic map to answer the questions. Scale 1:${m.scale.toLocaleString('en-AU')}.`, visual: { type: 'topo', map: serialise(m) }, parts };
+    const full = lvl === 'C';
+    return { level: full ? 'C' : 'S', tags: ['G1', 'G2', 'G3'], stem: `Use the topographic map to answer the questions. Scale 1:${m.scale.toLocaleString('en-AU')}.`, visual: { type: 'topo', map: serialise(m) }, parts: full ? parts : parts.slice(0, 6) };
   }
   const serialise = (m) => ({ E0: m.E0, N0: m.N0, size: m.size, ci: m.ci, contours: m.contours, peak: m.peak, river: m.river, feats: m.feats, forest: m.forest, scale: m.scale });
 
@@ -300,6 +301,6 @@ const G = (() => {
   };
 
   const BANK = { maps: [mapQuestion, mapQuestion, scaleQ, climateQ], water: [waterDataQ, climateQ] };
-  return { mapDeck, waterDeck, BANK, makeMap };
+  return { mapDeck, waterDeck, BANK, makeMap, mapQuestion };
 })();
 if (typeof module !== 'undefined') module.exports = G;
