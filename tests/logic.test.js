@@ -167,6 +167,35 @@ test('newGroupCode: 6 chars from the safe alphabet', () => {
   assert.ok(/^[ABCDEFGHJKLMNPQRSTUVWXYZ23456789]{6}$/.test(Logic.newGroupCode()));
 });
 
+/* ---------- review fixes ---------- */
+test('mergeState: a mistake cleared on one device stays cleared', () => {
+  const phone = base({ mistakes: [{ id: 'm1', key: 'k', at: 5, fixes: 1 }] });
+  const laptop = base({ mistakes: [], cleared: { k: 9 } });
+  const m = Logic.mergeState(phone, laptop);
+  assert.strictEqual(m.mistakes.length, 0);
+  assert.deepStrictEqual(m.cleared, { k: 9 });
+});
+test('mergeState: a mistake missed again after it was cleared comes back', () => {
+  const m = Logic.mergeState(base({ mistakes: [{ id: 'm2', key: 'k', at: 20, fixes: 0 }] }), base({ cleared: { k: 9 } }));
+  assert.strictEqual(m.mistakes.length, 1);
+});
+test('mergeState: a deleted custom deck stays deleted', () => {
+  const m = Logic.mergeState(base({ custom: [{ id: 'u1' }, { id: 'u2' }] }), base({ custom: [{ id: 'u2' }], gone: { u1: 3 } }));
+  assert.deepStrictEqual(m.custom.map(d => d.id), ['u2']);
+  assert.deepStrictEqual(m.gone, { u1: 3 });
+});
+test('clearMistake records a tombstone and removes it', () => {
+  const s = base({ mistakes: [{ id: 'm1', key: 'k', at: 1, fixes: 1 }] });
+  Logic.clearMistake(s, 'k', 50);
+  assert.strictEqual(s.mistakes.length, 0);
+  assert.deepStrictEqual(s.cleared, { k: 50 });
+});
+test('defaults adds cleared and gone maps', () => {
+  const s = Logic.defaults({});
+  assert.deepStrictEqual(s.cleared, {});
+  assert.deepStrictEqual(s.gone, {});
+});
+
 let fail = 0;
 for (const [name, fn] of tests) { try { fn(); } catch (e) { fail++; console.log('FAIL', name, '\n ', e.message); } }
 console.log(fail ? `${fail}/${tests.length} failed` : `ok (${tests.length} tests)`);

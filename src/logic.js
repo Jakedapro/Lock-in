@@ -6,7 +6,7 @@ const Logic = (() => {
   function defaults(S) {
     const s = S || {};
     s.lvl ||= {}; s.mistakes ||= []; s.week ||= { start: '', xp: 0 };
-    s.groups ||= []; if (s.profile === undefined) s.profile = null;
+    s.groups ||= []; s.cleared ||= {}; s.gone ||= {}; if (s.profile === undefined) s.profile = null;
     return s;
   }
 
@@ -58,6 +58,8 @@ const Logic = (() => {
     if (m.fixes + 1 >= FIXES_TO_CLEAR) return { list: list.filter(x => x !== m), removed: true };
     return { list: list.map(x => (x === m ? { ...x, fixes: x.fixes + 1 } : x)), removed: false };
   }
+  // Removes a cleared mistake and remembers when, so another device's old copy can't bring it back.
+  function clearMistake(S, key, now) { S.mistakes = S.mistakes.filter(m => m.key !== key); S.cleared[key] = now; return S; }
   const missAgain = (list, id) => list.map(m => (m.id === id ? { ...m, fixes: 0 } : m));
 
   /* ---------- sync ---------- */
@@ -81,8 +83,10 @@ const Logic = (() => {
     }
     m.lvl = { ...a.lvl };
     for (const [id, lb] of Object.entries(b.lvl)) { const la = m.lvl[id]; if (!la || LEVELS.indexOf(lb.L) >= LEVELS.indexOf(la.L)) m.lvl[id] = lb; }
-    m.custom = unionBy(a.custom, b.custom, 'id');
-    m.mistakes = unionBy(a.mistakes, b.mistakes, 'key', (x, y) => (y.at > x.at ? y : x));
+    const latest = (x, y) => { const o = { ...x }; for (const [k, t] of Object.entries(y)) o[k] = Math.max(o[k] || 0, t); return o; };
+    m.cleared = latest(a.cleared, b.cleared); m.gone = latest(a.gone, b.gone);
+    m.custom = unionBy(a.custom, b.custom, 'id').filter(d => !m.gone[d.id]);
+    m.mistakes = unionBy(a.mistakes, b.mistakes, 'key', (x, y) => (y.at > x.at ? y : x)).filter(x => !(m.cleared[x.key] >= x.at));
     m.week = a.week.start > b.week.start ? a.week : b.week.start > a.week.start ? b.week : { start: b.week.start, xp: Math.max(a.week.xp, b.week.xp) };
     m.profile = b.profile || a.profile;
     m.groups = b.groups.length ? b.groups : a.groups;
@@ -100,6 +104,6 @@ const Logic = (() => {
   const CODE_ABC = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   const newGroupCode = (rand = Math.random) => Array.from({ length: 6 }, () => CODE_ABC[Math.floor(rand() * CODE_ABC.length) % CODE_ABC.length]).join('');
 
-  return { LEVELS, defaults, classify, ladder, nearestLevel, weekStart, serialise, addMistake, fixMistake, missAgain, storageKey, mergeState, cloudPayload, validNickname, newGroupCode };
+  return { LEVELS, defaults, classify, ladder, nearestLevel, weekStart, serialise, addMistake, fixMistake, clearMistake, missAgain, storageKey, mergeState, cloudPayload, validNickname, newGroupCode };
 })();
 if (typeof module !== 'undefined') module.exports = Logic;

@@ -249,7 +249,7 @@
     if (d.custom) {
       $('#shareBtn').onclick = () => copyText(shareCode(d), 'Share code copied. Send it to your mates.', body);
       const del = $('#delBtn'); del.onclick = () => {
-        if (del.dataset.sure) { S.custom = S.custom.filter(x => x.id !== d.id); delete S.p[d.id]; save(); closeOv(); renderTabs(); toast('Deck deleted'); }
+        if (del.dataset.sure) { S.custom = S.custom.filter(x => x.id !== d.id); delete S.p[d.id]; S.gone[d.id] = Date.now(); save(); closeOv(); renderTabs(); toast('Deck deleted'); }
         else { del.dataset.sure = 1; del.textContent = 'Tap again to delete'; del.style.borderColor = 'var(--bad)'; setTimeout(() => { if (del.isConnected) { delete del.dataset.sure; del.textContent = 'Delete'; del.style.borderColor = ''; } }, 3000); }
       };
     }
@@ -537,7 +537,8 @@ Award marks only for what the student actually wrote. Reply with ONLY this JSON:
   // Called once a question is fully marked. `redo` = {id, fresh} when it came from the mistakes list.
   function noteResult(q, d, redo) {
     if (redo && !missed(q)) {
-      const r = Logic.fixMistake(S.mistakes, redo.id); S.mistakes = r.list;
+      const key = S.mistakes.find(m => m.id === redo.id)?.key;
+      const r = Logic.fixMistake(S.mistakes, redo.id); S.mistakes = r.list; if (r.removed && key) S.cleared[key] = Date.now();
       toast(r.removed ? 'Cleared from your mistakes' : 'Fixed! Get it right once more to clear it');
     } else if (redo && !redo.fresh) S.mistakes = Logic.missAgain(S.mistakes, redo.id);
     else if (missed(q)) S.mistakes = Logic.addMistake(S.mistakes, { deckId: d.id, q, gen: q.gen }, Date.now());
@@ -904,7 +905,8 @@ Aim for 2-5 sections with 3-6 notes each, 10-20 flashcards (key terms, people, d
   /* ---------------- accounts & sync ---------------- */
   const AVATARS = ['🦊', '🐼', '🐸', '🦉', '🐯', '🐙', '🦄', '🐢', '🐧', '🦖', '🐝', '🐳'];
   const AV_COLS = ['coral', 'cyan', 'gold', 'lilac', 'pink', 'green'];
-  const sync = { t: null, state: 'idle', at: 0, dropped: false };
+  // ready = the cloud copy has been loaded and merged; nothing is pushed before that.
+  const sync = { t: null, state: 'idle', at: 0, dropped: false, ready: false, retry: null };
   const avatarHtml = (pr, cls = '') => `<span class="av ${cls} c-${esc(pr?.avatar?.c || 'lilac')}" aria-hidden="true">${esc(pr?.avatar?.e || '🙂')}</span>`;
   function renderAll() { renderStats(); renderMistakeCount(); renderTabs(); renderNext(); renderBoard(); renderSubject(); renderUpSubjects(); renderAcct(); renderLeague(); }
   function renderAcct() {
@@ -914,12 +916,17 @@ Aim for 2-5 sections with 3-6 notes each, 10-20 flashcards (key terms, people, d
     b.classList.toggle('in', !!me);
   }
   function queueSync() { clearTimeout(sync.t); sync.t = setTimeout(pushCloud, 3000); }
+  const cloudState = (doc) => (doc && doc.state ? JSON.parse(doc.state) : null);
   async function pushCloud() {
-    clearTimeout(sync.t); if (!me) return;
-    const { state, droppedCustom } = Logic.cloudPayload(S); sync.dropped = droppedCustom;
+    clearTimeout(sync.t); if (!me || !sync.ready) return;
+    const uid = me;
     sync.state = 'saving'; drawSync();
     try {
-      await Cloud.save(me, { nickname: S.profile?.nickname || '', avatar: S.profile?.avatar || null, state: JSON.stringify(state) });
+      // Merge with the latest cloud copy first, so an older tab or device can't overwrite newer progress.
+      const latest = cloudState(await Cloud.load(uid)); if (uid !== me) return;
+      S = Logic.mergeState(latest, S); try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { }
+      const { state, droppedCustom } = Logic.cloudPayload(S); sync.dropped = droppedCustom;
+      await Cloud.save(uid, { nickname: S.profile?.nickname || '', avatar: S.profile?.avatar || null, state: JSON.stringify(state) });
       sync.state = 'saved'; sync.at = Date.now();
       await pushLeague();
     } catch (e) { sync.state = 'error'; }
@@ -932,19 +939,33 @@ Aim for 2-5 sections with 3-6 notes each, 10-20 flashcards (key terms, people, d
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden' && sync.t) pushCloud(); });
 
   async function onUser(u) {
+    clearTimeout(sync.t); clearTimeout(sync.retry); sync.ready = false; sync.state = 'idle'; sync.dropped = false;
+    league.rows = {}; league.tab = 0;
     if (!u) { // signed out (or never signed in): back to this device's guest progress
       if (!me) return renderAcct();
       me = null; KEY = Logic.storageKey(null); S = loadLocal(KEY); closeOvIfOpen(); renderAll(); return;
     }
-    me = u.uid; KEY = Logic.storageKey(me);
-    let cloud = null;
-    try { const doc = await Cloud.load(me); cloud = doc && doc.state ? JSON.parse(doc.state) : null; } catch (e) { toast('Couldn\'t reach the cloud. Using this device\'s copy for now.'); }
-    S = Logic.mergeState(loadLocal(KEY), cloud);
-    const guest = loadLocal(Logic.storageKey(null)), flag = 'lockin.migrated:' + me;
+    const uid = u.uid, key = Logic.storageKey(uid), local = loadLocal(key);
+    let cloud = null, ok = true;
+    try { cloud = cloudState(await Cloud.load(uid)); } catch (e) { ok = false; }
+    // Swap user, storage key and state together, so nothing is saved under the wrong person.
+    me = uid; KEY = key; S = Logic.mergeState(local, cloud);
+    if (!ok) { toast('Couldn\'t reach the cloud. Using this device\'s copy until you\'re back online.'); retryLoad(uid); }
+    else sync.ready = true;
+    const guest = loadLocal(Logic.storageKey(null)), flag = 'lockin.migrated:' + uid;
     let asked = false; try { asked = !!localStorage.getItem(flag); } catch (e) { }
-    if (!asked && (guest.xp > 0 || guest.custom.length)) { try { localStorage.setItem(flag, '1'); } catch (e) { } offerMigrate(guest); }
-    else if (!S.profile) openProfile(true);
-    save(); renderAll();
+    if (ok && !asked && (guest.xp > 0 || guest.custom.length)) { try { localStorage.setItem(flag, '1'); } catch (e) { } offerMigrate(guest); }
+    else if (ok && !S.profile) openProfile(true);
+    try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { }
+    renderAll(); if (sync.ready) queueSync();
+  }
+  // Offline at sign-in: keep trying to load the cloud copy before any push is allowed.
+  function retryLoad(uid) {
+    sync.retry = setTimeout(async () => {
+      if (me !== uid) return;
+      try { const cloud = cloudState(await Cloud.load(uid)); if (me !== uid) return; S = Logic.mergeState(cloud, S); sync.ready = true; save(); renderAll(); if (!S.profile) openProfile(true); }
+      catch (e) { retryLoad(uid); }
+    }, 20000);
   }
   const closeOvIfOpen = () => { if (!ov.hidden) closeOv(); };
   function offerMigrate(guest) {
@@ -953,7 +974,11 @@ Aim for 2-5 sections with 3-6 notes each, 10-20 flashcards (key terms, people, d
       <div class="row" style="margin-top:14px"><button class="btn btn-hot" type="button" id="migYes">Move it into my account</button><button class="btn btn-ghost" type="button" id="migNo">No, start fresh</button></div><p class="note" style="font-size:13px;margin-top:10px">Not your progress (shared computer)? Pick "start fresh".</p></div>`;
     showOv();
     const done = () => { closeOv(); if (!S.profile) openProfile(true); };
-    $('#migYes').onclick = () => { S = Logic.mergeState(guest, S); save(); renderAll(); toast('Progress moved into your account'); done(); };
+    $('#migYes').onclick = () => {
+      S = Logic.mergeState(guest, S); save(); renderAll();
+      try { localStorage.removeItem(Logic.storageKey(null)); localStorage.removeItem('lockin.v1'); } catch (e) { } // moved, not copied
+      toast('Progress moved into your account'); done();
+    };
     $('#migNo').onclick = done;
   }
   function openProfile(first) {
@@ -979,7 +1004,13 @@ Aim for 2-5 sections with 3-6 notes each, 10-20 flashcards (key terms, people, d
     if (!me) {
       body.innerHTML = `<div class="sheet"><h3>Lock in with your mates</h3><ul class="note perks"><li>Your XP, levels, mistakes and decks sync between your phone and laptop.</li><li>Make a group and compete on a private leaderboard.</li><li>Only your nickname is shown to others.</li></ul>
         <div class="row" style="margin-top:14px"><button class="btn btn-hot" type="button" id="gIn"><svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#4285F4" d="M45 24.5c0-1.6-.1-3.1-.4-4.5H24v8.5h11.8c-.5 2.8-2.1 5.1-4.4 6.7v5.5h7.1c4.2-3.8 6.5-9.5 6.5-16.2z"/><path fill="#34A853" d="M24 46c5.9 0 10.9-2 14.5-5.3l-7.1-5.5c-2 1.3-4.5 2.1-7.4 2.1-5.7 0-10.5-3.8-12.2-9H4.5v5.7C8.1 41.1 15.5 46 24 46z"/><path fill="#FBBC05" d="M11.8 28.3c-.4-1.3-.7-2.8-.7-4.3s.3-3 .7-4.3V14H4.5C3 17 2 20.4 2 24s1 7 2.5 10l7.3-5.7z"/><path fill="#EA4335" d="M24 10.7c3.2 0 6.1 1.1 8.4 3.3l6.3-6.3C34.9 4.2 29.9 2 24 2 15.5 2 8.1 6.9 4.5 14l7.3 5.7c1.7-5.2 6.5-9 12.2-9z"/></svg>Sign in with Google</button><button class="btn btn-ghost" type="button" id="guest">Keep going as guest</button></div></div>`;
-      $('#gIn').onclick = async () => { try { await Cloud.signIn(); closeOvIfOpen(); } catch (e) { if (e.code !== 'auth/popup-closed-by-user' && e.code !== 'auth/cancelled-popup-request') toast('Sign-in didn\'t work: ' + (e.message || 'try again')); } };
+      $('#gIn').onclick = async () => {
+        try { await Cloud.signIn(); closeOvIfOpen(); }
+        catch (e) {
+          const msg = { 'auth/popup-blocked': 'Your browser blocked the sign-in window. Allow pop-ups for this site, then try again.', 'auth/network-request-failed': 'No internet connection. Try again when you\'re online.', 'auth/unauthorized-domain': 'Sign-in isn\'t set up for this web address yet.' }[e.code];
+          if (e.code !== 'auth/popup-closed-by-user' && e.code !== 'auth/cancelled-popup-request') toast(msg || 'Sign-in didn\'t work. Try again.');
+        }
+      };
       $('#guest').onclick = closeOv;
     } else {
       body.innerHTML = `<div class="sheet"><div class="row">${avatarHtml(S.profile, 'lg')}<div><h3>${esc(S.profile?.nickname || 'No nickname yet')}</h3><div class="note mono" id="syncState" style="font-size:12.5px"></div></div></div>

@@ -24,8 +24,7 @@ const Cloud = (() => {
     init(onUser) { if (!available) return onUser(null); auth.onAuthStateChanged(u => onUser(u ? { uid: u.uid } : null)); },
     async signIn() {
       const p = new firebase.auth.GoogleAuthProvider(); p.setCustomParameters({ prompt: 'select_account' });
-      try { await auth.signInWithPopup(p); }
-      catch (e) { if (e.code === 'auth/popup-blocked') return auth.signInWithRedirect(p); throw e; }
+      await auth.signInWithPopup(p); // popup only: redirect sign-in breaks on iPhone when the site isn't on firebaseapp.com
     },
     signOut: () => auth.signOut(),
     // users/{uid} = { nickname, avatar, state (JSON string of the app state), updatedAt }
