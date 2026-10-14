@@ -149,7 +149,7 @@ const Logic = (() => {
     m.daily = { ...a.daily, ...b.daily, done: { ...a.daily.done, ...b.daily.done } };
     if (a.eng || b.eng) {
       const ea = a.eng || {}, eb = b.eng || {};
-      m.eng = { ...ea, ...eb, best: Math.max(ea.best || 0, eb.best || 0), history: unionBy(ea.history, eb.history, 'id').sort((x, y) => x.at - y.at).slice(-40) };
+      m.eng = { ...ea, ...eb, best: Math.max(ea.best || 0, eb.best || 0), history: unionBy(ea.history, eb.history, 'id').sort((x, y) => x.at - y.at).slice(-25) };
     }
     return m;
   }
@@ -158,6 +158,8 @@ const Logic = (() => {
     const state = JSON.parse(JSON.stringify(S));
     if (JSON.stringify(state).length <= MAX_DOC_CHARS) return { state, droppedCustom: false };
     state.custom = [];
+    // Still too big: keep writing scores but not the old drafts' text.
+    if (JSON.stringify(state).length > MAX_DOC_CHARS && state.eng) { state.eng.history = (state.eng.history || []).map(h => ({ ...h, text: '' })); if (state.eng.draft) state.eng.draft.text = String(state.eng.draft.text || '').slice(0, 20000); }
     return { state, droppedCustom: true };
   }
   // Same seed -> same random numbers (mulberry32), so everyone gets the same daily challenge.

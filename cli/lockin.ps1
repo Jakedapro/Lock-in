@@ -210,14 +210,15 @@ function Show-Focus([int]$Minutes) {
   if ($Minutes -lt 1 -or $Minutes -gt 180) { Write-Host 'Pick between 1 and 180 minutes, e.g. lockin focus 25'; exit 1 }
   $total = $Minutes * 60; $end = (Get-Date).AddSeconds($total); $paused = $null
   if (-not $Fancy) {
-    Write-Host "Focus for $Minutes minutes. Ctrl+C to stop."
+    $unit = if ($Minutes -eq 1) { 'minute' } else { 'minutes' }
+    Write-Host "Focus for $Minutes $unit. Ctrl+C to stop."
     while ((Get-Date) -lt $end) { $left = [int]($end - (Get-Date)).TotalMinutes; Write-Host "  $left min left"; Start-Sleep -Seconds ([Math]::Min(60, [Math]::Max(1, ($end - (Get-Date)).TotalSeconds))) }
     Write-Host 'Done. Take a 5 minute break.'; return
   }
   $tip = $Tips | Get-Random
   try { [Console]::TreatControlCAsInput = $true } catch { }
   [Console]::Write("$Esc[?25l"); Write-Host ''
-  Write-Typed "  locked in for $Minutes minutes. phone in another room." "$Bold$(Rgb @(45, 212, 191))" 10
+  Write-Typed "  locked in for $Minutes minute$(if ($Minutes -ne 1) { 's' }). phone in another room." "$Bold$(Rgb @(45, 212, 191))" 10
   Write-Host "  $Dim[space] pause   [q] stop$Reset"; Write-Host ''
   $lines = 8; $first = $true; $stopped = $false
   try {
@@ -254,7 +255,7 @@ function Show-Focus([int]$Minutes) {
   Write-Host ''
   if ($stopped) { $mins = [int](($total - [Math]::Max(0, ($end - (Get-Date)).TotalSeconds)) / 60); Write-Host "  stopped after $mins minute$(if ($mins -ne 1) { 's' })." ; return }
   foreach ($hz in 880, 988, 1175) { try { [Console]::Beep($hz, 160) } catch { } }
-  Write-Typed "  $Minutes minutes locked in. take 5: stand up, drink water." "$Bold$(Rgb @(52, 211, 153))" 14
+  Write-Typed "  $Minutes minute$(if ($Minutes -ne 1) { 's' }) locked in. take 5: stand up, drink water." "$Bold$(Rgb @(52, 211, 153))" 14
   Write-Host ''
 }
 

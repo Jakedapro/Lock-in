@@ -33,13 +33,14 @@ const Gate = (() => {
       <svg class="gate-lock" viewBox="0 0 92 108" aria-hidden="true"><path class="shk" d="M24 50V32a22 22 0 0 1 44 0v18" fill="none" stroke="#B4BDC9" stroke-width="10" stroke-linecap="round"/><rect x="8" y="46" width="76" height="58" rx="12" fill="#E7ECF2"/><path class="hole" d="M46 64a8 8 0 0 1 4.5 14.6L53 92H39l2.5-13.4A8 8 0 0 1 46 64z"/></svg>
       <h1>Lock <span>in</span></h1>
       <p class="gate-sub">Invite only. Enter the key a mate sent you.</p>
-      <form class="gate-form" novalidate><input class="gate-key" id="gateKey" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="19" placeholder="LOCK-XXXX-XXXX-XXXX" aria-label="Invite key"><button class="gate-go" type="submit">Unlock</button></form>
+      <form class="gate-form" novalidate><input class="gate-key" id="gateKey" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="LOCK-XXXX-XXXX-XXXX" aria-label="Invite key"><button class="gate-go" type="submit">Unlock</button></form>
       <p class="gate-msg" id="gateMsg" role="status" aria-live="polite"></p>
       <p class="gate-foot">Got an invite link? Just open it and you're in.</p></div>`;
     document.body.appendChild(el);
     const inp = el.querySelector('#gateKey');
     inp.addEventListener('input', () => { // type "7kq2xd9m3hta" and it becomes LOCK-7KQ2-XD9M-3HTA
-      let t = inp.value.toUpperCase().replace(/[^A-Z0-9]/g, ''); if (t.startsWith('LOCK')) t = t.slice(4);
+      const found = inp.value.match(/LOCK[\s-]*([A-Z0-9]{4})[\s-]*([A-Z0-9]{4})[\s-]*([A-Z0-9]{4})/i); // a pasted invite link or message works too
+      let t = found ? found.slice(1).join('').toUpperCase() : inp.value.toUpperCase().replace(/[^A-Z0-9]/g, ''); if (!found && t.startsWith('LOCK')) t = t.slice(4);
       t = t.slice(0, 12); inp.value = t ? 'LOCK-' + t.match(/.{1,4}/g).join('-') : '';
     });
     el.querySelector('form').addEventListener('submit', async (ev) => {

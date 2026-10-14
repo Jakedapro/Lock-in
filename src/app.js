@@ -1333,6 +1333,7 @@ Aim for 2-5 sections with 3-6 notes each, 10-20 flashcards (key terms, people, d
   function dailyQ(date = today()) {
     const decks = allDecks().filter(d => !d.custom && DAILY_SUBJ.includes(d.subject) && d.bank && d.bank.length);
     if (!decks.length) return null;
+    decks.forEach(d => d.bank.forEach(infoOf)); // sampling generators uses Math.random, so do it before seeding
     return Logic.withSeed('daily:' + date, () => { const d = pick(decks); const fns = bankFor(d, 'all', 'C'); return bankQ(pick(fns.length ? fns : d.bank), d, 'C'); });
   }
   function dailyStreak() { let n = 0; const d = new Date(); if (!S.daily.done[today()]) d.setDate(d.getDate() - 1); for (;;) { const k = d.toLocaleDateString('en-CA'); if (!S.daily.done[k]) break; n++; d.setDate(d.getDate() - 1); } return n; }
@@ -1396,15 +1397,16 @@ Aim for 2-5 sections with 3-6 notes each, 10-20 flashcards (key terms, people, d
   function openCmd() {
     if ($('.cmdk')) return;
     const items = cmdItems(), back = document.activeElement;
-    const el = document.createElement('div'); el.className = 'cmdk'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-label', 'Quick search');
-    el.innerHTML = `<div class="cmdk-box"><input class="cmdk-in" placeholder="Search decks, topics and actions…" aria-label="Search" autocomplete="off" spellcheck="false"><ul class="cmdk-list" role="listbox"></ul><div class="cmdk-foot"><span><kbd>↑</kbd><kbd>↓</kbd> move</span><span><kbd>Enter</kbd> open</span><span><kbd>Esc</kbd> close</span></div></div>`;
+    const el = document.createElement('div'); el.className = 'cmdk'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true'); el.setAttribute('aria-label', 'Quick search');
+    el.innerHTML = `<div class="cmdk-box"><input class="cmdk-in" placeholder="Search decks, topics and actions…" aria-label="Search" autocomplete="off" spellcheck="false" role="combobox" aria-expanded="true" aria-controls="cmdkList"><ul class="cmdk-list" id="cmdkList" role="listbox" aria-label="Results"></ul><div class="cmdk-foot"><span><kbd>↑</kbd><kbd>↓</kbd> move</span><span><kbd>Enter</kbd> open</span><span><kbd>Esc</kbd> close</span></div></div>`;
     document.body.appendChild(el);
     const inp = $('.cmdk-in', el), list = $('.cmdk-list', el); let sel = 0, shown = [];
     const draw = () => {
       const q = inp.value.trim();
       shown = items.map(it => ({ it, s: Math.max(fuzzy(q, it.label), fuzzy(q, it.kw) * 0.6, fuzzy(q, it.hint) * 0.5) })).filter(x => x.s > 0).sort((a, b) => b.s - a.s).slice(0, 9).map(x => x.it);
       sel = Math.min(sel, Math.max(0, shown.length - 1));
-      list.innerHTML = shown.length ? shown.map((it, i) => `<li role="option" aria-selected="${i === sel}" data-i="${i}"><span>${fm(it.label)}</span><small>${esc(it.hint)}</small></li>`).join('') : '<li class="none">Nothing found</li>';
+      list.innerHTML = shown.length ? shown.map((it, i) => `<li role="option" id="cmdk${i}" aria-selected="${i === sel}" data-i="${i}"><span>${fm(it.label)}</span><small>${esc(it.hint)}</small></li>`).join('') : '<li class="none">Nothing found</li>';
+      if (shown.length) { inp.setAttribute('aria-activedescendant', 'cmdk' + sel); list.querySelector('[aria-selected=true]')?.scrollIntoView({ block: 'nearest' }); } else inp.removeAttribute('aria-activedescendant');
     };
     const close = () => { el.remove(); back?.focus?.(); };
     const go = (i) => { const it = shown[i]; if (!it) return; close(); it.run(); };
@@ -1465,19 +1467,19 @@ Aim for 2-5 sections with 3-6 notes each, 10-20 flashcards (key terms, people, d
     cur = { kind: 'share', tab: null }; const body = ovFrame('Share card', 'c-lilac', null);
     body.innerHTML = `<div class="share"><img class="share-img" alt="Your Lock in stats card"><div class="share-side"><p class="note">Your stats as a picture. Post it, send it to the group chat, aura farm responsibly.</p>${!S.profile?.nickname ? `<label class="lbl" for="shName">Name on the card</label><input class="field" id="shName" maxlength="16" placeholder="Your name or nickname" value="${esc(kget('lockin.shareName', ''))}">` : ''}<div class="row" style="margin-top:14px"><button class="btn" type="button" id="shSave">Save picture</button>${navigator.canShare ? '<button class="btn btn-ghost" type="button" id="shSend">Share</button>' : ''}</div></div></div>`;
     const img = $('.share-img', body);
-    const draw = () => { const nm = $('#shName', body)?.value.trim(); const keep = S.profile; if (nm && !S.profile) S.profile = { nickname: nm }; const c = shareCanvas(); S.profile = keep; img.src = c.toDataURL('image/png'); return c; };
+    const draw = () => { const nm = $('#shName', body)?.value.trim(); const keep = S.profile; if (nm && !S.profile) S.profile = { nickname: nm }; let c; try { c = shareCanvas(); } finally { S.profile = keep; } img.src = c.toDataURL('image/png'); return c; };
     let c; (document.fonts?.ready || Promise.resolve()).then(() => { c = draw(); });
     const nm = $('#shName', body); if (nm) nm.oninput = () => { kset('lockin.shareName', nm.value); c = draw(); };
-    $('#shSave', body).onclick = () => { const a = document.createElement('a'); a.href = img.src; a.download = 'lock-in-stats.png'; a.click(); toast('Saved'); };
-    const sb = $('#shSend', body); if (sb) sb.onclick = () => c.toBlob(async (b) => { const f = new File([b], 'lock-in-stats.png', { type: 'image/png' }); try { if (navigator.canShare({ files: [f] })) await navigator.share({ files: [f], title: 'Lock in' }); else toast('Sharing pictures isn\'t supported here. Use Save picture.'); } catch (e) { } });
+    $('#shSave', body).onclick = () => { if (!c) return; const a = document.createElement('a'); a.href = img.src; a.download = 'lock-in-stats.png'; a.click(); toast('Saved'); };
+    const sb = $('#shSend', body); if (sb) sb.onclick = () => c && c.toBlob(async (b) => { const f = new File([b], 'lock-in-stats.png', { type: 'image/png' }); try { if (navigator.canShare({ files: [f] })) await navigator.share({ files: [f], title: 'Lock in' }); else toast('Sharing pictures isn\'t supported here. Use Save picture.'); } catch (e) { } });
     showOv();
   }
 
   /* ---------------- focus sounds ---------------- */
   // Generated in the browser (no downloads): brown noise, or rain (filtered noise with soft drops).
-  const sound = { ac: null, nodes: [], kind: 'off' };
+  const sound = { ac: null, nodes: [], kind: 'off', gen: 0 };
   function setSound(kind) {
-    sound.nodes.forEach(n => { try { n.stop ? n.stop() : n.disconnect(); } catch (e) { } }); sound.nodes = []; sound.kind = kind;
+    sound.nodes.forEach(n => { try { n.stop ? n.stop() : n.disconnect(); } catch (e) { } }); sound.nodes = []; sound.kind = kind; const gen = ++sound.gen;
     try { localStorage.setItem('lockin.sound', kind); } catch (e) { }
     if (kind === 'off') return;
     try {
@@ -1490,7 +1492,7 @@ Aim for 2-5 sections with 3-6 notes each, 10-20 flashcards (key terms, people, d
       if (kind === 'rain') { const hp = ac.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 900; const lp = ac.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 7000; src.connect(hp); hp.connect(lp); tail = lp; }
       tail.connect(gain); gain.connect(ac.destination); src.start(); sound.nodes.push(src, gain);
       if (kind === 'rain') { // occasional heavier drops
-        const drip = () => { if (sound.kind !== 'rain') return; const o = ac.createBufferSource(), g2 = ac.createGain(), f = ac.createBiquadFilter(); o.buffer = buf; f.type = 'bandpass'; f.frequency.value = 1500 + Math.random() * 2500; g2.gain.setValueAtTime(0.0001, ac.currentTime); g2.gain.exponentialRampToValueAtTime(0.25, ac.currentTime + 0.005); g2.gain.exponentialRampToValueAtTime(0.0001, ac.currentTime + 0.08); o.connect(f); f.connect(g2); g2.connect(ac.destination); o.start(ac.currentTime, Math.random() * 3, 0.1); setTimeout(drip, 40 + Math.random() * 260); };
+        const drip = () => { if (sound.gen !== gen) return; const o = ac.createBufferSource(), g2 = ac.createGain(), f = ac.createBiquadFilter(); o.buffer = buf; f.type = 'bandpass'; f.frequency.value = 1500 + Math.random() * 2500; g2.gain.setValueAtTime(0.0001, ac.currentTime); g2.gain.exponentialRampToValueAtTime(0.25, ac.currentTime + 0.005); g2.gain.exponentialRampToValueAtTime(0.0001, ac.currentTime + 0.08); o.connect(f); f.connect(g2); g2.connect(ac.destination); o.start(ac.currentTime, Math.random() * 3, 0.1); setTimeout(drip, 40 + Math.random() * 260); };
         drip();
       }
     } catch (e) { sound.kind = 'off'; }
@@ -1503,7 +1505,10 @@ Aim for 2-5 sections with 3-6 notes each, 10-20 flashcards (key terms, people, d
     creative: [['tell', 'Telling'], ['adverb', 'Adverbs'], ['cliche', 'Clichés'], ['informal', 'Dialogue punctuation'], ['long', 'Long sentences']],
   };
   const engState = () => (S.eng ||= { draft: { kind: 'essay', question: '', text: '', marks: 4 }, history: [] });
-  let wlTimer = null;
+  // In memory only (not saved or synced): the latest feedback, and the exam timer.
+  // Handlers re-read engState() because a cloud sync replaces S while the screen is open.
+  let wlTimer = null, lastFb = null, wlClock = null;
+  const Dn = () => engState().draft;
   function openWriting(load) {
     cur = { kind: 'writing', tab: 'write' }; const E = engState();
     if (load) E.draft = { kind: load.kind, question: load.question || '', text: load.text, marks: load.marks || 4 };
@@ -1521,37 +1526,37 @@ Aim for 2-5 sections with 3-6 notes each, 10-20 flashcards (key terms, people, d
         <label class="lbl" for="wlQ">${D.kind === 'creative' ? 'Prompt or stimulus (optional)' : 'The question (optional, but feedback is sharper with it)'}</label>
         <div class="row wl-qrow"><input class="field" id="wlQ" maxlength="300" value="${esc(D.question)}" placeholder="${D.kind === 'creative' ? 'e.g. Write a story that begins with a sound' : 'e.g. How does the text represent the paradoxes of human behaviour?'}">${D.kind === 'short' ? `<select class="field" id="wlMarks" aria-label="Marks">${[2, 3, 4, 5, 6, 7].map(n => `<option value="${n}"${+D.marks === n ? ' selected' : ''}>${n} marks</option>`).join('')}</select>` : ''}</div>
         <textarea class="field wl-text" id="wlText" spellcheck="true" placeholder="${D.kind === 'creative' ? 'Paste or write your story here…' : 'Paste or write your response here. Put quotes in quotation marks and leave a blank line between paragraphs.'}">${esc(D.text)}</textarea>
-        <div class="wl-bar"><span id="wlCount" class="mono"></span><span class="row"><button class="btn btn-ghost btn-sm" type="button" id="wlTime">${E.timer ? 'Stop timer' : 'Time me (40 min)'}</button><button class="btn btn-hot" type="button" id="wlGo">Get feedback</button></span></div>
+        <div class="wl-bar"><span id="wlCount" class="mono"></span><span class="row"><button class="btn btn-ghost btn-sm" type="button" id="wlTime">${wlClock ? 'Stop timer' : 'Time me (40 min)'}</button><button class="btn btn-hot" type="button" id="wlGo">Get feedback</button></span></div>
       </div>
-      <div class="wl-out" id="wlOut" aria-live="polite">${E.last ? '' : `<div class="wl-empty"><h3>Instant feedback on your writing</h3><ul class="note"><li>Thesis, topic sentences and whether you answer the question</li><li>Quotes, techniques and whether you explain their effect</li><li>Retelling, vague words and informal language</li><li>For creative: showing not telling, senses, clichés and rhythm</li></ul><p class="note" style="font-size:13.5px">It checks the things markers look for. It can't judge how good your ideas are${aiReady() ? ', so use AI marking for that' : ''}.</p></div>`}</div>
+      <div class="wl-out" id="wlOut" aria-live="polite">${lastFb ? '' : `<div class="wl-empty"><h3>Instant feedback on your writing</h3><ul class="note"><li>Thesis, topic sentences and whether you answer the question</li><li>Quotes, techniques and whether you explain their effect</li><li>Retelling, vague words and informal language</li><li>For creative: showing not telling, senses, clichés and rhythm</li></ul><p class="note" style="font-size:13.5px">It checks the things markers look for. It can't judge how good your ideas are${aiReady() ? ', so use AI marking for that' : ''}.</p></div>`}</div>
     </div>`;
     const ta = $('#wlText', body), cnt = $('#wlCount', body);
     const count = () => {
       const n = (ta.value.match(/[A-Za-z][A-Za-z'’-]*/g) || []).length;
       let t = `${n} word${n === 1 ? '' : 's'}`;
-      if (E.timer) { const left = Math.max(0, E.timer.end - Date.now()), used = (Date.now() - E.timer.start) / 6e4; t += ` · ${Math.floor(left / 6e4)}:${pad(Math.floor(left % 6e4 / 1e3))} left · ${used > 0.5 ? Math.round(n / used) : 0} words/min`; if (!left) { E.timer = null; chime(); toast('Time\'s up. Pens down: get your feedback.'); drawWriting(); return; } }
+      if (wlClock) { const left = Math.max(0, wlClock.end - Date.now()), used = (Date.now() - wlClock.start) / 6e4; t += ` · ${Math.floor(left / 6e4)}:${pad(Math.floor(left % 6e4 / 1e3))} left · ${used > 0.5 ? Math.round(n / used) : 0} words/min`; if (!left) { wlClock = null; chime(); toast('Time\'s up. Pens down: get your feedback.'); drawWriting(); return; } }
       cnt.textContent = t;
     };
-    let saveT; ta.oninput = () => { D.text = ta.value; count(); clearTimeout(saveT); saveT = setTimeout(save, 800); };
-    $('#wlQ', body).oninput = (e) => { D.question = e.target.value; clearTimeout(saveT); saveT = setTimeout(save, 800); };
-    const mk = $('#wlMarks', body); if (mk) mk.onchange = () => { D.marks = +mk.value; save(); };
-    $$('[data-wk]', body).forEach(b => b.onclick = () => { D.kind = b.dataset.wk; E.last = null; save(); drawWriting(); });
-    $('#wlTime', body).onclick = () => { E.timer = E.timer ? null : { start: Date.now(), end: Date.now() + 40 * 6e4 }; drawWriting(); };
+    let saveT; ta.oninput = () => { Dn().text = ta.value; count(); clearTimeout(saveT); saveT = setTimeout(save, 800); };
+    $('#wlQ', body).oninput = (e) => { Dn().question = e.target.value; clearTimeout(saveT); saveT = setTimeout(save, 800); };
+    const mk = $('#wlMarks', body); if (mk) mk.onchange = () => { Dn().marks = +mk.value; save(); };
+    $$('[data-wk]', body).forEach(b => b.onclick = () => { Dn().text = ta.value; Dn().kind = b.dataset.wk; lastFb = null; save(); drawWriting(); });
+    $('#wlTime', body).onclick = () => { Dn().text = ta.value; wlClock = wlClock ? null : { start: Date.now(), end: Date.now() + 40 * 6e4 }; drawWriting(); };
     $('#wlGo', body).onclick = () => runFeedback(body);
-    if (E.timer) wlTimer = setInterval(() => { if (cur?.kind !== 'writing' || !$('#wlCount')) return clearInterval(wlTimer); count(); }, 1000);
+    if (wlClock) wlTimer = setInterval(() => { if (cur?.kind !== 'writing' || !$('#wlCount')) return clearInterval(wlTimer); count(); }, 1000);
     count();
-    if (E.last && E.last.text === D.text) showFeedback2($('#wlOut', body), E.last.r, D);
+    if (lastFb && lastFb.text === D.text) showFeedback2($('#wlOut', body), lastFb.r, D);
   }
   function runFeedback(body) {
-    const E = engState(), D = E.draft, text = D.text.trim();
+    const E = engState(), D = E.draft; D.text = $('#wlText', body).value; D.question = $('#wlQ', body).value; const text = D.text.trim();
     if ((text.match(/\S+/g) || []).length < 25) { toast('Write at least a few sentences first'); $('#wlText', body).focus(); return; }
     const r = WR.analyse(text, { kind: D.kind, question: D.question, marks: D.marks });
-    E.last = { text: D.text, r };
+    lastFb = { text: D.text, r };
     const words = r.stats.words, prev = E.history[E.history.length - 1];
     const isNew = !prev || prev.text !== text;
     if (isNew) {
-      E.history.push({ id: 'w' + Date.now().toString(36), at: Date.now(), kind: D.kind, question: D.question, marks: D.marks, text: text.slice(0, 12000), words, score: r.score });
-      E.history = E.history.slice(-40);
+      E.history.push({ id: 'w' + Date.now().toString(36), at: Date.now(), kind: D.kind, question: D.question, marks: D.marks, text: text.slice(0, 6000), words, score: r.score });
+      E.history = E.history.slice(-25);
       if (words >= 100) { addXp(15); Logic.logActivity(S, today(), Math.min(10, Math.round(words / 80))); bumpStreak(); xpPop($('#wlGo', body), '+15'); }
       E.best = Math.max(E.best || 0, r.score);
     }
@@ -1574,7 +1579,7 @@ Aim for 2-5 sections with 3-6 notes each, 10-20 flashcards (key terms, people, d
       <h4 style="margin:18px 0 8px">Your writing, marked up</h4>
       <div class="filters wl-legend" role="group" aria-label="Show highlights">${groups.filter(([k]) => present.has(k)).map(([k, l]) => `<button class="fchip lg-${k}" type="button" data-hl="${k}" aria-pressed="${show.has(k)}"><i></i>${l}</button>`).join('') || '<span class="note">Nothing highlighted.</span>'}</div>
       <div class="wl-marked" id="wlMarked"></div><p class="note" style="font-size:13px">Hover or tap a highlight to see why.</p>`;
-    const drawMarked = () => { $('#wlMarked', out).innerHTML = WR.highlight(D.text.trim(), r.marks, [...show]); };
+    const analysed = D.text.trim(), drawMarked = () => { $('#wlMarked', out).innerHTML = WR.highlight(analysed, r.marks, [...show]); };
     drawMarked();
     $$('[data-hl]', out).forEach(b => b.onclick = () => { const k = b.dataset.hl; show.has(k) ? show.delete(k) : show.add(k); cur.wlShow = [...show]; b.setAttribute('aria-pressed', show.has(k)); drawMarked(); });
     $('#wlMarked', out).addEventListener('click', e => { const m = e.target.closest('mark[title]'); if (m) toast(m.title); });
@@ -1613,7 +1618,7 @@ Reply with ONLY this JSON:
     const pts = E.history.slice(-20), w = 300, h = 60, x = (i) => pts.length > 1 ? i / (pts.length - 1) * w : w / 2, y = (s) => h - s / 100 * h;
     body.innerHTML = `<div class="wl-hist"><div class="spark"><svg viewBox="-6 -6 ${w + 12} ${h + 12}" role="img" aria-label="Your last ${pts.length} scores"><polyline points="${pts.map((p, i) => `${x(i)},${y(p.score)}`).join(' ')}" fill="none" stroke="var(--pink)" stroke-width="2.5" stroke-linejoin="round"/>${pts.map((p, i) => `<circle cx="${x(i)}" cy="${y(p.score)}" r="3.5" fill="var(--pink)"/>`).join('')}</svg><span class="note">Best: <b>${E.best || Math.max(...E.history.map(h => h.score))}</b></span></div>
       <ul class="wl-list">${H.map(hh => `<li><button type="button" data-wh="${hh.id}"><span class="sc">${hh.score}</span><span class="tx"><b>${esc((WKINDS.find(k => k[0] === hh.kind) || [, ''])[1])}${hh.question ? `: ${esc(hh.question.slice(0, 70))}${hh.question.length > 70 ? '…' : ''}` : ''}</b><small>${hh.words} words · ${ago(hh.at)}${hh.ai ? ` · AI ${esc(hh.ai)}` : ''}</small></span></button></li>`).join('')}</ul></div>`;
-    $$('[data-wh]', body).forEach(b => b.onclick = () => { const hh = E.history.find(x => x.id === b.dataset.wh); E.draft = { kind: hh.kind, question: hh.question || '', text: hh.text, marks: hh.marks || 4 }; E.last = null; save(); cur.tab = 'write'; $$('.tab', ov).forEach(x => x.setAttribute('aria-selected', x.dataset.tab === 'write')); drawWriting(); });
+    $$('[data-wh]', body).forEach(b => b.onclick = () => { const hh = E.history.find(x => x.id === b.dataset.wh); E.draft = { kind: hh.kind, question: hh.question || '', text: hh.text, marks: hh.marks || 4 }; lastFb = null; save(); cur.tab = 'write'; $$('.tab', ov).forEach(x => x.setAttribute('aria-selected', x.dataset.tab === 'write')); drawWriting(); });
   }
 
   /* ---------------- English: quote bank + memoriser ---------------- */
@@ -1632,15 +1637,15 @@ Reply with ONLY this JSON:
     $('#qbForm', body).onsubmit = (e) => {
       e.preventDefault(); const t = $('#qbT', body).value.trim(), q = $('#qbQ', body).value.trim().replace(/^["“'‘]+|["”'’]+$/g, '');
       if (!t || !q) { toast('Add the text and the quote'); return; }
-      Q.push({ id: 'q' + Date.now().toString(36) + Math.floor(Math.random() * 99), text: t, q, tech: $('#qbTech', body).value.trim(), effect: $('#qbE', body).value.trim(), theme: $('#qbTh', body).value.trim(), box: 0, at: Date.now() });
+      quotes().push({ id: 'q' + Date.now().toString(36) + Math.floor(Math.random() * 99), text: t, q, tech: $('#qbTech', body).value.trim(), effect: $('#qbE', body).value.trim(), theme: $('#qbTh', body).value.trim(), box: 0, at: Date.now() });
       cur.lastText = t; save(); toast('Quote added'); drawQuotes(); $('#qbQ')?.focus();
     };
-    $$('[data-qdel]', body).forEach(b => b.onclick = () => { if (!b.dataset.sure) { b.dataset.sure = 1; b.textContent = 'Tap again'; return; } S.quotes = Q.filter(q => q.id !== b.dataset.qdel); (S.goneQ ||= {})[b.dataset.qdel] = Date.now(); save(); drawQuotes(); });
+    $$('[data-qdel]', body).forEach(b => b.onclick = () => { if (!b.dataset.sure) { b.dataset.sure = 1; b.textContent = 'Tap again'; return; } S.quotes = quotes().filter(q => q.id !== b.dataset.qdel); (S.goneQ ||= {})[b.dataset.qdel] = Date.now(); save(); drawQuotes(); });
   }
   function learnQuotes(body) {
     const Q = quotes();
     if (!Q.length) { body.innerHTML = '<div class="empty"><h3>Add some quotes first</h3><p>Then this drills you until you can write them out word for word.</p></div>'; return; }
-    const texts = [...new Set(Q.map(q => q.text))]; cur.qText ||= 'all'; cur.qMode ||= 'gaps';
+    const texts = [...new Set(Q.map(q => q.text))]; if (!cur.qText || (cur.qText !== 'all' && !texts.includes(cur.qText))) cur.qText = 'all'; cur.qMode ||= 'gaps';
     const pool = Q.filter(q => cur.qText === 'all' || q.text === cur.qText);
     // Weakest first: lowest box, then least recently seen.
     const q = pool.slice().sort((a, b) => (a.box || 0) - (b.box || 0) || (a.seen || 0) - (b.seen || 0))[0];
@@ -1654,7 +1659,7 @@ Reply with ONLY this JSON:
     $('#qbNext', body).onclick = () => learnQuotes(body);
     const host = $('#qbQ', body), fb = $('#qbFb', body);
     const result = (score) => {
-      const ok = score >= 0.9; q.box = Math.max(0, Math.min(5, (q.box || 0) + (ok ? 1 : -1))); addXp(ok ? 4 : 1); Logic.logActivity(S, today(), 1); bumpStreak(); save(); renderStats(); checkBadges();
+      const ok = score >= 0.9, live = quotes().find(x => x.id === q.id) || q; live.box = Math.max(0, Math.min(5, (live.box || 0) + (ok ? 1 : -1))); live.seen = Date.now(); addXp(ok ? 4 : 1); Logic.logActivity(S, today(), 1); bumpStreak(); save(); renderStats(); checkBadges();
       fb.innerHTML = `<div class="fb ${ok ? 'good' : score >= 0.6 ? 'info' : 'bad'}"><b>${ok ? pick(['Word perfect.', 'Locked in.', 'Got it.']) : `${Math.round(score * 100)}% of the words.`}</b><blockquote>“${esc(q.q)}”</blockquote>${q.tech || q.effect ? `<p class="note">${[q.tech && `<b>${esc(q.tech)}</b>`, q.effect && esc(q.effect)].filter(Boolean).join(': ')}</p>` : ''}</div>`;
       if (ok) xpPop($('#qbNext', body), '+4');
       $('#qbNext', body).focus();
@@ -1688,13 +1693,15 @@ Reply with ONLY this JSON:
   const kget = (k, d) => { try { return JSON.parse(localStorage.getItem(k)) || d; } catch (e) { return d; } };
   const kset = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { } };
   const keysJson = (list) => '{\n  "v": 1,\n  "keys": [\n' + list.keys.map(k => '    ' + JSON.stringify(k)).join(',\n') + '\n  ]\n}\n';
+  let keysFresh = false;
   function openKeys() {
-    cur = { kind: 'keys', tab: null }; ovFrame('Invite keys', 'c-lilac', null); drawKeys(); showOv();
-    Gate.refresh().then(ok => { if (ok && cur?.kind === 'keys') drawKeys(); });
+    keysFresh = false; cur = { kind: 'keys', tab: null }; ovFrame('Invite keys', 'c-lilac', null); drawKeys(); showOv();
+    Gate.refresh().then(ok => { keysFresh = ok; if (cur?.kind === 'keys') drawKeys(); if (!ok) toast('Couldn\'t load the live key list. Check your connection.'); });
   }
   function drawKeys(fresh) {
     const body = $('#ovBody'), live = Gate.keys(), labels = kget('lockin.keyLabels', {}), pending = kget('lockin.keyPending', []);
     const liveHashes = new Set(live.keys.map(k => k.hash)), waiting = pending.filter(p => !liveHashes.has(p.hash));
+    if (keysFresh && waiting.length < pending.length) kset('lockin.keyPending', waiting); // saved on GitHub now, so forget the key text
     const label = (k) => labels[k.id] || k.label || (k.owner ? 'You' : k.id);
     const nextId = () => 'k' + String(Math.max(0, ...live.keys.map(k => +k.id.slice(1) || 0), ...pending.map(p => +p.id.slice(1) || 0)) + 1).padStart(2, '0');
     const site = location.protocol === 'file:' ? 'https://jamalmusialla81-hub.github.io/lock-in/' : location.href.split('#')[0].split('?')[0];
@@ -1720,6 +1727,7 @@ Reply with ONLY this JSON:
       const a = b.dataset.kc;
       if (a === 'link') copyText(site + '#key=' + fresh.key, 'Invite link copied. Send it to them.', body);
       if (a === 'key') copyText(fresh.key, 'Key copied', body);
+      if ((a === 'json') && !keysFresh) { toast('Still loading the live key list. Try again in a moment.'); return; }
       if (a === 'json') copyText(keysJson(draft), 'keys.json copied. Now open GitHub and paste over it.', body);
       if (a === 'new') {
         const l = $('#kLabel', body).value.trim().slice(0, 30); if (!l) { toast('Who is it for?'); $('#kLabel', body).focus(); return; }
@@ -1730,6 +1738,7 @@ Reply with ONLY this JSON:
       if (a === 'forget') { if (b.dataset.sure) { closeOv(); Gate.forget(); } else { b.dataset.sure = 1; b.textContent = 'Tap again: you\'ll need your key to get back in'; } }
     });
     $$('[data-kt]', body).forEach(b => b.onclick = () => {
+      if (!keysFresh) { toast('Still loading the live key list. Try again in a moment.'); return; }
       const k = draft.keys.find(x => x.id === b.dataset.kt); if (k.revoked) delete k.revoked; else k.revoked = true;
       copyText(keysJson(draft), `keys.json copied with ${k.id} turned ${k.revoked ? 'off' : 'on'}. Paste it on GitHub to save.`, body);
       setTimeout(() => window.open(KEYS_EDIT, '_blank', 'noopener'), 400);
