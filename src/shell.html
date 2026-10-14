@@ -176,6 +176,16 @@ textarea.field { min-height: 100px; resize: vertical; }
 .bonus { font-family: var(--f-mono); font-size: 10.5px; letter-spacing: .08em; padding: 3px 7px; border-radius: 6px; background: rgba(169,155,255,.15); color: var(--lilac); }
 .lvl { font-family: var(--f-mono); font-size: 10.5px; letter-spacing: .06em; padding: 3px 7px; border-radius: 6px; }
 .lvl-F { background: rgba(61,220,151,.14); color: var(--good); } .lvl-S { background: rgba(69,214,230,.14); color: var(--cyan); } .lvl-C { background: rgba(255,93,122,.14); color: var(--bad); }
+.lvlbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 14px; margin: 4px 0 10px; }
+.lvlbar .filters { margin: 0; }
+.lvl-now { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.lvl-badge { font-family: var(--f-display); font-weight: 700; font-size: 14px; padding: 7px 12px; border-radius: 10px; display: inline-block; }
+.lvl-badge.lvl-F, .lvl-chip.lvl-F { background: rgba(61,220,151,.14); color: var(--good); }
+.lvl-badge.lvl-S, .lvl-chip.lvl-S { background: rgba(69,214,230,.14); color: var(--cyan); }
+.lvl-badge.lvl-C, .lvl-chip.lvl-C { background: rgba(255,93,122,.14); color: var(--bad); }
+.lvl-hint { font-family: var(--f-mono); font-size: 12px; color: var(--muted); }
+.lvl-chip { font-family: var(--f-mono); font-size: 11.5px; font-weight: 700; padding: 4px 8px; border-radius: 999px; margin-left: auto; }
+.lvl-note { font-size: 13px; margin: 0 0 8px; }
 .sec-card ul { margin: 10px 0 0; padding-left: 18px; display: grid; gap: 6px; font-size: 15px; }
 .worked { background: var(--ink); border: 1px dashed var(--line); border-radius: 14px; padding: 14px; font-size: 14.5px; align-self: start; }
 .worked .wq { font-weight: 700; margin-bottom: 8px; }

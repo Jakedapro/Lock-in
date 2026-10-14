@@ -12,6 +12,7 @@
   const KEY = 'lockin.v2';
   let S = { p: {}, xp: 0, streak: { last: '', n: 0 }, custom: [], extra: {}, subj: 'geo' };
   try { const raw = localStorage.getItem(KEY) || localStorage.getItem('lockin.v1'); if (raw) { const o = JSON.parse(raw); S = Object.assign(S, o); S.custom = (S.custom || []).map(d => ({ subject: 'other', ...d })); } } catch (e) { }
+  S = Logic.defaults(S);
   const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { } };
   const today = () => new Date().toLocaleDateString('en-CA');
   function bumpStreak() { const t = today(); if (S.streak.last === t) return; const y = new Date(Date.now() - 864e5).toLocaleDateString('en-CA'); S.streak.n = S.streak.last === y ? S.streak.n + 1 : 1; S.streak.last = t; }
@@ -186,7 +187,7 @@
     el.innerHTML = `<div class="subj-head"><div><div class="eyebrow">${s.exam ? 'Exam · ' + esc(s.when) : 'Subject'}</div><h2>${esc(s.name)}<span>.</span></h2><div class="subj-meta">${esc(s.format)}</div></div>
       <div class="subj-actions">${s.mock ? `<button class="btn btn-acc" type="button" data-act="mock" data-s="${s.id}">Practice exam${s.mock === 'geo' ? ' (45 min)' : ''}</button>` : ''}${ds.length ? `<button class="btn btn-ghost" type="button" data-act="cards" data-s="${esc(s.id)}">All flashcards</button>` : ''}<button class="btn btn-ghost" type="button" data-act="upload" data-s="${esc(s.id)}">+ Upload</button></div></div>
       ${ds.length ? `<div class="decks">${ds.map(d => { const m = mastery(d.id); return `<button class="deck ${hue(d)}" type="button" data-open="${esc(d.id)}">
-          <div class="top"><span class="chip">${esc(d.chapter || 'Your deck')}</span>${d.custom ? `<span class="chip" style="color:var(--muted)">${d.ai ? 'AI' : 'Quick'}</span>` : ''}</div>
+          <div class="top"><span class="chip">${esc(d.chapter || 'Your deck')}</span><span class="lvl-chip lvl-${levelOf(d)}" title="Your level: ${LNAME[levelOf(d)]}">${levelOf(d)}</span>${d.custom ? `<span class="chip" style="color:var(--muted)">${d.ai ? 'AI' : 'Quick'}</span>` : ''}</div>
           <h3>${esc(d.title)}</h3><p>${esc(d.blurb || '')}</p>
           <div class="foot"><span class="counts">${counts(d)}</span><div class="ring" style="--v:${m}"><span>${m}%</span></div></div></button>`; }).join('')}</div>`
         : `<div class="empty"><h3>No ${esc(s.name)} decks yet</h3><p>Upload your class notes or textbook pages (even scanned ones) and it builds notes, flashcards and exam questions.</p><button class="btn btn-hot" type="button" data-act="upload" data-s="${esc(s.id)}" style="margin-top:12px">Upload ${esc(s.name)} notes</button></div>`}`;
@@ -229,7 +230,7 @@
   function refreshOverlay() { if (!cur) return; if (cur.kind === 'deck') renderDeckOv(); }
 
   /* ---------------- deck view ---------------- */
-  function openDeck(id, tab, filter) { const d = getDeck(id); if (!d) return; cur = { kind: 'deck', deck: d, tab: tab || 'learn', filter: filter || 'all', level: 'all' }; renderDeckOv(); showOv(); }
+  function openDeck(id, tab, filter) { const d = getDeck(id); if (!d) return; cur = { kind: 'deck', deck: d, tab: tab || 'learn', filter: filter || 'all', level: 'auto' }; renderDeckOv(); showOv(); }
   function deckTabs(d) {
     const t = [['learn', d.custom ? 'Notes' : 'Learn'], ['cards', 'Flashcards'], ['practice', 'Exam questions']];
     if (d.drills) t.push(['drills', 'Quick drills']);
@@ -467,30 +468,62 @@ Award marks only for what the student actually wrote. Reply with ONLY this JSON:
   }
 
   /* ---------------- practice view ---------------- */
+  const levelOf = (d) => Logic.nearestLevel(S.lvl[d.id]?.L || 'F', deckLevels(d));
+  const allDone = (q) => q.parts.every(p => p._done && p._got != null);
+  const qScore = (q) => q.parts.reduce((a, p) => [a[0] + (p._got || 0), a[1] + (p.marks || 1)], [0, 0]);
+  // Runs the level ladder once a practice question is fully marked. Returns how the level moved.
+  function climb(d, q) {
+    const [got, out] = qScore(q);
+    const { st, moved } = Logic.ladder(S.lvl[d.id], Logic.classify(got, out), deckLevels(d));
+    S.lvl[d.id] = st; save();
+    return moved;
+  }
+  function lvlHint(d) {
+    const st = S.lvl[d.id] || { up: 0, down: 0 }, ls = deckLevels(d), i = ls.indexOf(levelOf(d));
+    if (st.down && i > 0) return `${2 - st.down} more miss drops you a level`;
+    if (i < ls.length - 1) return `${3 - (st.up || 0)} right in a row to level up`;
+    return 'Top level. Keep it locked in.';
+  }
   function viewPractice(el, d) {
     const tags = (d.sections || []).filter(s => hasPracticeFor(d, s.code));
-    const levels = d.bank && d.subject === 'maths';
     const sess = { got: 0, out: 0 };
+    const ls = deckLevels(d);
     el.innerHTML = `${tags.length ? `<div class="filters" role="group" aria-label="Topic"><button class="fchip" type="button" data-f="all" aria-pressed="${cur.filter === 'all'}">All topics</button>${tags.map(s => `<button class="fchip" type="button" data-f="${esc(s.code)}" aria-pressed="${cur.filter === s.code}">${esc(s.code)} ${esc(s.name)}${s.ext ? ' ★' : ''}</button>`).join('')}</div>` : ''}
-      ${levels ? `<div class="filters" role="group" aria-label="Level">${[['all', 'Any level'], ['F', 'Foundation'], ['S', 'Standard'], ['C', 'Complex']].map(([k, l]) => `<button class="fchip" type="button" data-l="${k}" aria-pressed="${cur.level === k}">${l}</button>`).join('')}</div>` : ''}
+      <div class="lvlbar"><div class="lvl-now" id="lvlNow"></div><div class="filters" role="group" aria-label="Level">${[['auto', 'Auto'], ...ls.map(L => [L, LNAME[L]])].map(([k, l]) => `<button class="fchip" type="button" data-l="${k}" aria-pressed="${cur.level === k}">${l}</button>`).join('')}</div></div>
       <div class="session"><span>This session <b id="sGot">0</b>/<b id="sOut">0</b> marks</span>${aiReady() ? '<button class="linkbtn" type="button" id="aiMore">✦ Make new questions with AI</button>' : ''}</div><div id="qHost"></div>
       <div class="qnav"><button class="btn btn-hot" type="button" id="nextQ">Next question →</button></div>`;
+    const drawLvl = (pulse) => {
+      const auto = cur.level === 'auto', L = auto ? levelOf(d) : cur.level, box = $('#lvlNow', el);
+      box.innerHTML = `<span class="lvl-badge lvl-${L}">${auto ? 'Level' : 'Fixed'} · ${LNAME[L]}</span><span class="lvl-hint">${auto ? esc(lvlHint(d)) : 'Manual level: your level won\'t change'}</span>`;
+      if (pulse && hasGsap && !reduce) gsap.fromTo($('.lvl-badge', box), { scale: 1.35 }, { scale: 1, duration: .6, ease: 'elastic.out(1, .5)' });
+    };
     $$('[data-f]', el).forEach(b => b.onclick = () => { cur.filter = b.dataset.f; $$('[data-f]', el).forEach(x => x.setAttribute('aria-pressed', x === b)); next(); });
-    $$('[data-l]', el).forEach(b => b.onclick = () => { cur.level = b.dataset.l; $$('[data-l]', el).forEach(x => x.setAttribute('aria-pressed', x === b)); next(); });
+    $$('[data-l]', el).forEach(b => b.onclick = () => { cur.level = b.dataset.l; $$('[data-l]', el).forEach(x => x.setAttribute('aria-pressed', x === b)); drawLvl(); next(); });
     const host = $('#qHost', el);
-    const onPart = (p, q) => { sess.got += p._got || 0; sess.out += p.marks || 1; $('#sGot', el).textContent = sess.got; $('#sOut', el).textContent = sess.out; record(q.deckId, q.tags, p._got || 0, p.marks || 1); };
+    const onPart = (p, q) => {
+      sess.got += p._got || 0; sess.out += p.marks || 1; $('#sGot', el).textContent = sess.got; $('#sOut', el).textContent = sess.out; record(q.deckId, q.tags, p._got || 0, p.marks || 1);
+      if (!allDone(q) || q._counted) return; q._counted = true;
+      noteResult(q, d);
+      if (cur.level !== 'auto') return;
+      const moved = climb(d, q); drawLvl(!!moved);
+      if (moved === 'up') { toast(`Level up → ${LNAME[levelOf(d)]}`); burst(innerWidth / 2, 140, 110); }
+      if (moved === 'down') toast(`Level down → ${LNAME[levelOf(d)]}. Build it back up.`);
+    };
     const next = () => {
-      const q = nextQuestion(d, cur.filter, cur.level);
+      const q = nextQuestion(d, cur.filter, cur.level === 'auto' ? levelOf(d) : cur.level);
       host.innerHTML = '';
       if (!q) { host.innerHTML = '<p class="note">No questions for this filter yet.</p>'; return; }
+      if (q.levelNote) host.insertAdjacentHTML('beforeend', `<p class="note lvl-note">${esc(q.levelNote)}</p>`);
       const card = renderCard(q, { mode: 'practice', onPart }); host.appendChild(card);
       if (hasGsap && !reduce) gsap.fromTo(card, { y: 16, opacity: .2 }, { y: 0, opacity: 1, duration: .3, ease: 'power2.out' });
       ov.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
     };
     $('#nextQ', el).onclick = next;
     const more = $('#aiMore', el); if (more) more.onclick = () => aiMoreQuestions(d, more, () => toast('New questions added to this deck'));
-    next();
+    drawLvl(); next();
   }
+  // Mistakes hook (filled in by the mistakes review).
+  function noteResult() { }
   async function aiMoreQuestions(d, btn, done) {
     btn.disabled = true; const old = btn.textContent; btn.textContent = 'Writing questions… (about a minute)';
     const notes = deckContext(d);
