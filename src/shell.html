@@ -136,6 +136,44 @@ button { cursor: pointer; }
 .features dd { margin: 4px 0 0; color: var(--ink-2); font-size: 15.5px; }
 @media (max-width: 860px) { .home-grid { grid-template-columns: 1fr; } .tallies { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 
+/* study plan */
+.plan { background: var(--sheet); border: 1px solid var(--rule); border-radius: 16px; padding: 24px; margin-bottom: 20px; }
+.plan-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 14px; flex-wrap: wrap; margin-bottom: 16px; }
+.plan-days { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 12px; }
+.pday { border: 1px solid var(--rule-2); border-radius: 12px; padding: 12px 14px; }
+.pday.today { border: 2px solid var(--pen); }
+.pday h3 { font-size: 15.5px; margin-bottom: 8px; }
+.pday ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.task { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; font-size: 14.5px; border-left: 3px solid var(--acc); padding-left: 8px; }
+.task label { display: flex; gap: 8px; align-items: flex-start; cursor: pointer; }
+.task input { margin-top: 4px; width: 16px; height: 16px; accent-color: var(--tick); flex: none; }
+.task.done span { text-decoration: line-through; color: var(--ink-3); }
+.task.is-exam span { font-weight: 700; }
+.task .linkbtn { font-size: 14px; flex: none; }
+.plan-rest { margin-top: 14px; }
+.plan-rest summary { cursor: pointer; margin-bottom: 12px; }
+/* heatmap */
+.heat-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin-bottom: 8px; }
+.heat-head h3 { font-size: 16px; } .heat-head span { font-size: 14px; color: var(--ink-3); }
+.heat { display: grid; grid-auto-flow: column; grid-template-rows: repeat(7, 14px); grid-auto-columns: 14px; gap: 3px; margin-bottom: 6px; overflow-x: auto; }
+.heat i, .heat-key i { display: block; aspect-ratio: 1; border-radius: 3px; background: var(--rule-2); }
+.heat-key { display: flex; align-items: center; gap: 3px; font-size: 12.5px; color: var(--ink-3); margin-bottom: 18px; }
+.heat-key i { width: 12px; }
+.h1 { background: color-mix(in srgb, var(--pen) 25%, var(--sheet)) !important; } .h2 { background: color-mix(in srgb, var(--pen) 50%, var(--sheet)) !important; }
+.h3 { background: color-mix(in srgb, var(--pen) 75%, var(--sheet)) !important; } .h4 { background: var(--pen) !important; }
+/* focus mode */
+.focus-btn { border: 0; background: var(--ink); color: var(--paper); font-weight: 700; font-size: 14.5px; padding: 7px 14px; border-radius: 999px; white-space: nowrap; }
+.ov.focus { background: #12151B; color: #E9EDF2; --sheet: #1B2028; --rule: #343B46; --rule-2: #262C35; --ink: #E9EDF2; --ink-2: #B7C0CC; --ink-3: #8C96A4; --paper: #12151B; --pen: #8FB0FF; --pen-soft: #22304F; }
+.ov.focus .ov-head { background: #12151B; }
+.focus-setup { max-width: 640px; margin: 20px auto; display: grid; gap: 12px; }
+.focus-setup h2 { font-size: 22px; margin-top: 10px; }
+.focus-run { text-align: center; padding-top: 6vh; }
+.focus-sub { color: var(--ink-3); font-size: 17px; }
+.focus-time { font-size: clamp(96px, 22vw, 220px); font-weight: 700; letter-spacing: -0.04em; line-height: 1; margin: 10px 0 16px; font-variant-numeric: tabular-nums; }
+.focus-task { font-size: 19px; max-width: 46ch; margin: 0 auto 18px; }
+.focus-bar { max-width: 520px; height: 6px; margin: 0 auto; background: var(--rule-2); border-radius: 3px; overflow: hidden; }
+.focus-bar i { display: block; height: 100%; background: var(--pen); width: 0; transition: width .5s linear; }
+
 /* sections */
 .section { padding-block: 36px; }
 .sec-head { margin-bottom: 16px; }
@@ -415,6 +453,7 @@ footer { padding-block: 26px 44px; color: var(--ink-3); font-size: 14px; border-
     <div class="stat" title="Days in a row"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2s5 4.5 5 10a5 5 0 0 1-10 0c0-2 1-3.5 1-3.5S9 11 11 11c0-4 1-9 1-9z"/></svg><b id="streak">0</b><span class="sr">day streak</span></div>
     <div class="stat xp-stat"><b id="xp">0</b>&nbsp;XP</div>
     <button class="stat mist-btn" id="mistBtn" type="button" aria-label="Mistakes to fix"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19"/></svg><b id="mistN">0</b></button>
+    <button class="focus-btn" id="focusBtn" type="button">Lock in</button>
     <button class="acct" id="acctBtn" type="button" hidden>Sign in</button>
   </div>
 </header>

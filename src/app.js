@@ -41,7 +41,7 @@
     if (!deckId || !out) return;
     const p = prog(deckId); p.att += out; p.cor += got;
     (tags && tags.length ? tags : ['all']).forEach(t => { const r = (p.tags[t] ||= [0, 0]); r[0] += out; r[1] += got; });
-    addXp(got * 10 + 2); bumpStreak(); save(); renderStats();
+    addXp(got * 10 + 2); Logic.logActivity(S, today(), out); bumpStreak(); save(); renderStats();
   }
   function addXp(n) { S.xp += n; const wk = Logic.weekStart(new Date()); if (S.week.start !== wk) S.week = { start: wk, xp: 0 }; S.week.xp += n; }
   const mastery = (id) => { const p = S.p[id]; if (!p || !p.att) return 0; return Math.round(p.cor / p.att * Math.min(1, p.att / 30) * 100); };
@@ -212,6 +212,107 @@
     $('#subtabs').innerHTML = [{ id: 'home', name: 'Home' }, ...subjects()].map(s => `<button class="subtab" role="tab" type="button" data-subj="${esc(s.id)}" aria-selected="${S.subj === s.id}" title="${esc(s.name)}">${esc(s.tab || s.name)}</button>`).join('');
   }
   $('#subtabs').addEventListener('click', e => { const b = e.target.closest('[data-subj]'); if (!b) return; S.subj = b.dataset.subj; save(); renderTabs(); renderSubject(); $('#subject').scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' }); });
+  /* ---------------- study planner ---------------- */
+  const planSubs = () => S.planSubs || SUBJ.filter(s => s.exam && s.exam > Date.now()).map(s => s.id);
+  function topicsFor(sid) {
+    return decksOf(sid).flatMap(d => (d.sections || []).filter(sec => hasPracticeFor(d, sec.code)).map(sec => {
+      const t = S.p[d.id]?.tags?.[sec.code];
+      return { sid, deckId: d.id, code: sec.code, name: sec.name, acc: t && t[0] ? t[1] / t[0] : null };
+    }));
+  }
+  function currentPlan() {
+    const subs = planSubs(), exams = SUBJ.filter(s => s.exam && subs.includes(s.id)).map(s => ({ sid: s.id, name: s.name, date: s.exam }));
+    return Logic.buildPlan({ today: new Date(), exams, topics: subs.flatMap(topicsFor), perDay: 3 });
+  }
+  function taskHtml(t) {
+    const s = getSubj(t.sid), done = !!S.planDone[t.id];
+    const label = { topic: `Practise ${esc(t.code)} ${fm(t.name)}`, mock: `${esc(s.name)} practice exam`, mistakes: `Fix your ${esc(s.name)} mistakes`, exam: `${esc(s.name)} exam, ${esc(s.when)}` }[t.kind];
+    const go = t.kind === 'exam' ? '' : `<button class="linkbtn" type="button" data-task-go="${esc(t.id)}">${t.kind === 'mock' ? 'Start' : 'Go'}</button>`;
+    return `<li class="task c-${s.hue}${done ? ' done' : ''}${t.kind === 'exam' ? ' is-exam' : ''}"><label><input type="checkbox" data-task="${esc(t.id)}"${done ? ' checked' : ''}><span>${label}</span></label>${go}</li>`;
+  }
+  function renderPlan() {
+    const el = $('#plan'); if (!el) return;
+    const plan = currentPlan(), byId = new Map(plan.flatMap(d => d.tasks.map(t => [t.id, t])));
+    const all = SUBJ.filter(s => s.exam && s.exam > Date.now()), subs = planSubs(), week = plan.slice(0, 7);
+    const dayName = (d, i) => i === 0 ? 'Today' : i === 1 ? 'Tomorrow' : new Date(d + 'T12:00').toLocaleDateString('en-AU', { weekday: 'long', day: 'numeric', month: 'short' });
+    const t0 = plan[0]?.tasks || [], doneToday = t0.filter(t => S.planDone[t.id]).length;
+    el.innerHTML = `<div class="plan-head"><div><h2 id="plH">Your plan</h2><p class="sec-sub">${plan.length ? `${doneToday} of ${t0.length} done today. Aimed at your weakest topics, rebuilt as you practise.` : 'No exams coming up.'}</p></div>
+        <div class="pills" role="group" aria-label="Subjects in the plan">${all.map(s => `<button class="pill c-${s.hue}" type="button" data-plan-sub="${esc(s.id)}" aria-pressed="${subs.includes(s.id)}">${esc(s.tab || s.name)}</button>`).join('')}</div></div>
+      <ol class="plan-days">${week.map((d, i) => `<li class="pday${i === 0 ? ' today' : ''}"><h3>${dayName(d.date, i)}</h3>${d.tasks.length ? `<ul>${d.tasks.map(taskHtml).join('')}</ul>` : '<p class="note">Rest day.</p>'}</li>`).join('')}</ol>
+      ${plan.length > 7 ? `<details class="plan-rest"><summary class="linkbtn">The rest of the plan, up to ${esc(shortDate(new Date(plan[plan.length - 1].date + 'T12:00')))}</summary><ol class="plan-days">${plan.slice(7).map(d => `<li class="pday"><h3>${dayName(d.date, 9)}</h3><ul>${d.tasks.map(taskHtml).join('')}</ul></li>`).join('')}</ol></details>` : ''}`;
+    $$('[data-task]', el).forEach(c => c.onchange = () => { if (c.checked) { S.planDone[c.dataset.task] = 1; addXp(5); } else delete S.planDone[c.dataset.task]; save(); renderStats(); renderPlan(); });
+    $$('[data-task-go]', el).forEach(b => b.onclick = () => {
+      const t = byId.get(b.dataset.taskGo); if (!t) return;
+      if (t.kind === 'topic') openDeck(t.deckId, 'practice', t.code); else if (t.kind === 'mock') openMock(t.sid); else if (t.kind === 'mistakes') openMistakes(t.sid);
+    });
+    $$('[data-plan-sub]', el).forEach(b => b.onclick = () => { const id = b.dataset.planSub, cur = planSubs(); S.planSubs = cur.includes(id) ? cur.filter(x => x !== id) : [...cur, id]; save(); renderPlan(); });
+  }
+
+  /* ---------------- lock-in focus mode ---------------- */
+  const FOCUS_KEY = 'lockin.focus';
+  const focusState = () => { try { return JSON.parse(localStorage.getItem(FOCUS_KEY)) || null; } catch (e) { return null; } };
+  const setFocus = (f) => { try { f ? localStorage.setItem(FOCUS_KEY, JSON.stringify(f)) : localStorage.removeItem(FOCUS_KEY); } catch (e) { } };
+  let focusTick = null, baseTitle = document.title;
+  function chime() { // three soft beeps when a session ends
+    try { const ac = new (window.AudioContext || window.webkitAudioContext)(); [0, .25, .5].forEach(t => { const o = ac.createOscillator(), g = ac.createGain(); o.frequency.value = 880; g.gain.setValueAtTime(.0001, ac.currentTime + t); g.gain.exponentialRampToValueAtTime(.2, ac.currentTime + t + .02); g.gain.exponentialRampToValueAtTime(.0001, ac.currentTime + t + .2); o.connect(g).connect(ac.destination); o.start(ac.currentTime + t); o.stop(ac.currentTime + t + .22); }); } catch (e) { }
+  }
+  function openFocus() {
+    cur = { kind: 'focus', tab: null }; ovFrame('Lock in', 'c-lilac', null); ov.classList.add('focus'); showOv();
+    const f = focusState();
+    if (f && (f.paused || f.end > Date.now())) runFocus(f);
+    else if (f) finishFocus(f, f.min); // it finished while the page was closed
+    else focusSetup();
+  }
+  function focusSetup() {
+    const body = $('#ovBody'), subs = subjects().filter(s => decksOf(s.id).length), next = nextExam(), pickSid = (next && subs.some(s => s.id === next.id)) ? next.id : subs[0]?.id;
+    const todayMin = S.days[today()]?.min || 0;
+    body.innerHTML = `<div class="focus-setup"><h2>What are you locking in on?</h2>
+      <div class="pills" role="group" aria-label="Subject">${subs.map(s => `<button class="pill c-${s.hue}" type="button" data-fs="${esc(s.id)}" aria-pressed="${s.id === pickSid}">${esc(s.tab || s.name)}</button>`).join('')}</div>
+      <h2>For how long?</h2>
+      <div class="pills" role="group" aria-label="Length">${[25, 50, 90].map(n => `<button class="pill" type="button" data-fl="${n}" aria-pressed="${n === 25}">${n} min</button>`).join('')}</div>
+      <label class="lbl" for="fTask">Goal for this session (optional)</label><input class="field" id="fTask" maxlength="80" placeholder="e.g. Partial fractions questions until I get 3 right in a row">
+      <div class="row" style="margin-top:20px"><button class="btn" type="button" id="fGo">Start</button><span class="note">${todayMin ? `${todayMin} min focused today.` : 'Phone in another room. You\'ve got this.'}</span></div></div>`;
+    let sid = pickSid, len = 25;
+    $$('[data-fs]', body).forEach(b => b.onclick = () => { sid = b.dataset.fs; $$('[data-fs]', body).forEach(x => x.setAttribute('aria-pressed', x === b)); });
+    $$('[data-fl]', body).forEach(b => b.onclick = () => { len = +b.dataset.fl; $$('[data-fl]', body).forEach(x => x.setAttribute('aria-pressed', x === b)); });
+    $('#fGo', body).onclick = () => { const f = { sid, min: len, start: Date.now(), end: Date.now() + len * 6e4, task: $('#fTask', body).value.trim(), paused: null }; setFocus(f); runFocus(f); };
+  }
+  function runFocus(f) {
+    const body = $('#ovBody'), s = getSubj(f.sid), ex = s.exam && s.exam > Date.now() ? `${s.name} exam in ${daysTo(s.exam)} days` : s.name;
+    body.innerHTML = `<div class="focus-run"><p class="focus-sub">${esc(ex)}</p><div class="focus-time" id="fTime" role="timer" aria-live="off"></div>
+      ${f.task ? `<p class="focus-task">${esc(f.task)}</p>` : ''}<div class="focus-bar"><i id="fBar"></i></div>
+      <div class="row" style="justify-content:center;margin-top:24px"><button class="btn btn-ghost" type="button" id="fPause"></button><button class="btn btn-ghost" type="button" id="fStop">End session</button></div></div>`;
+    const draw = () => {
+      const now = f.paused || Date.now(), left = Math.max(0, f.end - now), mm = Math.floor(left / 6e4), ss = Math.floor(left % 6e4 / 1e3);
+      const t = `${mm}:${String(ss).padStart(2, '0')}`; $('#fTime').textContent = t; document.title = `${t} · Lock in`;
+      $('#fBar').style.width = `${100 - left / (f.min * 6e4) * 100}%`; $('#fPause').textContent = f.paused ? 'Resume' : 'Pause';
+      if (left <= 0 && !f.paused) finishFocus(f, f.min);
+    };
+    clearInterval(focusTick); focusTick = setInterval(() => { if (cur?.kind !== 'focus') { clearInterval(focusTick); document.title = baseTitle; return; } draw(); }, 500); draw();
+    $('#fPause').onclick = () => { if (f.paused) { f.end += Date.now() - f.paused; f.paused = null; } else f.paused = Date.now(); setFocus(f); draw(); };
+    $('#fStop').onclick = () => { const done = Math.floor(((f.paused || Date.now()) - f.start) / 6e4); finishFocus(f, Math.min(f.min, done)); };
+  }
+  function finishFocus(f, min) {
+    clearInterval(focusTick); setFocus(null); document.title = baseTitle;
+    const body = $('#ovBody');
+    if (min >= 5) {
+      Logic.addSession(S, { id: 'f' + f.start.toString(36), date: today(), min, sid: f.sid }); addXp(Math.round(min * 0.9)); bumpStreak(); save(); renderStats(); chime();
+      if (min >= 25) burst(innerWidth / 2, innerHeight / 3, 120);
+    }
+    const todayMin = S.days[today()]?.min || 0;
+    body.innerHTML = `<div class="focus-setup"><h2>${min >= 5 ? `${min} minutes locked in.` : 'Session ended.'}</h2><p class="note">${min >= 5 ? `+${Math.round(min * 0.9)} XP. ${todayMin} min focused today.` : 'Sessions under 5 minutes aren\'t logged.'}</p>
+      <div class="row" style="margin-top:20px"><button class="btn" type="button" id="fAgain">Another session</button><button class="btn btn-ghost" type="button" id="fBreak">Take a 5 minute break</button></div></div>`;
+    $('#fAgain').onclick = focusSetup;
+    $('#fBreak').onclick = () => { const b = { sid: f.sid, min: 5, start: Date.now(), end: Date.now() + 3e5, task: 'Break. Stand up, drink water, look out a window.', paused: null, isBreak: true }; runBreak(b); };
+  }
+  function runBreak(b) { // a break is a timer that doesn't log anything
+    const body = $('#ovBody');
+    body.innerHTML = `<div class="focus-run"><p class="focus-sub">Break</p><div class="focus-time" id="fTime"></div><p class="focus-task">${esc(b.task)}</p><div class="row" style="justify-content:center;margin-top:24px"><button class="btn" type="button" id="fBack">Back to work</button></div></div>`;
+    clearInterval(focusTick);
+    focusTick = setInterval(() => { const left = Math.max(0, b.end - Date.now()); const el = $('#fTime'); if (!el) return clearInterval(focusTick); el.textContent = `${Math.floor(left / 6e4)}:${String(Math.floor(left % 6e4 / 1e3)).padStart(2, '0')}`; if (!left) { clearInterval(focusTick); chime(); focusSetup(); } }, 500);
+    $('#fBack').onclick = () => { clearInterval(focusTick); focusSetup(); };
+  }
+
   /* ---------------- home: report card, what's inside, what it does ---------------- */
   const GRADE = (m) => (m >= 85 ? 'A' : m >= 70 ? 'B' : m >= 50 ? 'C' : m >= 25 ? 'D' : m > 0 ? 'E' : '–');
   const FEATURES = [
@@ -222,6 +323,8 @@
     ['Questions that never run out', 'Every exam question is generated with new numbers and comes with full working.'],
     ['Your own decks', 'Upload a textbook PDF or photos of your book and get notes, flashcards and questions.'],
     ['AI marking', 'In the Claude version, short answers are marked against the criteria and you can ask about any topic.'],
+    ['Lock-in focus mode', 'A full-screen timer for 25 or 50 minutes of focus. Every session earns XP and lands on your study heatmap.'],
+    ['A plan that writes itself', 'A day-by-day plan to every exam, aimed at your weakest topics, with a practice paper the day before each one.'],
     ['Leaderboards with mates', 'Make a private group, share the code, and race for XP each week.'],
   ];
   function renderHome(el) {
@@ -232,12 +335,17 @@
     const answered = Object.values(S.p).reduce((a, p) => a + (p.att || 0), 0), cleared = Object.keys(S.cleared).length;
     const avg = (ds) => Math.round(ds.reduce((a, d) => a + mastery(d.id), 0) / ds.length);
     const best = (ds) => ds.map(levelOf).sort((a, b) => Logic.LEVELS.indexOf(b) - Logic.LEVELS.indexOf(a))[0];
-    el.innerHTML = `<div class="home-grid">
+    const hm = Logic.heat(S.days, new Date(), 12), weekMin = hm.slice(-7).reduce((a, d) => a + d.min, 0);
+    el.innerHTML = `<section class="plan" id="plan" aria-labelledby="plH"></section>
+    <div class="home-grid">
       <section class="report" aria-labelledby="rcH">
         <h2 id="rcH">Report card</h2><p class="sec-sub">${esc(S.profile?.nickname || 'You')}, ${new Date().toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
         <table class="rc"><thead><tr><th scope="col">Subject</th><th scope="col">Mastery</th><th scope="col">Level</th><th scope="col">Grade</th></tr></thead>
           <tbody>${subs.map(s => { const ds = decksOf(s.id), m = avg(ds), L = best(ds); return `<tr class="c-${s.hue}"><th scope="row"><button class="linkbtn" type="button" data-subj-go="${esc(s.id)}">${esc(s.name)}</button></th><td><span class="rbar"><i style="width:${m}%"></i></span> ${m}%</td><td><span class="d-level lvl-${L}">${LNAME[L]}</span></td><td class="grade">${GRADE(m)}</td></tr>`; }).join('')}</tbody></table>
         <dl class="tallies"><div><dt>XP</dt><dd>${S.xp}</dd></div><div><dt>Day streak</dt><dd>${S.streak.n}</dd></div><div><dt>Marks attempted</dt><dd>${answered}</dd></div><div><dt>Mistakes cleared</dt><dd>${cleared}</dd></div></dl>
+        <div class="heat-head"><h3>Study days</h3><span>${weekMin} min focused this week</span></div>
+        <div class="heat" role="img" aria-label="Study activity over the last 12 weeks">${hm.map(d => `<i class="h${d.level}" title="${esc(new Date(d.date + 'T12:00').toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' }))}: ${d.min} min focused, ${d.marks} marks"></i>`).join('')}</div>
+        <div class="heat-key" aria-hidden="true">Less <i class="h0"></i><i class="h1"></i><i class="h2"></i><i class="h3"></i><i class="h4"></i> More</div>
         <button class="btn btn-ghost" type="button" id="shareSite">Share Lock in</button>
       </section>
       <section class="inside" aria-labelledby="inH">
@@ -248,6 +356,7 @@
     </div>
     <section class="features" aria-labelledby="ftH"><h2 id="ftH">What it does</h2><dl>${FEATURES.map(([t, d]) => `<div><dt>${t}</dt><dd>${d}</dd></div>`).join('')}</dl></section>`;
     $('#shareSite').onclick = () => copyText(location.href.split('#')[0], 'Link copied. Send it to your mates.', el);
+    renderPlan();
     $$('[data-subj-go]', el).forEach(b => b.onclick = () => { S.subj = b.dataset.subjGo; save(); renderTabs(); renderSubject(); });
   }
   function renderSubject() {
@@ -1175,6 +1284,8 @@ Aim for 2-5 sections with 3-6 notes each, 10-20 flashcards (key terms, people, d
 
 
   $('#mistBtn').onclick = () => openMistakes();
+  $('#focusBtn').onclick = openFocus;
+  if (focusState()) openFocus(); // a session survives a reload
   $('#acctBtn').onclick = () => (me && !S.profile ? openProfile(true) : openAccount());
   if (S.subj !== 'home' && !subjects().some(s => s.id === S.subj)) S.subj = 'home';
   renderStats(); renderMistakeCount(); renderTabs(); renderNext(); renderBoard(); renderSubject(); renderWeek(); renderUpSubjects(); renderAiNote(); renderAcct(); renderLeague(); intro();

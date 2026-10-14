@@ -6,7 +6,7 @@ const Logic = (() => {
   function defaults(S) {
     const s = S || {};
     s.lvl ||= {}; s.mistakes ||= []; s.week ||= { start: '', xp: 0 };
-    s.groups ||= []; s.cleared ||= {}; s.gone ||= {}; if (s.profile === undefined) s.profile = null;
+    s.groups ||= []; s.cleared ||= {}; s.gone ||= {}; s.sessions ||= []; s.days ||= {}; s.planDone ||= {}; if (s.profile === undefined) s.profile = null;
     return s;
   }
 
@@ -62,6 +62,51 @@ const Logic = (() => {
   function clearMistake(S, key, now) { S.mistakes = S.mistakes.filter(m => m.key !== key); S.cleared[key] = now; return S; }
   const missAgain = (list, id) => list.map(m => (m.id === id ? { ...m, fixes: 0 } : m));
 
+  /* ---------- focus sessions + activity heatmap ---------- */
+  const MAX_SESSIONS = 500;
+  const dayOf = (S, d) => (S.days[d] ||= { min: 0, marks: 0 });
+  function addSession(S, sess) { S.sessions.push(sess); S.sessions = S.sessions.slice(-MAX_SESSIONS); dayOf(S, sess.date).min += sess.min; return S; }
+  function logActivity(S, date, marks) { dayOf(S, date).marks += marks; return S; }
+  // Last `weeks` weeks ending on `end`, oldest first. Score = focus minutes + 2 per mark attempted.
+  function heat(days, end, weeks = 12) {
+    const out = [], n = weeks * 7;
+    for (let i = n - 1; i >= 0; i--) {
+      const d = new Date(end.getFullYear(), end.getMonth(), end.getDate() - i), key = ymd(d), v = days[key] || {};
+      const score = (v.min || 0) + 2 * (v.marks || 0);
+      out.push({ date: key, min: v.min || 0, marks: v.marks || 0, level: score === 0 ? 0 : score < 20 ? 1 : score < 45 ? 2 : score < 90 ? 3 : 4 });
+    }
+    return out;
+  }
+
+  /* ---------- study planner ---------- */
+  const DAY = 864e5, midnight = (t) => { const d = new Date(t); return new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime(); };
+  // Day-by-day plan from today to the last exam. Each day works on the nearest exam (weakest topics first),
+  // keeps one slot for the next exam, and puts a practice paper on the day before each exam.
+  function buildPlan({ today, exams, topics, perDay = 3 }) {
+    const t0 = midnight(today), up = exams.filter(e => midnight(e.date) >= t0).sort((a, b) => a.date - b.date);
+    if (!up.length) return [];
+    const queues = {}, pos = {};
+    for (const e of up) { queues[e.sid] = topics.filter(t => t.sid === e.sid).map((t, i) => ({ t, i, acc: t.acc == null ? 0.5 : t.acc })).sort((a, b) => a.acc - b.acc || a.i - b.i).map(x => x.t); pos[e.sid] = 0; }
+    const plan = [], last = midnight(up[up.length - 1].date);
+    for (let d = t0; d <= last; d += DAY) {
+      const date = ymd(new Date(d)), tasks = [], used = new Set();
+      const add = (kind, sid, extra = {}) => tasks.push({ id: `${date}:${kind}:${sid}${extra.code ? ':' + extra.code : ''}`, kind, sid, ...extra });
+      const topic = (sid) => { const q = queues[sid]; for (let k = 0; k < q.length; k++) { const t = q[pos[sid]++ % q.length]; if (!used.has(sid + t.code)) { used.add(sid + t.code); add('topic', sid, { deckId: t.deckId, code: t.code, name: t.name }); return true; } } return false; };
+      const todayExams = up.filter(e => midnight(e.date) === d), later = up.filter(e => midnight(e.date) > d);
+      todayExams.forEach(e => add('exam', e.sid, { name: e.name }));
+      if (later.length) {
+        const [first, second] = later, gap = Math.round((midnight(first.date) - d) / DAY);
+        let slots = todayExams.length ? 1 : perDay;
+        if (gap === 1) { add('mock', first.sid); add('mistakes', first.sid); slots -= 2; }
+        const forSecond = second && slots >= 2 ? 1 : 0;
+        for (let k = 0; k < slots - forSecond; k++) topic(first.sid);
+        if (forSecond) topic(second.sid);
+      }
+      plan.push({ date, tasks });
+    }
+    return plan;
+  }
+
   /* ---------- sync ---------- */
   const storageKey = (uid) => (uid ? 'lockin.v2:' + uid : 'lockin.v2');
   const unionBy = (a, b, key, pickNewer) => {
@@ -91,6 +136,11 @@ const Logic = (() => {
     m.profile = b.profile || a.profile;
     m.groups = b.groups.length ? b.groups : a.groups;
     m.extra = { ...a.extra, ...b.extra };
+    m.sessions = unionBy(a.sessions, b.sessions, 'id').slice(-MAX_SESSIONS);
+    m.days = { ...a.days };
+    for (const [d, v] of Object.entries(b.days)) { const o = m.days[d] || {}; m.days[d] = { min: Math.max(o.min || 0, v.min || 0), marks: Math.max(o.marks || 0, v.marks || 0) }; }
+    m.planDone = { ...a.planDone, ...b.planDone };
+    m.planSubs = b.planSubs || a.planSubs || null;
     return m;
   }
   const MAX_DOC_CHARS = 900000;
@@ -104,6 +154,6 @@ const Logic = (() => {
   const CODE_ABC = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   const newGroupCode = (rand = Math.random) => Array.from({ length: 6 }, () => CODE_ABC[Math.floor(rand() * CODE_ABC.length) % CODE_ABC.length]).join('');
 
-  return { LEVELS, defaults, classify, ladder, nearestLevel, weekStart, serialise, addMistake, fixMistake, clearMistake, missAgain, storageKey, mergeState, cloudPayload, validNickname, newGroupCode };
+  return { LEVELS, defaults, classify, ladder, nearestLevel, weekStart, serialise, addMistake, fixMistake, clearMistake, missAgain, addSession, logActivity, heat, buildPlan, storageKey, mergeState, cloudPayload, validNickname, newGroupCode };
 })();
 if (typeof module !== 'undefined') module.exports = Logic;

@@ -196,6 +196,81 @@ test('defaults adds cleared and gone maps', () => {
   assert.deepStrictEqual(s.gone, {});
 });
 
+/* ---------- focus sessions + heatmap ---------- */
+test('addSession logs minutes against the day and caps the history', () => {
+  const s = base({});
+  Logic.addSession(s, { id: 'a', date: '2026-10-14', min: 25, sid: 'y12' });
+  Logic.addSession(s, { id: 'b', date: '2026-10-14', min: 50, sid: 'e1' });
+  assert.strictEqual(s.days['2026-10-14'].min, 75);
+  assert.strictEqual(s.sessions.length, 2);
+  for (let i = 0; i < 600; i++) Logic.addSession(s, { id: 'x' + i, date: '2026-10-15', min: 1, sid: 'y12' });
+  assert.strictEqual(s.sessions.length, 500);
+});
+test('logActivity counts marks per day', () => {
+  const s = base({});
+  Logic.logActivity(s, '2026-10-14', 3); Logic.logActivity(s, '2026-10-14', 2);
+  assert.strictEqual(s.days['2026-10-14'].marks, 5);
+});
+test('heat gives 12 weeks ending on the given day, with levels 0-4', () => {
+  const s = base({ days: { '2026-10-14': { min: 90, marks: 20 }, '2026-10-13': { min: 10, marks: 0 } } });
+  const h = Logic.heat(s.days, new Date(2026, 9, 14), 12);
+  assert.strictEqual(h.length, 84);
+  assert.strictEqual(h[h.length - 1].date, '2026-10-14');
+  assert.strictEqual(h[h.length - 1].level, 4);
+  assert.ok(h[h.length - 2].level >= 1 && h[h.length - 2].level < 4);
+  assert.strictEqual(h[0].level, 0);
+});
+test('mergeState combines days, sessions and plan ticks', () => {
+  const a = base({ sessions: [{ id: 'a', date: '2026-10-14', min: 25 }], days: { '2026-10-14': { min: 25, marks: 4 } }, planDone: { t1: 1 } });
+  const b = base({ sessions: [{ id: 'b', date: '2026-10-14', min: 50 }], days: { '2026-10-14': { min: 50, marks: 2 } }, planDone: { t2: 1 } });
+  const m = Logic.mergeState(a, b);
+  assert.deepStrictEqual(m.sessions.map(x => x.id).sort(), ['a', 'b']);
+  assert.deepStrictEqual(m.days['2026-10-14'], { min: 50, marks: 4 });
+  assert.deepStrictEqual(m.planDone, { t1: 1, t2: 1 });
+});
+
+/* ---------- study planner ---------- */
+const EX = [
+  { sid: 'y12', name: 'Maths Extension 2', date: new Date(2026, 9, 19, 13, 50) },
+  { sid: 'e1', name: 'Maths Extension 1', date: new Date(2026, 9, 23, 13, 50) },
+  { sid: 'phys', name: 'Physics', date: new Date(2026, 10, 5, 9, 25) },
+];
+const TOPICS = [
+  { sid: 'y12', deckId: 'c', code: '2.1', name: 'Complex intro', acc: 0.9 }, { sid: 'y12', deckId: 'c', code: '2.3', name: 'Mod-arg', acc: 0.3 }, { sid: 'y12', deckId: 'i', code: '4.3', name: 'Partial fractions', acc: null },
+  { sid: 'e1', deckId: 't', code: 'T3', name: 'Auxiliary angle', acc: 0.5 }, { sid: 'e1', deckId: 'p', code: 'P2', name: 'Roots', acc: null },
+  { sid: 'phys', deckId: 'm5', code: '5.1', name: 'Projectiles', acc: 0.8 },
+];
+const plan = () => Logic.buildPlan({ today: new Date(2026, 9, 14, 8), exams: EX, topics: TOPICS, perDay: 3 });
+test('buildPlan covers every day from today to the last exam', () => {
+  const p = plan();
+  assert.strictEqual(p[0].date, '2026-10-14');
+  assert.strictEqual(p[p.length - 1].date, '2026-11-05');
+  assert.strictEqual(p.length, 23);
+});
+test('buildPlan puts the exam itself on exam day and a practice paper the day before', () => {
+  const p = plan(), day = (d) => p.find(x => x.date === d);
+  assert.ok(day('2026-10-19').tasks.some(t => t.kind === 'exam' && t.sid === 'y12'));
+  assert.ok(day('2026-10-18').tasks.some(t => t.kind === 'mock' && t.sid === 'y12'));
+  assert.ok(day('2026-10-22').tasks.some(t => t.kind === 'mock' && t.sid === 'e1'));
+});
+test('buildPlan works on the nearest exam first, weakest topic first', () => {
+  const t = plan()[0].tasks.filter(x => x.kind === 'topic');
+  assert.strictEqual(t[0].sid, 'y12');
+  assert.strictEqual(t[0].code, '2.3'); // 30% beats untouched (counted as 50%) and 90%
+});
+test('buildPlan gives later exams some time before the first one is done', () => {
+  const early = plan().slice(0, 5).flatMap(d => d.tasks);
+  assert.ok(early.some(t => t.sid === 'e1'));
+});
+test('buildPlan task ids are stable and unique', () => {
+  const ids = plan().flatMap(d => d.tasks.map(t => t.id));
+  assert.strictEqual(new Set(ids).size, ids.length);
+  assert.deepStrictEqual(ids, plan().flatMap(d => d.tasks.map(t => t.id)));
+});
+test('buildPlan with no upcoming exams is empty', () => {
+  assert.deepStrictEqual(Logic.buildPlan({ today: new Date(2026, 11, 1), exams: EX, topics: TOPICS }), []);
+});
+
 let fail = 0;
 for (const [name, fn] of tests) { try { fn(); } catch (e) { fail++; console.log('FAIL', name, '\n ', e.message); } }
 console.log(fail ? `${fail}/${tests.length} failed` : `ok (${tests.length} tests)`);
