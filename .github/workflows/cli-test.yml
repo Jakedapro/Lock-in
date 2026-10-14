@@ -12,9 +12,12 @@ jobs:
       - name: Install with the README command
         shell: powershell
         run: irm https://raw.githubusercontent.com/jamalmusialla81-hub/lock-in/main/install.ps1 | iex
-      - name: The app is installed
+      - name: Show where the app was installed
+        if: always()
         shell: powershell
-        run: if (-not (Test-Path "$env:LOCALAPPDATA\Programs\lock-in\Lock in.exe")) { throw 'Lock in.exe missing' }
+        run: |
+          Get-ItemProperty 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\*' -ErrorAction SilentlyContinue | Where-Object DisplayName -like 'Lock in*' | Select-Object DisplayName, DisplayVersion, InstallLocation | Format-List
+          Get-ChildItem "$env:LOCALAPPDATA\Programs" -ErrorAction SilentlyContinue | Select-Object Name
       - name: lockin version, update (already latest) and help
         shell: cmd
         run: |

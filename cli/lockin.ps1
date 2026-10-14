@@ -7,12 +7,25 @@ $ProgressPreference = 'SilentlyContinue' # makes downloads much faster in Window
 
 $Repo = 'jamalmusialla81-hub/lock-in'
 $Site = 'https://jamalmusialla81-hub.github.io/lock-in/'
-$AppDir = Join-Path $env:LOCALAPPDATA 'Programs\lock-in'
-$AppExe = Join-Path $AppDir 'Lock in.exe'
 $Bin = Split-Path -Parent $MyInvocation.MyCommand.Path
 
+# Where the app is installed: ask Windows (the uninstall records Settings uses), then try the usual folders.
+function Find-AppDir {
+  $keys = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\*', 'HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\*', 'HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*'
+  foreach ($k in $keys) {
+    $hit = Get-ItemProperty $k -ErrorAction SilentlyContinue | Where-Object { $_.DisplayName -like 'Lock in*' -and $_.InstallLocation } | Select-Object -First 1
+    if ($hit -and (Test-Path (Join-Path $hit.InstallLocation 'Lock in.exe'))) { return $hit.InstallLocation }
+  }
+  foreach ($d in @((Join-Path $env:LOCALAPPDATA 'Programs\Lock in'), (Join-Path $env:LOCALAPPDATA 'Programs\lock-in'), (Join-Path $env:ProgramFiles 'Lock in'))) {
+    if (Test-Path (Join-Path $d 'Lock in.exe')) { return $d }
+  }
+  return $null
+}
+function Get-AppExe { $d = Find-AppDir; if ($d) { return (Join-Path $d 'Lock in.exe') } return $null }
+
 function Get-InstalledVersion {
-  if (Test-Path $AppExe) { return (Get-Item $AppExe).VersionInfo.ProductVersion }
+  $exe = Get-AppExe
+  if ($exe) { return (Get-Item $exe).VersionInfo.ProductVersion }
   return $null
 }
 
@@ -45,7 +58,7 @@ function Update-App {
     Get-Process -Name 'Lock in' -ErrorAction SilentlyContinue | Stop-Process -Force
     Start-Process $setup -ArgumentList '/S' -Wait
     Remove-Item $setup -ErrorAction SilentlyContinue
-    if (-not (Test-Path $AppExe)) { throw "The installer finished but $AppExe is missing." }
+    if (-not (Get-AppExe)) { throw 'The installer finished but Lock in.exe could not be found.' }
     Write-Host "Lock in $(Get-InstalledVersion) is installed. Type 'lockin' to open it."
   }
   Update-Cli
@@ -53,8 +66,9 @@ function Update-App {
 
 switch ($Command.ToLower()) {
   'open' {
-    if (-not (Test-Path $AppExe)) { Write-Host "Lock in isn't installed yet. Run: lockin update"; exit 1 }
-    Start-Process $AppExe
+    $exe = Get-AppExe
+    if (-not $exe) { Write-Host "Lock in isn't installed yet. Run: lockin update"; exit 1 }
+    Start-Process $exe
   }
   'update' { Update-App }
   'version' {
@@ -63,9 +77,9 @@ switch ($Command.ToLower()) {
   }
   'web' { Start-Process $Site }
   'uninstall' {
-    $un = Join-Path $AppDir 'Uninstall Lock in.exe'
     Get-Process -Name 'Lock in' -ErrorAction SilentlyContinue | Stop-Process -Force
-    if (Test-Path $un) { Start-Process $un -ArgumentList '/S' -Wait }
+    $dir = Find-AppDir
+    if ($dir) { $un = Join-Path $dir 'Uninstall Lock in.exe'; if (Test-Path $un) { Start-Process $un -ArgumentList '/S' -Wait } }
     $userPath = [Environment]::GetEnvironmentVariable('Path', 'User')
     if ($userPath) { [Environment]::SetEnvironmentVariable('Path', (($userPath -split ';') | Where-Object { $_ -and $_ -ne $Bin }) -join ';', 'User') }
     Write-Host 'Lock in is uninstalled. Your progress on the website is untouched.'
