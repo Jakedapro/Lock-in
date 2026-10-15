@@ -521,6 +521,36 @@ footer { padding-block: 26px 44px; color: var(--ink-3); font-size: 14px; border-
 .petal-k.on { border-color: var(--tick); background: var(--tick-soft); color: var(--tick); }
 .petal-k.off { border-color: var(--red); background: var(--red-soft); color: var(--red); border-style: dashed; }
 @media (max-width: 480px) { .petal-row { grid-template-columns: repeat(5, minmax(0, 1fr)); } .petal-n { grid-column: 1 / -1; } .petal-k small { display: none; } }
+/* ---- read: Animal Farm ---- */
+.rd-strip { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+.rd-ch { min-width: 40px; height: 40px; border-radius: 10px; border: 1.5px solid var(--rule); background: var(--sheet); color: var(--ink); font: 700 15px var(--f); cursor: pointer; position: relative; }
+.rd-ch[aria-selected=true] { border-color: var(--pink); background: var(--pink); color: var(--sheet); }
+.rd-ch.done::after { content: '✓'; position: absolute; top: -6px; right: -6px; width: 16px; height: 16px; border-radius: 50%; background: var(--tick); color: #fff; font-size: 10px; display: grid; place-items: center; }
+.rd-cast { padding-inline: 12px; }
+.rd-prog { margin: 0 0 18px; font-size: 14px; }
+.rd { max-width: 760px; }
+.rd-head h2 { font-size: clamp(26px, 5vw, 34px); margin: 4px 0 14px; }
+.rd-sum { background: var(--sheet); border: 1px solid var(--rule); border-radius: 14px; padding: 18px 20px; }
+.rd-sum h3, .rd-h { font-size: 18px; margin: 0 0 6px; } .rd-h { margin: 26px 0 10px; }
+.rd-sum p { font-family: Georgia, "Times New Roman", serif; font-size: 17px; line-height: 1.7; margin: 0; }
+.rd-moments { list-style: none; padding: 0; margin: 0; display: grid; gap: 14px; }
+.rd-m { background: var(--sheet); border: 1px solid var(--rule); border-radius: 14px; padding: 18px 20px; }
+.rd-m h4 { display: flex; align-items: center; gap: 10px; font-size: 18px; margin: 0 0 10px; }
+.rd-num { width: 26px; height: 26px; flex: none; border-radius: 50%; display: grid; place-items: center; font-size: 13px; background: var(--pink); color: var(--sheet); }
+.rd-q { margin: 0 0 12px; padding: 10px 16px; border-left: 3px solid var(--pink); background: var(--paper); border-radius: 0 10px 10px 0; font-family: Georgia, "Times New Roman", serif; font-size: 18px; line-height: 1.6; }
+.rd-notes { margin: 0; display: grid; gap: 10px; }
+.rd-notes div { display: grid; grid-template-columns: 150px 1fr; gap: 12px; }
+.rd-notes dt { font-size: 13.5px; font-weight: 700; color: var(--pink); padding-top: 2px; }
+.rd-notes dd { margin: 0; color: var(--ink-2); line-height: 1.55; }
+.rd-think { margin-top: 12px; border-top: 1px dashed var(--rule); padding-top: 10px; }
+.rd-think summary { cursor: pointer; font-weight: 700; } .rd-think p { margin: 8px 0 0; color: var(--ink-2); }
+.rd-quiz { margin-top: 28px; } .rd-quiz h3 { font-size: 20px; margin: 0; }
+.rd-nav { margin-top: 20px; }
+.rd-cast-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+.rd-person { background: var(--sheet); border: 1px solid var(--rule); border-radius: 14px; padding: 16px 18px; }
+.rd-person h3 { margin: 0 0 6px; font-size: 19px; } .rd-person p { margin: 6px 0 0; color: var(--ink-2); font-size: 15px; }
+.rd-tag b { display: block; font-size: 12.5px; color: var(--pink); }
+@media (max-width: 600px) { .rd-notes div { grid-template-columns: 1fr; gap: 2px; } .rd-m, .rd-sum { padding: 14px; } }
 /* ---- quote bank ---- */
 .qb { display: grid; gap: 18px; max-width: 860px; }
 .qb-add h3 { margin: 0 0 4px; }
@@ -579,6 +609,28 @@ footer { padding-block: 26px 44px; color: var(--ink-3); font-size: 14px; border-
 @media (max-width: 760px) { .share { grid-template-columns: 1fr; } }
 .focus-sound { justify-content: center; margin-top: 18px; }
 
+.admin-btn { border-color: var(--lilac); color: var(--lilac); }
+@media (max-width: 680px) { .admin-btn { display: none; } }
+.adm { display: grid; gap: 16px; max-width: 820px; }
+.adm-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.adm-stats div { background: var(--sheet); border: 1px solid var(--rule); border-radius: 12px; padding: 12px 14px; }
+.adm-stats b { display: block; font-size: 26px; } .adm-stats span { font-size: 13px; color: var(--ink-3); }
+.adm-save { padding: 12px 16px; border-radius: 12px; background: var(--tick-soft); display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; }
+.adm-save.has { background: var(--pen-soft); }
+.adm-err { flex-basis: 100%; margin: 4px 0 0; color: var(--red); font-weight: 700; font-size: 14px; }
+.adm-make h3, .adm-head h3 { margin: 0 0 10px; font-size: 19px; } .adm-make .pills { margin-top: 10px; }
+.adm-head { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
+.adm-list { list-style: none; padding: 0; margin: 8px 0 0; display: grid; }
+.adm-list li { display: grid; grid-template-columns: 40px minmax(0, 1fr) auto; gap: 4px 12px; align-items: center; padding: 10px 2px; border-bottom: 1px solid var(--rule-2); }
+.adm-list .acts { grid-column: 2 / -1; display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 14px; }
+.adm-list small { font-size: 12px; color: var(--pen); font-weight: 700; }
+.adm-list .chip { font-size: 13px; font-weight: 700; padding: 3px 9px; border-radius: 999px; background: var(--paper); white-space: nowrap; }
+.adm-list .st-ok .chip { color: var(--tick); background: var(--tick-soft); } .adm-list .st-adm .chip { color: var(--lilac); background: var(--pen-soft); }
+.adm-list .st-soon .chip { color: var(--gold); background: #F0B54A22; } .adm-list .st-exp .chip, .adm-list .st-off .chip { color: var(--red); background: var(--red-soft); }
+.adm-list .st-off .nm, .adm-list .st-exp .nm { color: var(--ink-3); }
+.linkbtn.danger { color: var(--red); }
+.adm-gh summary { cursor: pointer; } .adm-gh ol { padding-left: 20px; margin: 10px 0; display: grid; gap: 4px; }
+@media (max-width: 520px) { .adm-stats b { font-size: 21px; } }
 /* ---- invite-key lock screen ---- */
 html.locked body > :not(.gate):not(script) { display: none !important; }
 html.locked body { overflow: hidden; }
@@ -618,6 +670,7 @@ html.locked body { overflow: hidden; }
     <button class="stat mist-btn" id="mistBtn" type="button" aria-label="Mistakes to fix"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19"/></svg><b id="mistN">0</b></button>
     <button class="stat cmd-btn" id="cmdBtn" type="button" aria-label="Search (Ctrl+K)" title="Search (Ctrl+K)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg></button>
     <button class="stat theme-btn" id="themeBtn" type="button" aria-label="Theme: auto"></button>
+    <button class="acct admin-btn" id="adminBtn" type="button" hidden>Admin</button>
     <button class="focus-btn" id="focusBtn" type="button">Lock in</button>
     <button class="acct" id="acctBtn" type="button" hidden>Sign in</button>
   </div>
@@ -692,7 +745,7 @@ html.locked body { overflow: hidden; }
 <script src="https://cdn.jsdelivr.net/npm/firebase@10.14.1/firebase-firestore-compat.js" integrity="sha384-Ke0FJhH7LyRqDxZ0wt+/OXV38yfQVu7g9VPEEGjYmB4RVOY/ta04uecRhsMwT7V3" crossorigin="anonymous"></script>
 <script>
 const EXAMS = [{"id": "y12", "name": "Maths Extension 2", "date": "2026-10-19T13:50", "when": "Mon 19 Oct, 1:50 pm"}, {"id": "e1", "name": "Maths Extension 1", "date": "2026-10-23T13:50", "when": "Fri 23 Oct, 1:50 pm"}, {"id": "geo", "name": "Geography", "date": "2026-10-26T09:00", "when": "Mon 26 Oct, P1–2"}, {"id": "eng", "name": "English", "date": "2026-10-28T13:40", "when": "Wed 28 Oct, P5–6"}, {"id": "maths", "name": "Maths", "date": "2026-10-29T11:00", "when": "Thu 29 Oct, P3–4"}, {"id": "phys", "name": "Physics", "date": "2026-11-05T09:25", "when": "Thu 5 Nov, 9:25 am"}];
-const KEYS = {"v": 1, "keys": [{"id": "k01", "hash": "217fb2c886771854199f02e9f346a1573630e78f342697ba8941d106b506ee03", "owner": true, "label": "Owner"}, {"id": "k02", "hash": "3a3b5c532e31e8129e71c1401279f3ce2becc1e259d2a22de6b98d7ea0de1661", "label": "Friend 1"}, {"id": "k03", "hash": "f1b4555a2a5de69cf8df25ab413d248979ea269c7172adf81aed66efc17695ce", "label": "Friend 2"}, {"id": "k04", "hash": "4a25659b4a472867ee641fc8dbd0d2b3e94bbb75f930de4c3d94a8ff44c631d9", "label": "Friend 3"}, {"id": "k05", "hash": "a15268caf66eec096600e155dc6201f87d9002fa4b10fe9f56f50dba9ffc80a3", "label": "Friend 4"}, {"id": "k06", "hash": "82fa0d38a6327b8b1853363e215d0a914fdac4bdb6eda7f82f157291d9e56cf9", "label": "Friend 5"}, {"id": "k07", "hash": "14acdaa60e9994008505b344efd7cfe2cef305376602c9d04d7407d57985f9f7", "label": "Friend 6"}, {"id": "k08", "hash": "5ca40d6089403b8a658bf84e5c2035f91516089142303ebfe760da450ac439ce", "label": "Friend 7"}, {"id": "k09", "hash": "e07a8c72b53b8b865124e74c7c6dda5e3ce1665658fd2e9f8a19ea88fb6528ce", "label": "Friend 8"}, {"id": "k10", "hash": "c8553cab2825df4ce7af381ef8266ff539f9891de5b0871a1ddd9298a472068c", "label": "Friend 9"}, {"id": "k11", "hash": "e1cf67237b5fb399f65e2e206ac513882dff81eea9d59c993d96e36ea1f878ba", "label": "Friend 10"}, {"id": "k12", "hash": "27e9d81f98347726a31c7df5aa6062702bdeb43ebadc4cd2a7de79a4574abaea", "label": "Friend 11"}, {"id": "k13", "hash": "2ac8a511be8ae246bf75dcd7c07a0896eea8aff63c470d63f81364fd6bfb80d6", "label": "Friend 12"}, {"id": "k14", "hash": "08c3a31c34543f62fea87db7276999a859ec3bc63ed5bf941ab50aa03a63c5c6", "label": "Friend 13"}, {"id": "k15", "hash": "37906a4b24bcf4cc8e5de4bf3dc3510629c2eef9fa0e1939a4b045fca7922a87", "label": "Friend 14"}, {"id": "k16", "hash": "391b0f80acbf6218f3e594aa1c9028f406673c9e51c3690eeb912251fd464942", "label": "Friend 15"}]};
+const KEYS = {"v": 1, "keys": [{"id": "k01", "hash": "217fb2c886771854199f02e9f346a1573630e78f342697ba8941d106b506ee03", "label": "Admin", "admin": true}, {"id": "k02", "hash": "3a3b5c532e31e8129e71c1401279f3ce2becc1e259d2a22de6b98d7ea0de1661", "label": "Friend 1"}, {"id": "k03", "hash": "f1b4555a2a5de69cf8df25ab413d248979ea269c7172adf81aed66efc17695ce", "label": "Friend 2"}, {"id": "k04", "hash": "4a25659b4a472867ee641fc8dbd0d2b3e94bbb75f930de4c3d94a8ff44c631d9", "label": "Friend 3"}, {"id": "k05", "hash": "a15268caf66eec096600e155dc6201f87d9002fa4b10fe9f56f50dba9ffc80a3", "label": "Friend 4"}, {"id": "k06", "hash": "82fa0d38a6327b8b1853363e215d0a914fdac4bdb6eda7f82f157291d9e56cf9", "label": "Friend 5"}, {"id": "k07", "hash": "14acdaa60e9994008505b344efd7cfe2cef305376602c9d04d7407d57985f9f7", "label": "Friend 6"}, {"id": "k08", "hash": "5ca40d6089403b8a658bf84e5c2035f91516089142303ebfe760da450ac439ce", "label": "Friend 7"}, {"id": "k09", "hash": "e07a8c72b53b8b865124e74c7c6dda5e3ce1665658fd2e9f8a19ea88fb6528ce", "label": "Friend 8"}, {"id": "k10", "hash": "c8553cab2825df4ce7af381ef8266ff539f9891de5b0871a1ddd9298a472068c", "label": "Friend 9"}, {"id": "k11", "hash": "e1cf67237b5fb399f65e2e206ac513882dff81eea9d59c993d96e36ea1f878ba", "label": "Friend 10"}, {"id": "k12", "hash": "27e9d81f98347726a31c7df5aa6062702bdeb43ebadc4cd2a7de79a4574abaea", "label": "Friend 11"}, {"id": "k13", "hash": "2ac8a511be8ae246bf75dcd7c07a0896eea8aff63c470d63f81364fd6bfb80d6", "label": "Friend 12"}, {"id": "k14", "hash": "08c3a31c34543f62fea87db7276999a859ec3bc63ed5bf941ab50aa03a63c5c6", "label": "Friend 13"}, {"id": "k15", "hash": "37906a4b24bcf4cc8e5de4bf3dc3510629c2eef9fa0e1939a4b045fca7922a87", "label": "Friend 14"}, {"id": "k16", "hash": "391b0f80acbf6218f3e594aa1c9028f406673c9e51c3690eeb912251fd464942", "label": "Friend 15"}]};
 const BUILD = {"gate": true};
 </script>
 <script>
@@ -820,7 +873,7 @@ const Logic = (() => {
     const s = S || {};
     s.lvl ||= {}; s.mistakes ||= []; s.week ||= { start: '', xp: 0 };
     s.groups ||= []; s.cleared ||= {}; s.gone ||= {}; s.sessions ||= []; s.days ||= {}; s.planDone ||= {}; if (s.profile === undefined) s.profile = null;
-    s.badges ||= {}; s.flags ||= {}; s.quotes ||= []; s.goneQ ||= {}; s.daily ||= { done: {} }; s.daily.done ||= {};
+    s.badges ||= {}; s.flags ||= {}; s.quotes ||= []; s.goneQ ||= {}; s.daily ||= { done: {} }; s.daily.done ||= {}; s.read ||= { ch: 1, done: {} }; s.read.done ||= {};
     return s;
   }
 
@@ -960,6 +1013,7 @@ const Logic = (() => {
     m.goneQ = latest(a.goneQ, b.goneQ);
     m.quotes = unionBy(a.quotes, b.quotes, 'id', (x, y) => ((y.seen || 0) > (x.seen || 0) ? y : x)).filter(q => !m.goneQ[q.id]);
     m.daily = { ...a.daily, ...b.daily, done: { ...a.daily.done, ...b.daily.done } };
+    m.read = { ...a.read, ...b.read, done: { ...a.read.done, ...b.read.done } };
     if (a.eng || b.eng) {
       const ea = a.eng || {}, eb = b.eng || {};
       m.eng = { ...ea, ...eb, best: Math.max(ea.best || 0, eb.best || 0), history: unionBy(ea.history, eb.history, 'id').sort((x, y) => x.at - y.at).slice(-25) };
@@ -1034,18 +1088,43 @@ const Keys = (() => {
   const pretty = (n) => 'LOCK-' + n.match(/.{4}/g).join('-');
   const hash = (key) => { const n = norm(key); return n ? sha256(SALT + n) : ''; };
 
-  // Returns the matching, switched-on entry from keys.json, or null.
-  function check(key, list) {
+  // The entry for this key in keys.json (on, off or expired), or null if it isn't there at all.
+  function find(key, list) {
     const h = hash(key); if (!h || !list || !Array.isArray(list.keys)) return null;
-    return list.keys.find(k => k.hash === h && !k.revoked) || null;
+    return list.keys.find(k => k.hash === h) || null;
   }
+  const isAdmin = (e) => !!(e && (e.admin || e.owner));
+  // 'ok', 'off' (turned off) or 'expired'. The admin key never expires.
+  function status(e, now = Date.now()) {
+    if (!e) return 'missing';
+    if (e.revoked) return 'off';
+    if (!isAdmin(e) && e.exp && now >= e.exp) return 'expired';
+    return 'ok';
+  }
+  // Returns the matching entry if it works right now, or null.
+  function check(key, list, now = Date.now()) { const e = find(key, list); return status(e, now) === 'ok' ? e : null; }
+  const DAY = 864e5;
+  const daysLeft = (e, now = Date.now()) => (e && e.exp && !isAdmin(e) ? Math.ceil((e.exp - now) / DAY) : null);
   // A fresh random key. `rand` returns 0..1 (crypto-backed in the browser).
   function make(rand) {
     const r = rand || (() => { const a = new Uint32Array(1); (globalThis.crypto || require('crypto').webcrypto).getRandomValues(a); return a[0] / 2 ** 32; });
     return pretty(Array.from({ length: LEN }, () => ABC[Math.floor(r() * ABC.length) % ABC.length]).join(''));
   }
 
-  return { sha256, norm, pretty, hash, check, make, ABC, LEN };
+  // Admin edits, applied to whatever keys.json currently holds (so edits made elsewhere aren't lost):
+  // {op:'add', entry} · {op:'set', id, patch} (a null value deletes that field) · {op:'del', id}
+  function applyOps(list, ops) {
+    const keys = JSON.parse(JSON.stringify((list && list.keys) || [])), next = () => 'k' + String(Math.max(0, ...keys.map(k => +String(k.id).slice(1) || 0)) + 1).padStart(2, '0');
+    for (const o of ops || []) {
+      if (o.op === 'add') { if (keys.some(k => k.hash === o.entry.hash)) continue; const e = { ...o.entry }; if (keys.some(k => k.id === e.id)) e.id = next(); keys.push(e); }
+      else if (o.op === 'set') { const k = keys.find(x => x.id === o.id); if (k) for (const [f, v] of Object.entries(o.patch)) { if (v == null) delete k[f]; else k[f] = v; } }
+      else if (o.op === 'del') { const i = keys.findIndex(x => x.id === o.id && !isAdmin(x)); if (i >= 0) keys.splice(i, 1); }
+    }
+    return { ...(list || {}), v: 1, keys };
+  }
+  const toJson = (list) => '{\n  "v": 1,\n  "keys": [\n' + list.keys.map(k => '    ' + JSON.stringify(k)).join(',\n') + '\n  ]\n}\n';
+
+  return { sha256, norm, pretty, hash, find, check, status, isAdmin, daysLeft, make, applyOps, toJson, ABC, LEN, DAY };
 })();
 if (typeof module !== 'undefined') module.exports = Keys;
 
@@ -1062,7 +1141,7 @@ const Gate = (() => {
   const get = (k) => { try { return localStorage.getItem(k); } catch (e) { return null; } };
   const set = (k, v) => { try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch (e) { } };
   let list = (() => { try { return JSON.parse(get(CACHE)) || KEYS; } catch (e) { return KEYS; } })();
-  let entry = null, onOpen = [], el = null, fails = 0, waitUntil = 0;
+  let entry = null, onOpen = [], onWarn = [], el = null, fails = 0, waitUntil = 0, warned = false;
 
   const locked = () => document.documentElement.classList.contains('locked');
   function open(silent) {
@@ -1073,6 +1152,11 @@ const Gate = (() => {
   }
   function lock(msg) {
     entry = null; document.documentElement.classList.add('locked'); show(msg);
+  }
+  const when = (t) => new Date(t).toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' });
+  function whyNot(k) {
+    const e = Keys.find(k, list), st = Keys.status(e);
+    return st === 'expired' ? `That key ran out on ${when(e.exp)}. Ask for a new one.` : st === 'off' ? 'That key has been turned off. Ask for a new one.' : 'That key doesn\'t work. Check it with whoever sent it.';
   }
   function tryKey(k) {
     const e = Keys.check(k, list); if (!e) return false;
@@ -1102,7 +1186,7 @@ const Gate = (() => {
       if (!Keys.norm(inp.value)) return wrong('Keys look like LOCK-XXXX-XXXX-XXXX.');
       if (!tryKey(inp.value)) {
         note('Checking…'); await refresh(); // a brand-new key is only in the live keys.json
-        if (!tryKey(inp.value)) { if (++fails >= 5) { fails = 0; waitUntil = Date.now() + 30000; } return wrong('That key doesn\'t work. Check it with whoever sent it.'); }
+        if (!tryKey(inp.value)) { if (++fails >= 5) { fails = 0; waitUntil = Date.now() + 30000; } return wrong(whyNot(inp.value)); }
       }
       el.classList.remove('shake'); el.classList.add('opening'); note('You\'re in.');
       setTimeout(() => open(false), 900);
@@ -1130,21 +1214,32 @@ const Gate = (() => {
     const fromLink = (location.hash.match(/(?:^#|&)key=([A-Za-z0-9-]+)/) || [])[1];
     if (fromLink) history.replaceState(null, '', location.pathname + location.search); // don't leave the key in the address bar
     if ((fromLink && tryKey(fromLink)) || tryKey(get(SAVED) || '')) open(true);
-    else show(fromLink ? 'That invite link\'s key doesn\'t work.' : '');
-    // Re-check online: a revoked key locks again, and a brand-new key works once keys.json updates.
-    refresh().then(ok => {
-      if (!ok) return;
-      const k = get(SAVED);
-      if (!locked() && !(k && Keys.check(k, list))) { set(SAVED, null); lock('This key has been turned off. Ask for a new one.'); }
-      else if (!locked()) entry = Keys.check(k, list);
-    });
+    else show(fromLink ? whyNot(fromLink) : get(SAVED) ? whyNot(get(SAVED)) : '');
+    recheck();
+    // Check again whenever the app comes back to the front, and every half hour while it's open.
+    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') recheck(); });
+    setInterval(recheck, 30 * 6e4);
+  }
+  // Re-check online: a turned-off or expired key locks again, and a brand-new key works once keys.json updates.
+  // Offline, the last list we saw still applies, so expiry still happens on time.
+  async function recheck() {
+    await refresh();
+    const k = get(SAVED); if (locked() || !k) return;
+    const e = Keys.check(k, list);
+    if (!e) { const msg = whyNot(k); set(SAVED, null); lock(msg); return; }
+    entry = e;
+    const d = Keys.daysLeft(e);
+    if (d != null && d <= 3 && !warned) { warned = true; onWarn.forEach(f => f(d, e)); }
   }
 
   return {
     start, refresh, enabled,
     onOpen: (f) => { onOpen.push(f); if (!locked()) f(entry); },
     entry: () => entry,
-    isOwner: () => !!(entry && entry.owner),
+    isOwner: () => Keys.isAdmin(entry),
+    isAdmin: () => Keys.isAdmin(entry),
+    onExpirySoon: (f) => onWarn.push(f),
+    setList(j) { list = j; set(CACHE, JSON.stringify(j)); }, // after the admin saves keys.json
     keys: () => list,
     forget() { set(SAVED, null); lock(''); },
   };
@@ -5646,6 +5741,678 @@ if (typeof module !== 'undefined') module.exports = EN;
 
 </script>
 <script>
+/* ===== Lock In — Animal Farm reader: a guided, chapter-by-chapter read-through =====
+   For Year 8 revision. Each chapter has a plain-English summary, the key moments for the exam
+   (one short quotation each, plus what it means, the technique, the theme and the history link),
+   and a quick quiz. Quotations are short (25 words or fewer, at most 6 per chapter) and are
+   checked against the text by tests/reader.test.js; everything else is original writing.
+   Theme names match the English deck (H1–H7). Formatter note: no asterisks or dollar signs. */
+
+const RD = (() => {
+  const CHAPTERS = [
+    /* ---------------- Chapter 1 ---------------- */
+    {
+      n: 1, title: 'Old Major’s dream',
+      summary: 'Mr Jones, the owner of Manor Farm, stumbles drunkenly to bed. Once his light goes out, the animals gather in the big barn, because Old Major, a respected prize boar, wants to tell them about a dream. Before describing it, Major gives a speech. He says animals are worked hard, fed barely enough to survive and then slaughtered when they are no longer useful. The cause of all this, he argues, is Man, who takes everything the animals produce and gives back almost nothing. He calls on the animals to rebel one day, warns them never to copy human habits, and declares that all animals are equal. The animals vote that rats are comrades too. Finally Major describes his dream of a world without humans and teaches them a stirring song, Beasts of England. The singing wakes Jones, who fires his gun into the dark, and the meeting breaks up.',
+      moments: [
+        {
+          title: 'Mr Jones, the careless master',
+          quote: 'was too drunk to remember to shut the popholes',
+          explain: 'The novel opens with Jones so drunk that he forgets basic jobs on his own farm. From the first sentence we see a ruler who neglects the creatures who depend on him.',
+          technique: 'Characterisation: one small detail about drink and neglect instantly shows Jones as lazy and unfit to be in charge.',
+          theme: 'Power and corruption (H1): Orwell shows that the old order was genuinely bad, so the animals have real reasons to want change.',
+          history: 'Jones represents Tsar Nicholas II, whose weak and careless rule left ordinary Russians hungry and angry.',
+          think: { q: 'How does Orwell make the reader sympathise with the animals from the very start?', a: 'He opens with Jones drunk and forgetting to lock up, so the farm’s owner seems careless and unfit to rule. This makes the animals’ later rebellion feel understandable and fair.' },
+        },
+        {
+          title: 'Old Major’s speech',
+          quote: 'our lives are miserable, laborious, and short.',
+          explain: 'Major sums up the animals’ whole existence in a few blunt words. He wants them to see their suffering as unfair, not as the natural way of things.',
+          technique: 'Tricolon (list of three): the three heavy adjectives build up a sense of endless hardship and make the line memorable, like a slogan.',
+          theme: 'Equality, class and the Seven Commandments (H3): Major exposes how the powerful live off the labour of the weak.',
+          history: 'Major represents Karl Marx and Lenin, and his speech echoes Marx’s call for workers to overthrow those who exploit them.',
+          think: { q: 'Why is Old Major’s speech so persuasive to the animals?', a: 'He describes their lives in short, emotional language they all recognise, then gives them someone to blame and a hopeful dream. The list of three makes his message simple and easy to remember.' },
+        },
+        {
+          title: 'Man the enemy',
+          quote: 'Man is the only creature that consumes without producing.',
+          explain: 'Major argues that humans take the milk, eggs and work of animals while giving nothing useful back. This becomes the core belief of the Rebellion.',
+          technique: 'Generalisation in a declarative sentence: stated as an obvious fact, the claim leaves no room for argument and makes Man the single cause of every problem.',
+          theme: 'Equality, class and the Seven Commandments (H3): Orwell presents the unfairness of a system where one group lives off another’s work.',
+          history: 'This mirrors Marx’s idea that the ruling class grows rich by taking the profit of the workers’ labour.',
+          think: { q: 'What is ironic about Major’s claim that Man consumes without producing?', a: 'By the end of the novel the pigs do exactly this: they do no farm work but eat the best food. The claim later describes the animals’ own leaders.' },
+        },
+        {
+          title: 'All animals are comrades',
+          quote: 'All men are enemies. All animals are comrades.',
+          explain: 'Major divides the world into two simple sides. Every animal is a friend and every human is a foe.',
+          technique: 'Antithesis and parallel structure: the two matching sentences set men against animals, making the idea neat, rhythmic and easy to chant.',
+          theme: 'The revolution betrayed (H5): the simple us-versus-them idea later collapses when the pigs start trading and partying with humans.',
+          history: 'Communists called one another “comrade” to show they were equals working for the same cause.',
+          think: { q: 'How does Orwell use structure in this line to make it powerful?', a: 'The two short sentences are built the same way but with opposite meanings, which makes the message balanced and catchy. It sounds like a rule everyone can repeat.' },
+        },
+        {
+          title: 'Major’s warning',
+          quote: 'in fighting against Man, we must not come to resemble him.',
+          explain: 'Major warns the animals never to copy human ways, such as living in houses, drinking or trading. This warning is broken, one step at a time, for the rest of the novel.',
+          technique: 'Foreshadowing: the warning hints at exactly what will go wrong, so readers watch the pigs slowly turn into the humans they replaced.',
+          theme: 'Power and corruption (H1): Orwell suggests that people who seize power are tempted to become the very tyrants they fought against.',
+          history: 'It reflects how Stalin’s rule came to betray the equal society that Marx and Lenin had promised.',
+          think: { q: 'Why is Major’s warning important to the structure of the novel?', a: 'It sets up the ending, where the pigs become impossible to tell apart from men. Because we remember the warning, the final scene feels like a complete betrayal.' },
+        },
+      ],
+      quiz: [
+        ['Why do the animals meet in the big barn?', ['To plan an attack on Jones', 'To hear about Old Major’s dream', 'To elect a leader', 'To learn to read'], 1, 'Old Major has had a strange dream and wants to share it before he dies.'],
+        ['Who does Old Major blame for the animals’ misery?', ['The dogs', 'Mr Pilkington', 'Man', 'The weather'], 2, 'He says Man takes everything the animals produce and gives nothing back.'],
+        ['What do the animals vote on during the meeting?', ['Whether rats are comrades', 'Who should lead them', 'Whether to sell the eggs', 'When to rebel'], 0, 'They decide by a large majority that rats are comrades.'],
+        ['How does the meeting end?', ['Old Major dies on the spot', 'The pigs take over the farmhouse', 'Mollie runs away', 'Jones fires his gun after the singing wakes him'], 3, 'The noise of Beasts of England wakes Jones, who fires into the darkness.'],
+      ],
+    },
+
+    /* ---------------- Chapter 2 ---------------- */
+    {
+      n: 2, title: 'The Rebellion',
+      summary: 'Old Major dies three nights later. The pigs, the cleverest animals, take charge of teaching his ideas, which Snowball, Napoleon and Squealer shape into a system called Animalism. Some animals are slow to understand, Mollie only cares about sugar and ribbons, and Moses the raven distracts others with tales of Sugarcandy Mountain. The Rebellion happens sooner than anyone expects. Jones gets drunk, his men forget to feed the animals, and when the hungry animals break into the store-shed and are attacked with whips, they fight back and chase all the humans off the farm. The animals celebrate, destroy the tools of their slavery and explore the farmhouse in awe, agreeing it must never be lived in. Snowball renames the farm Animal Farm and paints the Seven Commandments on the barn wall. That evening the cows’ milk mysteriously disappears.',
+      moments: [
+        {
+          title: 'Squealer the persuader',
+          quote: 'could turn black into white',
+          explain: 'This is how the other animals describe Squealer, the pig who does the talking. It warns us that he can make anything sound true.',
+          technique: 'Hyperbole and metaphor: claiming he can turn one colour into its opposite suggests his words can reverse the truth itself.',
+          theme: 'Propaganda and the power of language (H2): Orwell shows that skilled speakers can control people by twisting facts.',
+          history: 'Squealer represents Soviet propaganda, such as the state newspaper Pravda, which told people whatever the government wanted.',
+          think: { q: 'What does the description of Squealer suggest about his role in the story?', a: 'It suggests he is a master of persuasion who can make lies seem true. Orwell prepares us to distrust everything Squealer says.' },
+        },
+        {
+          title: 'Moses and Sugarcandy Mountain',
+          quote: 'In Sugarcandy Mountain it was Sunday seven days a week',
+          explain: 'Moses tells the animals about a paradise they will reach after death, with no work and plenty of food. The pigs argue against him because his stories distract from the Rebellion.',
+          technique: 'Symbolism: Sugarcandy Mountain stands for heaven, a promise of reward later that keeps the animals patient now.',
+          theme: 'Education, ignorance and control (H4): Orwell suggests that comforting stories can keep suffering people from questioning their rulers.',
+          history: 'Moses represents the Russian Orthodox Church, which the communists distrusted but later used for their own purposes.',
+          think: { q: 'Why do the pigs dislike Moses’s stories at this point in the novel?', a: 'His promise of a happy afterlife makes animals accept hardship instead of working for change. The pigs want the animals focused on the Rebellion, not on heaven.' },
+        },
+        {
+          title: 'The Rebellion',
+          quote: 'themselves being butted and kicked from all sides',
+          explain: 'When Jones and his men attack the starving animals with whips, the animals suddenly fight back. The humans panic and flee, and the farm belongs to the animals.',
+          technique: 'Action verbs: the violent verbs and the phrase “from all sides” show the humans overwhelmed by the united anger of the animals.',
+          theme: 'The revolution betrayed (H5): the Rebellion begins as a genuine, spontaneous uprising of the oppressed, which makes its later corruption more tragic.',
+          history: 'It represents the Russian Revolution of 1917, when hunger and anger led ordinary people to overthrow the Tsar.',
+          think: { q: 'Why does Orwell make the Rebellion happen almost by accident?', a: 'It starts because the animals are starving, not because of a careful plan. This shows the revolution grew from real suffering, so the pigs’ later betrayal is even worse.' },
+        },
+        {
+          title: 'Mollie’s ribbons',
+          quote: 'And shall I still be allowed to wear ribbons in my mane?',
+          explain: 'Mollie’s only question about the Rebellion is whether she can keep her ribbons. She cares more about luxury than freedom.',
+          technique: 'Characterisation through dialogue: her silly, selfish question shows her vanity in her own words.',
+          theme: 'Equality, class and the Seven Commandments (H3): Mollie shows that some prefer comfort and status to equality.',
+          history: 'Mollie represents the wealthy middle and upper classes who preferred their privileges and fled Russia after the revolution.',
+          think: { q: 'What does Mollie’s question reveal about her?', a: 'It shows she is vain and selfish, more interested in pretty decorations than in the animals’ freedom. She does not really believe in the Rebellion.' },
+        },
+        {
+          title: 'The Seven Commandments',
+          quote: 'All animals are equal.',
+          explain: 'This is the seventh and most important of the rules painted on the barn wall. The commandments are meant to be unalterable laws for every animal.',
+          technique: 'Simple declarative statement: the short, clear rule sounds certain and permanent, which makes its later rewriting deeply ironic.',
+          theme: 'Equality, class and the Seven Commandments (H3): equality is the founding promise of Animal Farm, and the whole novel tracks how it is broken.',
+          history: 'The commandments reflect the communist ideals of a classless society where everyone is equal.',
+          think: { q: 'Why does Orwell write the commandments on a wall?', a: 'A wall seems permanent and public, so the rules look fixed forever. This makes it more shocking when the pigs secretly change them later.' },
+        },
+        {
+          title: 'The missing milk',
+          quote: 'when they came back in the evening it was noticed that the milk had disappeared.',
+          explain: 'Napoleon tells the animals to forget the milk and go to the harvest. When they return the milk is gone, and the reader can guess who took it.',
+          technique: 'Passive voice and understatement: “it was noticed” and “had disappeared” hide who took the milk, leaving the reader to suspect the pigs.',
+          theme: 'Power and corruption (H1): on the very first day of freedom, the pigs secretly take more than their share.',
+          history: 'This reflects how the Bolshevik leaders quickly gave themselves privileges denied to ordinary workers.',
+          think: { q: 'How does Orwell hint that the pigs are already corrupt in Chapter 2?', a: 'He ends the chapter with the milk vanishing after Napoleon stood in front of the buckets. The passive voice hides the culprit, but the reader can work out that the pigs took it.' },
+        },
+      ],
+      quiz: [
+        ['What is the name of the system of ideas the pigs create?', ['Napoleonism', 'Animalism', 'Majorism', 'Farmism'], 1, 'The pigs turn Old Major’s teachings into Animalism.'],
+        ['What directly sparks the Rebellion?', ['Jones sells Boxer', 'Old Major orders an attack', 'The hungry animals break into the store-shed and are whipped', 'Snowball leads a planned assault'], 2, 'The animals have not been fed, break into the store-shed and fight back when attacked.'],
+        ['Who paints the Seven Commandments on the barn wall?', ['Snowball', 'Squealer', 'Napoleon', 'Benjamin'], 0, 'Snowball, who can read and write best, paints them on the end wall of the big barn.'],
+        ['What happens to the milk at the end of the chapter?', ['It is shared equally', 'It is sold at market', 'It is fed to the puppies', 'It disappears'], 3, 'When the animals return from the harvest the milk is gone, and the pigs are the obvious suspects.'],
+      ],
+    },
+
+    /* ---------------- Chapter 3 ---------------- */
+    {
+      n: 3, title: 'The first harvest',
+      summary: 'The animals bring in the harvest faster than Jones ever did, and for a while everyone seems happy and well fed. The pigs do not work but direct the others. Boxer, the giant carthorse, works hardest of all and makes “I will work harder!” his motto. Benjamin the donkey refuses to show any enthusiasm. Snowball forms committees and runs reading classes, but most animals learn very little, so he boils the commandments down to one slogan, “Four legs good, two legs bad”, which the sheep bleat endlessly. Napoleon takes nine newborn puppies from their mothers, saying he will educate them, and hides them away. The animals discover that the milk and windfall apples are going only to the pigs. Squealer explains that pigs need them for their brainwork and asks whether anyone wants Jones to come back. Frightened, nobody argues.',
+      moments: [
+        {
+          title: 'Boxer’s motto',
+          quote: 'I will work harder!',
+          explain: 'Boxer answers every problem by promising to work even harder. He is strong and loyal but does not question anything.',
+          technique: 'Repetition of a personal motto: Boxer repeats it so often that it defines him, showing both his dedication and his inability to think critically.',
+          theme: 'Education, ignorance and control (H4): Orwell shows how leaders exploit loyal workers who trust without questioning.',
+          history: 'Boxer represents the hard-working Soviet labourers, such as the celebrated Stakhanovite workers, who gave everything to the state.',
+          think: { q: 'How does Boxer’s motto make him both admirable and tragic?', a: 'It shows his honest effort and loyalty, which we admire. But because he never asks who benefits from his work, the pigs can use him until he is worn out.' },
+        },
+        {
+          title: 'Benjamin the cynic',
+          quote: 'None of you has ever seen a dead donkey',
+          explain: 'When asked whether life is better since the Rebellion, Benjamin gives a strange, puzzling reply instead of a real answer. He sees a lot but chooses to stay out of things.',
+          technique: 'Cryptic dialogue: the odd reply refuses to give an opinion, showing Benjamin’s detached, sceptical attitude.',
+          theme: 'Education, ignorance and control (H4): Benjamin can read and understand but does nothing, so Orwell suggests knowledge is useless without action.',
+          history: 'Benjamin represents people in the Soviet Union who saw the truth about the regime but stayed silent.',
+          think: { q: 'What does Benjamin’s reply suggest about his view of the Rebellion?', a: 'It suggests he believes nothing really changes and that he will simply outlast whoever is in charge. He refuses to get excited or involved.' },
+        },
+        {
+          title: 'Four legs good, two legs bad',
+          quote: 'Four legs good, two legs bad.',
+          explain: 'Because most animals cannot learn the full commandments, Snowball shrinks them into one slogan. The sheep love it and bleat it for hours.',
+          technique: 'Slogan with antithesis: the short, rhythmic contrast is easy to remember and chant, but it replaces real thinking.',
+          theme: 'Propaganda and the power of language (H2): slogans make ideas simple enough to repeat without understanding, which later lets them be used to drown out debate.',
+          history: 'It reflects the simple slogans the Soviet government used to spread its ideas to people with little education.',
+          think: { q: 'Why is the slogan both useful and dangerous?', a: 'It helps uneducated animals remember the main idea of Animalism. But because they repeat it without thinking, it can be used to silence anyone who wants to discuss or question.' },
+        },
+        {
+          title: 'Napoleon takes the puppies',
+          quote: 'he would make himself responsible for their education',
+          explain: 'Napoleon takes nine puppies from their mothers and hides them in a loft. The reason he gives sounds caring, but it hides a plan.',
+          technique: 'Euphemism and foreshadowing: “education” sounds harmless, but it hints at the training of a private army that will appear later.',
+          theme: 'Fear and violence (H6): Napoleon is quietly preparing the force he will use to seize and keep power.',
+          history: 'It represents Stalin building up the secret police, which he later used to remove his enemies.',
+          think: { q: 'Why does Orwell mention the puppies so briefly here?', a: 'Mentioning them quietly makes the reader almost forget, just like the animals do. When the dogs return in Chapter 5, the shock is greater and we realise how long Napoleon has been planning.' },
+        },
+        {
+          title: 'Squealer and the apples',
+          quote: 'Milk and apples (this has been proved by Science, comrades) contain substances absolutely necessary to the well-being of a pig.',
+          explain: 'Squealer explains why the pigs keep the milk and apples for themselves. He claims it is for the good of everyone, not because the pigs are greedy.',
+          technique: 'False appeal to authority: “proved by Science” sounds official, and the animals cannot check it, so they accept it.',
+          theme: 'Propaganda and the power of language (H2): Orwell shows how leaders disguise selfishness as duty using impressive-sounding words.',
+          history: 'This reflects how Communist Party officials justified special food, housing and privileges that ordinary citizens never got.',
+          think: { q: 'How does Squealer persuade the animals to accept the pigs’ privilege?', a: 'He claims science has proved pigs need milk and apples, an authority the animals cannot question. He also presents the pigs’ greed as a sacrifice for everyone.' },
+        },
+        {
+          title: 'The threat of Jones',
+          quote: 'surely there is no one among you who wants to see Jones come back?',
+          explain: 'Squealer finishes his argument by warning that if the pigs fail, Jones will return. The animals fear this above everything, so they stop questioning.',
+          technique: 'Rhetorical question and scare tactic: the question has only one possible answer, so it shuts down debate by using fear.',
+          theme: 'Fear and violence (H6): fear of an outside enemy is used to keep the animals obedient.',
+          history: 'The Soviet government used fear of the old Tsarist rulers and foreign enemies to make people accept hardship.',
+          think: { q: 'Why is Squealer’s rhetorical question so effective?', a: 'Nobody wants Jones back, so the only answer is no, which means agreeing with the pigs. It turns a question about fairness into a question about safety.' },
+        },
+      ],
+      quiz: [
+        ['What is Boxer’s motto in Chapter 3?', ['Napoleon is always right', 'I will work harder!', 'Four legs good', 'Long live Animal Farm'], 1, 'Boxer adopts “I will work harder!” as his answer to every problem.'],
+        ['Why does Snowball create the slogan “Four legs good, two legs bad”?', ['To insult the humans', 'To replace Beasts of England', 'To trick Napoleon', 'Because many animals cannot learn all seven commandments'], 3, 'It sums up the commandments for animals who cannot read well.'],
+        ['What does Napoleon do with the nine puppies?', ['Takes them away to educate them himself', 'Gives them to Mr Jones', 'Lets them run free', 'Sells them to Pilkington'], 0, 'He takes them from their mothers and keeps them hidden in a loft.'],
+        ['What does Squealer say would happen if the pigs failed in their duty?', ['Snowball would return', 'The windmill would fall', 'Jones would come back', 'The hens would rebel'], 2, 'He uses the animals’ fear of Jones to stop them questioning the pigs.'],
+      ],
+    },
+
+    /* ---------------- Chapter 4 ---------------- */
+    {
+      n: 4, title: 'The Battle of the Cowshed',
+      summary: 'News of the Rebellion spreads to other farms, and animals everywhere begin humming Beasts of England. The owners of the two neighbouring farms, Mr Pilkington of Foxwood and Mr Frederick of Pinchfield, dislike each other but are both frightened, and they spread wild stories about Animal Farm. In October, Jones and a group of men try to retake the farm. Snowball, who has studied the campaigns of Julius Caesar, has planned the defence. He sets an ambush in the cowshed and leads the charge himself, even though Jones’s shot wounds him. Boxer fights fiercely and is upset when he thinks he has killed a stable-lad. The humans flee. The animals hold a celebration, give Snowball and Boxer the medal Animal Hero, First Class, and name the fight the Battle of the Cowshed. Jones’s gun is set up as a cannon to be fired on anniversaries.',
+      moments: [
+        {
+          title: 'The neighbouring farmers',
+          quote: 'bad terms',
+          explain: 'Pilkington and Frederick are rivals who cannot agree, even though both fear the Rebellion spreading to their own animals. Their quarrel stops them from acting together.',
+          technique: 'Contrast in characterisation: the easy-going Pilkington and the tough, shrewd Frederick are set against each other, preparing for later plot twists.',
+          theme: 'Power and corruption (H1): Orwell shows that the powerful outsiders care only about their own interests.',
+          history: 'Pilkington represents Britain and the West, and Frederick represents Hitler’s Germany, both hostile to the Soviet Union but suspicious of each other.',
+          think: { q: 'Why does Orwell introduce two separate neighbouring farmers?', a: 'Their rivalry lets Napoleon later play one against the other. It also mirrors how Britain and Germany both distrusted the Soviet Union but also each other.' },
+        },
+        {
+          title: 'Snowball’s battle plan',
+          quote: 'Snowball, who had studied an old book of Julius Caesar’s campaigns',
+          explain: 'Snowball has prepared carefully for an attack, learning from history. His clever ambush wins the battle.',
+          technique: 'Characterisation: this detail shows Snowball as intelligent, well-read and brave, which makes his later disgrace by Napoleon unjust.',
+          theme: 'Rewriting history and memory (H7): his heroism here is later erased and twisted by the pigs’ propaganda.',
+          history: 'Snowball represents Leon Trotsky, who organised and led the Red Army to victory in the Russian Civil War.',
+          think: { q: 'How does Orwell present Snowball in the Battle of the Cowshed?', a: 'He is shown as clever and courageous: he studies battle tactics and leads the charge even when wounded. This makes it clear he is a genuine hero before Napoleon rewrites the story.' },
+        },
+        {
+          title: 'War is war',
+          quote: 'The only good human being is a dead one.',
+          explain: 'Snowball says this when Boxer feels guilty about the stable-lad. Even the idealistic Snowball accepts violence against the enemy.',
+          technique: 'Blunt declarative statement: the harsh, final-sounding sentence shows how quickly revolutionary ideals turn ruthless.',
+          theme: 'Fear and violence (H6): Orwell shows that violence, once accepted, becomes easier to justify, which Napoleon later exploits.',
+          history: 'It reflects the brutality of the Russian Civil War, where both sides killed without mercy.',
+          think: { q: 'What does Snowball’s comment suggest about him?', a: 'It suggests that even the most idealistic pig can be ruthless and sees all humans as the enemy. Orwell shows that no leader in the revolution is completely innocent.' },
+        },
+        {
+          title: 'Boxer’s regret',
+          quote: 'I have no wish to take life, not even human life',
+          explain: 'Boxer is upset when he thinks he has killed a boy. He is strong but gentle, and his conscience troubles him.',
+          technique: 'Contrast: Boxer’s kindness is placed right next to Snowball’s harsh words, highlighting his moral goodness.',
+          theme: 'Power and corruption (H1): the most decent characters are the workers, not the leaders, which makes their later exploitation more painful.',
+          history: '',
+          think: { q: 'Why does Orwell contrast Boxer and Snowball after the battle?', a: 'Snowball celebrates killing, while Boxer feels guilty. The contrast shows Boxer’s gentle, honest nature and makes the reader care about him even more.' },
+        },
+        {
+          title: 'Medals for heroes',
+          quote: 'Animal Hero, First Class',
+          explain: 'The animals invent a military decoration and award it to Snowball and Boxer. They start copying human customs such as medals and ceremonies.',
+          technique: 'Symbolism: the medal stands for official honours that the leaders control and can later take away or give to themselves.',
+          theme: 'Rewriting history and memory (H7): Napoleon later awards himself medals and claims Snowball never deserved his.',
+          history: 'It reflects Soviet honours such as the Order of Lenin, which the regime used to reward loyalty.',
+          think: { q: 'Why might Orwell include the medal ceremony?', a: 'It shows the animals beginning to copy human ways, such as military honours. It also sets up the later lie that Snowball was a traitor at this very battle.' },
+        },
+      ],
+      quiz: [
+        ['Who plans the animals’ defence in the Battle of the Cowshed?', ['Napoleon', 'Snowball', 'Boxer', 'Squealer'], 1, 'Snowball has studied Julius Caesar’s campaigns and sets the ambush.'],
+        ['Why is Boxer upset after the battle?', ['He thinks he has killed a stable-lad', 'He was not given a medal', 'His leg is broken', 'Snowball insulted him'], 0, 'He believes he has killed a boy, though the lad was only stunned.'],
+        ['What medal do Snowball and Boxer receive?', ['Animal Hero, Second Class', 'Order of the Green Banner', 'Animal Hero, First Class', 'Hero of the Windmill'], 2, 'Both are awarded Animal Hero, First Class.'],
+        ['Which two farmers own the neighbouring farms?', ['Whymper and Jones', 'Jones and Frederick', 'Pilkington and Whymper', 'Pilkington and Frederick'], 3, 'Pilkington owns Foxwood and Frederick owns Pinchfield.'],
+      ],
+    },
+
+    /* ---------------- Chapter 5 ---------------- */
+    {
+      n: 5, title: 'Snowball is driven out',
+      summary: 'Mollie grows lazy and is seen letting a human stroke her nose. Soon she runs away to work pulling a cart for a pub owner, and the animals never mention her again. Snowball and Napoleon argue at every meeting. Snowball is the better speaker and is full of schemes, above all a windmill that would make electricity and shorten the working week. Napoleon opposes the windmill, wins over the sheep, and shows his contempt by urinating on Snowball’s plans. On the day of the final vote, Napoleon gives a strange whimper and nine huge dogs, the puppies he took, burst in and chase Snowball off the farm. Napoleon then ends the Sunday debates; a committee of pigs will decide everything. Squealer explains that Napoleon has taken on a heavy burden. Three weeks later Napoleon announces the windmill will be built after all, and Squealer calls his earlier opposition tactics.',
+      moments: [
+        {
+          title: 'The windmill debate',
+          quote: 'Vote for Snowball and the three-day week',
+          explain: 'Snowball’s supporters chant this slogan, while Napoleon’s side has a rival slogan about full mangers. The farm splits into two camps.',
+          technique: 'Campaign slogan: the catchy phrase reduces a complicated plan to a promise, showing how politics relies on simple messages.',
+          theme: 'Power and corruption (H1): the struggle over the windmill is really a struggle over who will control the farm.',
+          history: 'It reflects the power struggle between Trotsky and Stalin after Lenin’s death, including arguments over how to modernise the country.',
+          think: { q: 'What does the windmill debate show about Snowball and Napoleon?', a: 'Snowball wins support with big ideas and speeches, while Napoleon quietly gathers votes and backs a simpler message. It shows two very different ways of gaining power.' },
+        },
+        {
+          title: 'Napoleon’s contempt',
+          quote: 'lifted his leg, urinated over the plans',
+          explain: 'Napoleon inspects Snowball’s carefully drawn plans and then urinates on them without a word. He shows he has no respect for ideas or debate.',
+          technique: 'Characterisation through action: the crude gesture says more than any speech, revealing Napoleon as rude, arrogant and anti-intellectual.',
+          theme: 'Power and corruption (H1): Napoleon cares about power, not about what is best for the farm.',
+          history: 'It reflects Stalin’s scorn for Trotsky’s ideas, even though he later took many of them as his own.',
+          think: { q: 'How does Orwell use a single action to characterise Napoleon?', a: 'Urinating on the plans shows his total contempt for Snowball and for discussion. Without saying anything, Napoleon makes it clear he thinks force matters more than ideas.' },
+        },
+        {
+          title: 'The dogs attack',
+          quote: 'a high-pitched whimper of a kind no one had ever heard him utter before',
+          explain: 'At Napoleon’s signal, nine enormous dogs charge in and chase Snowball off the farm. The puppies he took have grown into his private army.',
+          technique: 'Turning point and climax: the sudden violence changes the whole direction of the story, from debate to dictatorship.',
+          theme: 'Fear and violence (H6): Orwell shows that Napoleon takes power not by winning the argument but by force.',
+          history: 'It represents Stalin forcing Trotsky out of power and into exile, backed by the secret police.',
+          think: { q: 'Why is Snowball’s expulsion a turning point in the novel?', a: 'From this moment, decisions are made by force rather than debate. Napoleon now controls the farm through fear of the dogs.' },
+        },
+        {
+          title: 'Squealer explains',
+          quote: 'No one believes more firmly than Comrade Napoleon that all animals are equal.',
+          explain: 'Squealer tells the animals that Napoleon would love to let them decide things, but they might make the wrong choices. He presents dictatorship as a kindness.',
+          technique: 'Irony: Squealer praises Napoleon’s belief in equality at the exact moment Napoleon has taken away the animals’ right to vote.',
+          theme: 'Propaganda and the power of language (H2): Orwell shows how leaders use the language of fairness to hide a grab for power.',
+          history: 'It reflects Soviet propaganda that claimed Stalin ruled for the good of the people while he removed their freedoms.',
+          think: { q: 'Why is Squealer’s claim ironic?', a: 'He says Napoleon believes in equality just after Napoleon has made himself the only decision-maker. The reader sees the truth while the animals are fooled.' },
+        },
+        {
+          title: 'Napoleon is always right',
+          quote: 'Napoleon is always right',
+          explain: 'Boxer cannot argue with Squealer, so he adds a second motto to his first. He now trusts the leader completely.',
+          technique: 'Absolute language: the word “always” leaves no room for doubt, showing how blind loyalty replaces thinking.',
+          theme: 'Education, ignorance and control (H4): Orwell warns that unquestioning trust in a leader makes dictatorship possible.',
+          history: 'It reflects the personality cult around Stalin, in which ordinary citizens were taught that the leader could not be wrong.',
+          think: { q: 'What is dangerous about Boxer’s new motto?', a: 'It means he will accept anything Napoleon does, however unfair. Because Boxer is so strong and respected, his loyalty also persuades other animals.' },
+        },
+        {
+          title: 'Tactics',
+          quote: 'Tactics, comrades, tactics!',
+          explain: 'When Napoleon suddenly supports the windmill, Squealer claims he only pretended to oppose it to get rid of Snowball. The animals are confused but accept it.',
+          technique: 'Repetition: repeating the word, with skipping and tail-whisking, makes the explanation sound convincing even though it explains nothing.',
+          theme: 'Rewriting history and memory (H7): Squealer changes the story of the past to make Napoleon look wise.',
+          history: 'Stalin attacked Trotsky’s plans for rapid industrialisation, then adopted similar plans in his Five-Year Plans.',
+          think: { q: 'How does Squealer use language to cover Napoleon’s change of mind?', a: 'He labels the U-turn as clever tactics and repeats the word until it sounds convincing. The animals, unable to work out the truth, simply accept it.' },
+        },
+      ],
+      quiz: [
+        ['What happens to Mollie in Chapter 5?', ['She is killed by the dogs', 'She becomes leader', 'She runs away to work for a human', 'She learns to read'], 2, 'She leaves to pull a cart for a man who feeds her sugar.'],
+        ['What does Snowball say the windmill will do?', ['Grind corn to sell', 'Make electricity and shorten the working week', 'Pump water to the fields', 'Scare off the humans'], 1, 'He promises it will provide electricity and a much shorter working week.'],
+        ['How is Snowball removed from the farm?', ['He is chased off by Napoleon’s dogs', 'He is voted out', 'He leaves willingly', 'Jones captures him'], 0, 'Napoleon’s nine dogs chase him off at the final meeting.'],
+        ['What does Napoleon abolish after Snowball is gone?', ['The windmill', 'The pigs’ committee', 'Beasts of England', 'The Sunday meetings'], 3, 'He ends the Sunday debates; a committee of pigs will now decide everything.'],
+      ],
+    },
+
+    /* ---------------- Chapter 6 ---------------- */
+    {
+      n: 6, title: 'Building the windmill',
+      summary: 'All year the animals work extremely hard on the windmill and the farm. Sunday work is called voluntary, but anyone who skips it has their food cut. Quarrying stone is exhausting, and Boxer works hardest, getting up early to do extra. Some supplies run short, so Napoleon announces that the farm will trade with neighbouring farms through a solicitor, Mr Whymper. Some animals remember resolutions against trade and money, but Squealer insists those were never passed. The pigs move into the farmhouse and sleep in beds. When Clover checks the Fourth Commandment, it now forbids sleeping in a bed with sheets, and Squealer explains why the pigs are within the rules. In November a storm knocks down the half-finished windmill. Napoleon blames Snowball, sentences him to death and orders the animals to start rebuilding the very next morning.',
+      moments: [
+        {
+          title: 'Working like slaves',
+          quote: 'the animals worked like slaves',
+          explain: 'The animals labour longer and harder than they did under Jones. Yet they believe they are working for themselves.',
+          technique: 'Simile and irony: comparing the free animals to slaves shows that, despite the Rebellion, nothing has really improved.',
+          theme: 'The revolution betrayed (H5): Orwell shows that the workers are as exploited as before, just by new masters.',
+          history: 'It reflects the harsh forced labour and long hours of Stalin’s industrialisation drive.',
+          think: { q: 'Why is the simile “worked like slaves” ironic?', a: 'The Rebellion was meant to free the animals from slavery, yet they now work just as hard as before. The comparison shows that their lives have not really changed.' },
+        },
+        {
+          title: 'Trade with humans',
+          quote: 'It was pure imagination, probably traceable in the beginning to lies circulated by Snowball.',
+          explain: 'Squealer insists the animals never agreed to ban trade and money. He blames their memory on Snowball’s lies.',
+          technique: 'Gaslighting and scapegoating: Squealer makes the animals doubt their own memories and blames the absent Snowball.',
+          theme: 'Rewriting history and memory (H7): Orwell shows that those who control the story of the past can control the present.',
+          history: 'It reflects how the Soviet government traded with Western countries while claiming to oppose them.',
+          think: { q: 'How does Squealer persuade the animals that they are remembering wrongly?', a: 'He states that the resolution was never made and calls their memory “imagination”. Because there is no written record, the animals cannot prove him wrong.' },
+        },
+        {
+          title: 'The pigs move into the farmhouse',
+          quote: 'No animal shall sleep in a bed with sheets.',
+          explain: 'Clover remembers a rule against beds, but the wall now has extra words added. The pigs have quietly changed the commandment to suit themselves.',
+          technique: 'Altered commandment: adding just a few words reverses the meaning of the rule while making it look as if nothing has changed.',
+          theme: 'Equality, class and the Seven Commandments (H3): the pigs bend the rules to justify their new luxury.',
+          history: 'It reflects how Communist Party leaders took comfortable homes and privileges that went against their own ideals.',
+          think: { q: 'How do the pigs justify sleeping in beds?', a: 'They add “with sheets” to the commandment so their beds seem allowed. Squealer then claims the rule was only ever about human sheets.' },
+        },
+        {
+          title: 'What is a bed?',
+          quote: 'A bed merely means a place to sleep in.',
+          explain: 'Squealer redefines the word “bed” so that it includes a pile of straw. By playing with the meaning, he makes the pigs seem innocent.',
+          technique: 'Redefinition of language: changing what a word means lets Squealer make the rule-breaking disappear.',
+          theme: 'Propaganda and the power of language (H2): Orwell shows that controlling the meaning of words is a way of controlling people.',
+          history: '',
+          think: { q: 'How does Squealer use word meanings to defend the pigs?', a: 'He claims a bed is just any place to sleep, so the animals in straw are also in beds. This makes the pigs’ luxury sound normal and the original rule meaningless.' },
+        },
+        {
+          title: 'Snowball is blamed',
+          quote: 'Snowball has done this thing!',
+          explain: 'When the windmill falls in a storm, Napoleon immediately blames Snowball instead of the weak walls. He even sentences Snowball to death.',
+          technique: 'Scapegoating: blaming an absent enemy turns the animals’ disappointment into anger and unites them behind Napoleon.',
+          theme: 'Fear and violence (H6): a hidden enemy is useful to a dictator because it explains every failure.',
+          history: 'Stalin blamed Trotsky and so-called saboteurs for failures that were really caused by poor planning.',
+          think: { q: 'Why does Napoleon blame Snowball for the fallen windmill?', a: 'It hides the real cause, which was weak building, and stops the animals blaming Napoleon. It also gives them a common enemy to hate, which makes them easier to control.' },
+        },
+      ],
+      quiz: [
+        ['Who acts as Napoleon’s go-between for trade?', ['Mr Pilkington', 'Mr Whymper', 'Mr Frederick', 'Moses'], 1, 'Mr Whymper, a solicitor, handles the farm’s trade with the outside world.'],
+        ['How has the Fourth Commandment been changed?', ['It now says no animal shall sleep in a bed with sheets', 'It now allows animals to wear clothes', 'It has been removed completely', 'It now says pigs may sleep anywhere'], 0, 'The words “with sheets” have been added.'],
+        ['What destroys the first windmill?', ['Frederick’s dynamite', 'Snowball', 'A storm', 'Jones'], 2, 'A violent November storm knocks it down, though Napoleon blames Snowball.'],
+        ['What happens to animals who do not do “voluntary” Sunday work?', ['Nothing', 'They are expelled', 'They lose their medals', 'Their rations are cut'], 3, 'Missing the voluntary work means having food cut, so it is not really voluntary.'],
+      ],
+    },
+
+    /* ---------------- Chapter 7 ---------------- */
+    {
+      n: 7, title: 'The purges',
+      summary: 'A bitter winter brings food shortages. To fool the outside world, Napoleon has bins filled with sand topped with grain so that Mr Whymper believes the farm is thriving. Napoleon orders the hens to give up their eggs for sale. The hens rebel, so he stops their rations until they give in, and nine of them die. Snowball is now blamed for every problem, and Squealer claims he was secretly working for Jones all along, even at the Battle of the Cowshed. Boxer doubts this until Squealer says Napoleon has declared it. Days later Napoleon calls the animals together. Four pigs, the rebellious hens and others confess to plotting with Snowball, and the dogs kill them on the spot. The shocked animals gather on a hillside. Clover realises this is not what Old Major dreamed of. They sing Beasts of England, but Squealer bans the song.',
+      moments: [
+        {
+          title: 'Fooling Mr Whymper',
+          quote: 'sand, which was then covered up with what remained of the grain and meal',
+          explain: 'Napoleon has empty bins filled with sand and topped with a layer of grain, then lets Whymper glimpse them. The outside world is told the farm has plenty.',
+          technique: 'Symbolism: the false bins stand for a regime that looks full and successful on the surface but is empty underneath.',
+          theme: 'Propaganda and the power of language (H2): Orwell shows leaders hiding failure to protect their image.',
+          history: 'It reflects how the Soviet government hid the terrible famines of the early 1930s from foreign visitors.',
+          think: { q: 'What do the sand-filled bins reveal about Napoleon’s leadership?', a: 'They show he cares more about appearances than about feeding his animals. He is willing to deceive outsiders rather than admit his plans have failed.' },
+        },
+        {
+          title: 'The hens’ rebellion',
+          quote: 'they protested that to take the eggs away now was murder',
+          explain: 'The hens refuse to hand over the eggs that would become their chicks. Napoleon starves them into giving in, and nine hens die.',
+          technique: 'Emotive language: the word “murder” shows how deeply the hens feel the injustice, and it contrasts with the cold way Napoleon crushes them.',
+          theme: 'Fear and violence (H6): any resistance, even peaceful protest, is crushed by starvation.',
+          history: 'It reflects how peasants who resisted Stalin’s takeover of their farms were starved and punished.',
+          think: { q: 'How does Napoleon respond to the hens’ protest, and what does this show?', a: 'He cuts off their food until they give in, and nine die. It shows that he will use cruelty, not discussion, to crush any opposition.' },
+        },
+        {
+          title: 'Snowball the traitor',
+          quote: 'Snowball was in league with Jones from the very start!',
+          explain: 'Squealer claims Snowball was always a spy for Jones, even during the Battle of the Cowshed. This contradicts what the animals saw with their own eyes.',
+          technique: 'Exclamation and false claims: the confident exclamation makes an outrageous lie sound like shocking news.',
+          theme: 'Rewriting history and memory (H7): the pigs change the past so that their enemy can never be seen as a hero.',
+          history: 'Stalin’s propaganda accused Trotsky of working with foreign enemies and erased him from photographs and history books.',
+          think: { q: 'Why does Squealer rewrite Snowball’s role at the Battle of the Cowshed?', a: 'If Snowball was a hero, the animals might want him back. By turning him into a traitor, Squealer makes Napoleon look like the only true leader.' },
+        },
+        {
+          title: 'Confessions and executions',
+          quote: 'a pile of corpses lying before Napoleon’s feet',
+          explain: 'Animal after animal confesses to plotting with Snowball and is killed by the dogs. The farm sees mass killing for the first time since Jones.',
+          technique: 'Graphic imagery: the image of bodies piled at Napoleon’s feet shows the horror of the purge and his total power.',
+          theme: 'Fear and violence (H6): Orwell shows a dictator using terror to destroy any possible opposition.',
+          history: 'It represents Stalin’s Great Purge and the show trials of the late 1930s, where people confessed to invented crimes and were executed.',
+          think: { q: 'How does Orwell present the executions as a turning point?', a: 'He describes the bodies and the smell of blood, showing the farm is now more violent than under Jones. The animals’ dream of freedom has become a nightmare of terror.' },
+        },
+        {
+          title: 'Boxer’s response',
+          quote: 'It must be due to some fault in ourselves.',
+          explain: 'After the killings, Boxer cannot understand what happened. Instead of blaming Napoleon, he decides the animals must work harder.',
+          technique: 'Dramatic irony: the reader knows Napoleon is to blame, but Boxer blames the animals themselves.',
+          theme: 'Education, ignorance and control (H4): loyal but unquestioning workers blame themselves and keep the tyrant in power.',
+          history: '',
+          think: { q: 'What is ironic about Boxer’s reaction to the executions?', a: 'He blames the animals rather than Napoleon, who ordered the killings. The reader can see the truth, which makes his loyalty both sad and frustrating.' },
+        },
+        {
+          title: 'Clover’s thoughts',
+          quote: 'These scenes of terror and slaughter were not what they had looked forward to',
+          explain: 'Looking over the farm, Clover senses that the Rebellion has gone wrong but cannot put it into words. The animals then sing Beasts of England, and soon after, the song is banned.',
+          technique: 'Free indirect discourse: we hear Clover’s private thoughts in the narration, which lets Orwell show the gap between the dream and reality.',
+          theme: 'The revolution betrayed (H5): Orwell shows the ordinary animals sensing the betrayal but lacking the words or power to resist.',
+          history: 'It reflects ordinary Soviet citizens who believed in the revolution’s ideals but saw them destroyed under Stalin.',
+          think: { q: 'How does Orwell use Clover to show the revolution has been betrayed?', a: 'We hear her thoughts comparing Major’s dream of equality with the terror around her. She senses something is wrong but cannot speak up, which shows how fear has silenced everyone.' },
+        },
+      ],
+      quiz: [
+        ['How does Napoleon fool Mr Whymper about food supplies?', ['He fills bins with sand and covers it with grain', 'He borrows food from Pilkington', 'He hides the animals', 'He shows him a fake windmill'], 0, 'The bins look full, but most of each is sand under a layer of grain.'],
+        ['What does Squealer now claim about Snowball?', ['He was a hero', 'He was in league with Jones from the start', 'He has died', 'He has returned to the farm'], 1, 'Squealer rewrites the past so Snowball becomes a traitor.'],
+        ['What happens to the animals who confess?', ['They are forgiven', 'They are sent away', 'They are killed by the dogs', 'They are put in charge'], 2, 'The dogs kill them immediately, in a scene that mirrors Stalin’s purges.'],
+        ['What happens to Beasts of England at the end of the chapter?', ['It becomes the anthem forever', 'Boxer rewrites it', 'The humans learn it', 'It is banned and replaced'], 3, 'Squealer says the song is no longer needed and it is replaced by a new anthem.'],
+      ],
+    },
+
+    /* ---------------- Chapter 8 ---------------- */
+    {
+      n: 8, title: 'The Battle of the Windmill',
+      summary: 'Some animals recall a commandment against killing, but the Sixth Commandment now forbids killing without cause. The animals work even harder while Squealer reads out figures claiming that production has soared. Napoleon now rarely appears in public, is given grand titles and has a poem written in his praise. He spends months bargaining over a pile of timber, appearing to favour first Pilkington, then Frederick, and finally sells it to Frederick, who pays in banknotes that turn out to be forgeries. Frederick and his men then attack, blowing up the newly finished windmill. The animals drive them off, but many are wounded or killed. Squealer insists it was a great victory. The pigs find a case of whisky and get drunk, and Napoleon is ill the next day. One night Squealer is found by a broken ladder and paint, and the Fifth Commandment now allows alcohol in moderation.',
+      moments: [
+        {
+          title: 'The Sixth Commandment',
+          quote: 'No animal shall kill any other animal without cause.',
+          explain: 'After the executions, Clover asks for the Sixth Commandment to be read. Two extra words have appeared that allow the killings.',
+          technique: 'Altered commandment: the added words “without cause” give the leader the power to decide which killings are justified.',
+          theme: 'Equality, class and the Seven Commandments (H3): the laws now serve the leader, not the animals.',
+          history: 'It reflects how Stalin’s government twisted laws to make its purges appear legal.',
+          think: { q: 'Why is the change to the Sixth Commandment so dangerous?', a: 'It lets Napoleon decide what counts as a good “cause” for killing. Any execution can now be called legal, so no animal is safe.' },
+        },
+        {
+          title: 'Napoleon’s titles',
+          quote: 'Father of All Animals, Terror of Mankind',
+          explain: 'The pigs invent grand titles for Napoleon and praise him for everything good that happens. He has become almost god-like.',
+          technique: 'Hyperbole: the over-the-top titles show the cult of personality built around the leader.',
+          theme: 'Propaganda and the power of language (H2): flattering language turns an ordinary pig into an untouchable hero.',
+          history: 'It reflects the personality cult around Stalin, who was given titles such as Father of the Peoples.',
+          think: { q: 'What do Napoleon’s new titles show about his rule?', a: 'They show he is now treated like a god rather than a fellow animal. The titles also make it harder for anyone to criticise him.' },
+        },
+        {
+          title: 'The forged banknotes',
+          quote: 'The banknotes were forgeries!',
+          explain: 'Napoleon thinks he has outsmarted both farmers, but Frederick has paid with fake money. Napoleon is furious and sentences Frederick to death.',
+          technique: 'Situational irony: the pig who cheats everyone is himself cheated, showing that his cleverness has limits.',
+          theme: 'Power and corruption (H1): Napoleon trusts a human enemy for profit, abandoning the Rebellion’s rule against dealing with humans.',
+          history: 'It represents the Nazi-Soviet Pact of 1939, when Stalin trusted Hitler, who then broke the deal and invaded.',
+          think: { q: 'Why is it ironic that Frederick pays with forged notes?', a: 'Napoleon is a master of deceiving his own animals, yet he is easily deceived by Frederick. His greed blinds him to the danger.' },
+        },
+        {
+          title: 'A costly victory',
+          quote: 'That is our victory',
+          explain: 'After the battle, Boxer is wounded and the windmill is gone, yet Squealer calls it a triumph. Boxer points out they have only won back what they already had.',
+          technique: 'Irony and dialogue: Boxer’s simple question exposes the gap between Squealer’s words and the real losses.',
+          theme: 'Propaganda and the power of language (H2): Orwell shows propaganda turning disaster into celebration.',
+          history: 'It reflects the huge Soviet losses in World War Two after the German invasion of 1941, which the government presented as glorious victory.',
+          think: { q: 'How does Squealer change the meaning of the battle?', a: 'He calls it a victory because the enemy has gone, ignoring the destroyed windmill and the dead. The animals are persuaded to celebrate a loss.' },
+        },
+        {
+          title: 'The broken ladder',
+          quote: 'Squealer, temporarily stunned, was sprawling beside it',
+          explain: 'One night the animals find Squealer beside a broken ladder near the commandments, with a pot of white paint. Soon the Fifth Commandment has changed.',
+          technique: 'Dramatic irony: the reader understands that Squealer was rewriting the rules, but most animals cannot put the clues together.',
+          theme: 'Rewriting history and memory (H7): Orwell shows the rules literally being repainted in secret.',
+          history: 'It reflects how the Soviet government secretly altered records, laws and history to suit the leader.',
+          think: { q: 'What does the reader understand about the ladder scene that most animals do not?', a: 'We can tell Squealer was secretly changing the commandments in the dark. Only Benjamin seems to understand, but he says nothing.' },
+        },
+      ],
+      quiz: [
+        ['What words have been added to the Sixth Commandment?', ['“without cause”', '“in the farmhouse”', '“to excess”', '“with sheets”'], 0, 'It now reads that no animal shall kill another without cause.'],
+        ['How does Frederick pay for the timber?', ['With grain', 'With forged banknotes', 'With gold', 'He never pays at all'], 1, 'The notes turn out to be forgeries, so he gets the timber for nothing.'],
+        ['What does Frederick destroy in the Battle of the Windmill?', ['The barn', 'The farmhouse', 'The windmill', 'The flagstaff'], 2, 'His men blow up the windmill with explosives.'],
+        ['What has changed about the Fifth Commandment by the end of the chapter?', ['It bans the singing of songs', 'It forbids all trade', 'It has been removed', 'It now says no animal shall drink alcohol to excess'], 3, 'The words “to excess” have been added after the pigs’ drinking.'],
+      ],
+    },
+
+    /* ---------------- Chapter 9 ---------------- */
+    {
+      n: 9, title: 'Boxer’s fate',
+      summary: 'Boxer’s split hoof heals slowly, but he keeps working, hoping to see the windmill finished before he retires. Rations are cut for everyone except the pigs and dogs, though Squealer calls it a readjustment. The pigs gain more privileges, and Napoleon’s thirty-one piglets are to be taught separately. Weekly Spontaneous Demonstrations celebrate the farm’s glory. The farm becomes a Republic, and Napoleon is elected President as the only candidate. Moses the raven returns with his tales of Sugarcandy Mountain, and the pigs let him stay with a ration of beer. One day Boxer collapses. The pigs say he will be treated in hospital, but Benjamin reads the van that comes for him: it belongs to a horse slaughterer. The animals cannot save him. Squealer later claims Boxer died peacefully in hospital praising Napoleon, and soon afterwards the pigs buy another case of whisky.',
+      moments: [
+        {
+          title: 'A “readjustment”',
+          quote: 'necessary to make a readjustment of rations',
+          explain: 'Food is cut for every animal except the pigs and dogs. Squealer refuses to call it a reduction and uses a softer word instead.',
+          technique: 'Euphemism: the mild word “readjustment” hides the harsh reality of hunger.',
+          theme: 'Propaganda and the power of language (H2): Orwell shows how leaders choose gentle words to hide painful truths.',
+          history: 'It reflects how the Soviet government disguised food shortages with official, comforting language.',
+          think: { q: 'Why does Squealer prefer the word “readjustment” to “reduction”?', a: 'It sounds neutral and organised rather than painful, so the animals feel less angry. The euphemism hides the fact that they are going hungry while the pigs are not.' },
+        },
+        {
+          title: 'President Napoleon',
+          quote: 'There was only one candidate, Napoleon, who was elected unanimously.',
+          explain: 'The farm becomes a Republic and holds an election, but Napoleon is the only choice. The vote is meaningless.',
+          technique: 'Irony and understatement: the calm, factual tone exposes the fake election without the narrator needing to comment.',
+          theme: 'Power and corruption (H1): Orwell shows that a dictator can keep the outward forms of democracy while destroying its substance.',
+          history: 'It reflects Soviet elections where only one party, and often only one candidate, could be chosen.',
+          think: { q: 'How does Orwell use irony to describe the election?', a: 'He calmly reports that Napoleon won every vote, then reveals he was the only candidate. The flat tone lets the reader see how meaningless the election is.' },
+        },
+        {
+          title: 'Moses returns',
+          quote: 'Sugarcandy Mountain, that happy country where we poor animals shall rest for ever from our labours!',
+          explain: 'Moses comes back preaching about paradise, and this time the pigs let him stay and even give him beer. His stories now help them by making the hungry animals hopeful.',
+          technique: 'Symbolism: Sugarcandy Mountain represents the comforting promise of heaven, which distracts the animals from their suffering.',
+          theme: 'Education, ignorance and control (H4): Orwell shows rulers tolerating religion when it keeps people patient and obedient.',
+          history: 'It reflects how Stalin allowed the Orthodox Church more freedom during World War Two to boost morale.',
+          think: { q: 'Why do the pigs now allow Moses to stay?', a: 'Life is so hard that a promise of paradise keeps the animals calm. The pigs use Moses’s stories to stop the animals rebelling over their present misery.' },
+        },
+        {
+          title: 'Boxer is taken away',
+          quote: 'Fools! Do you not see what is written on the side of that van?',
+          explain: 'Benjamin finally breaks his silence when he reads the van taking Boxer away. It belongs to a horse slaughterer.',
+          technique: 'Exclamation and climax: Benjamin’s rare outburst shows the horror of the moment and creates the emotional climax of the novel.',
+          theme: 'The revolution betrayed (H5): the most loyal worker is sold for money by the leaders he trusted.',
+          history: 'It reflects how Stalin’s regime used up and discarded loyal workers once they were no longer useful.',
+          think: { q: 'Why is Boxer’s fate the most tragic moment in the novel?', a: 'Boxer gave everything to the farm and trusted Napoleon completely, yet he is sold to be killed. His death shows how cruelly the pigs exploit the loyal workers.' },
+        },
+        {
+          title: 'More whisky',
+          quote: 'the pigs had acquired the money to buy themselves another case of whisky.',
+          explain: 'Soon after Boxer is taken away, the pigs suddenly have money for alcohol. The reader can work out where it came from.',
+          technique: 'Implication: Orwell does not say directly that the whisky was bought with the money from Boxer, but the timing makes it clear.',
+          theme: 'Power and corruption (H1): the leaders profit from the death of the most loyal worker.',
+          history: '',
+          think: { q: 'How does Orwell hint at what happened to the money from Boxer’s sale?', a: 'He places the pigs’ new whisky straight after Boxer’s death without explaining it. The reader connects the two and realises the pigs sold Boxer to pay for their drinking.' },
+        },
+      ],
+      quiz: [
+        ['What does Squealer call the cut in rations?', ['A reduction', 'A sacrifice', 'A readjustment', 'A reward'], 2, 'He always uses the softer word “readjustment”.'],
+        ['How many candidates stand for President?', ['One', 'Two', 'Three', 'None'], 0, 'Napoleon is the only candidate and is elected unanimously.'],
+        ['Who reads the writing on the side of the van?', ['Clover', 'Muriel', 'Squealer', 'Benjamin'], 3, 'Benjamin reveals the van belongs to a horse slaughterer.'],
+        ['What does Squealer claim happened to Boxer?', ['He ran away', 'He died in hospital praising Napoleon', 'He retired to a pasture', 'He was killed by Frederick'], 1, 'Squealer invents a peaceful hospital death to cover the truth.'],
+      ],
+    },
+
+    /* ---------------- Chapter 10 ---------------- */
+    {
+      n: 10, title: 'Four legs good, two legs better',
+      summary: 'Years pass. Many animals who remember the Rebellion have died, and the newer animals know it only as a story. The farm is richer and better organised, but only the pigs and dogs benefit. The rebuilt windmill grinds corn for profit rather than providing comfort. Benjamin insists life has always been hard and always will be. One day the animals are shocked to see Squealer, then all the pigs, walking on their hind legs, with Napoleon carrying a whip. The sheep have been taught a new chant that praises two legs. The commandments on the wall are replaced by a single, contradictory rule about equality. The pigs start wearing Jones’s clothes. Napoleon hosts the neighbouring farmers, and Pilkington praises how hard the animals are worked. Napoleon renames the farm Manor Farm. When a card game turns into a quarrel, the animals outside can no longer tell pig from man.',
+      moments: [
+        {
+          title: 'The forgotten past',
+          quote: 'Snowball was forgotten. Boxer was forgotten, except by the few who had known him.',
+          explain: 'Time passes and most of the animals who remember the Rebellion are gone. The heroes of the past have faded from memory.',
+          technique: 'Repetition and short sentences: repeating “was forgotten” has a flat, sad rhythm that shows how completely the past has been erased.',
+          theme: 'Rewriting history and memory (H7): Orwell shows that when people forget the past, leaders can tell any story they like.',
+          history: 'It reflects how, by the 1940s, few Soviet citizens remembered the hopes of 1917, and official history had replaced real memory.',
+          think: { q: 'Why does Orwell begin Chapter 10 by showing that the past has been forgotten?', a: 'Without anyone who remembers the original ideals, the pigs can change anything without being challenged. It explains how the final betrayal can happen without protest.' },
+        },
+        {
+          title: 'The whip',
+          quote: 'He carried a whip in his trotter.',
+          explain: 'Napoleon appears walking on two legs, holding a whip. The animals are horrified into silence.',
+          technique: 'Symbolism and a short, stand-alone sentence: the whip was a symbol of Jones’s cruelty, and placing the line on its own gives it shocking force.',
+          theme: 'The revolution betrayed (H5): the leader has become the cruel master the animals once overthrew.',
+          history: 'It reflects how Stalin ruled with as much force and cruelty as the Tsars before him.',
+          think: { q: 'Why is the whip such a powerful symbol in this scene?', a: 'In Chapter 2 the animals burned the whips as symbols of human cruelty. Napoleon now holding one shows he has become a new Jones.' },
+        },
+        {
+          title: 'The new slogan',
+          quote: 'Four legs good, two legs better!',
+          explain: 'Just as the animals might protest, the sheep burst into a new chant that reverses the old slogan. Any chance of objection is drowned out.',
+          technique: 'Parody of an earlier slogan: changing just one word turns the original meaning upside down, showing how propaganda can reverse any belief.',
+          theme: 'Propaganda and the power of language (H2): Orwell shows slogans being used to silence the very ideas they once supported.',
+          history: 'It reflects how Soviet propaganda changed its message whenever the leaders’ policies changed.',
+          think: { q: 'How does Orwell use the sheep’s new slogan to show the power of propaganda?', a: 'One changed word flips the original slogan to support the pigs walking on two legs. Because the sheep chant it so loudly, no animal can raise an objection.' },
+        },
+        {
+          title: 'More equal than others',
+          quote: 'ALL ANIMALS ARE EQUAL BUT SOME ANIMALS ARE MORE EQUAL THAN OTHERS',
+          explain: 'All seven commandments are replaced by this single rule. It keeps the word “equal” but completely destroys its meaning.',
+          technique: 'Paradox: something cannot be “more equal”, so the contradiction exposes the pigs’ hypocrisy and the absurdity of their logic.',
+          theme: 'Equality, class and the Seven Commandments (H3): Orwell shows equality being officially replaced by a new ruling class.',
+          history: 'It reflects how the Soviet Union claimed to be a classless society while Party leaders lived as a privileged elite.',
+          think: { q: 'Why is the final commandment a paradox, and what does it reveal?', a: 'Equal means the same, so nobody can be more equal than another. The contradiction reveals that the pigs have abandoned equality while pretending to keep it.' },
+        },
+        {
+          title: 'Pilkington’s joke',
+          quote: 'If you have your lower animals to contend with',
+          explain: 'At the dinner, Pilkington jokes that the pigs and the human farmers face the same problem: keeping the workers in their place. Everyone laughs.',
+          technique: 'Satire: the joke shows the pigs and humans as equal partners in keeping the workers down, mocking the Rebellion’s ideals.',
+          theme: 'Equality, class and the Seven Commandments (H3): the pigs now belong to the ruling class alongside the humans.',
+          history: 'It reflects meetings between Stalin and Western leaders, such as the Tehran Conference of 1943.',
+          think: { q: 'What does Pilkington’s joke reveal about the pigs by the end of the novel?', a: 'It shows the pigs now see the other animals the way humans see their workers. The rulers of both farms are alike, and the workers are the losers.' },
+        },
+        {
+          title: 'Pig and man',
+          quote: 'from pig to man, and from man to pig, and from pig to man again; but already it was impossible to say which was which.',
+          explain: 'Looking through the window, the animals cannot tell the pigs from the humans. The farm is back where it started, only now the pigs are the masters.',
+          technique: 'Repetition and cyclical structure: the repeated phrase imitates the animals’ eyes darting back and forth, and the ending returns to Manor Farm, where the novel began.',
+          theme: 'The revolution betrayed (H5): Orwell’s final message is that the revolution has simply replaced one set of tyrants with another.',
+          history: 'It suggests that Stalin’s Soviet Union had become as oppressive as the Tsarist rule it overthrew.',
+          think: { q: 'How does the ending show that the revolution has failed?', a: 'The animals cannot tell the pigs from the men, so the pigs have become exactly what Old Major warned against. The cyclical structure shows the animals are as oppressed as at the start.' },
+        },
+      ],
+      quiz: [
+        ['What does the rebuilt windmill end up being used for?', ['Making electricity for heating', 'Pumping water', 'Grinding corn for profit', 'Nothing at all'], 2, 'It makes money for the pigs instead of making the animals’ lives easier.'],
+        ['What new slogan do the sheep bleat?', ['Four legs good, two legs better!', 'Napoleon is always right!', 'Long live Animal Farm!', 'All animals are equal!'], 0, 'One word of the old slogan is changed to support the pigs walking on two legs.'],
+        ['What does Napoleon rename the farm?', ['Napoleon Farm', 'The Republic of Animals', 'Foxwood', 'Manor Farm'], 3, 'He brings back its original name, completing the circle.'],
+        ['What starts the quarrel at the end of the novel?', ['Pilkington insults Napoleon', 'Two players each play an ace of spades', 'The animals break the window', 'Frederick arrives with men'], 1, 'Napoleon and Pilkington play an ace of spades at the same time, so both are cheating.'],
+      ],
+    },
+  ];
+
+  const CAST = [
+    { name: 'Old Major', who: 'A wise, prize-winning old boar whose speech and dream inspire the Rebellion.', stands: 'Karl Marx and Lenin, whose ideas started the revolution.', arc: 'He dies in Chapter 2, but his skull is later displayed and his ideals are slowly twisted until his warning comes true.' },
+    { name: 'Napoleon', who: 'A large, fierce Berkshire boar who says little but plots carefully.', stands: 'Joseph Stalin, the dictator of the Soviet Union.', arc: 'He goes from a quiet committee pig to an all-powerful tyrant who walks on two legs and is indistinguishable from a human.' },
+    { name: 'Snowball', who: 'A lively, clever pig with big plans, such as the windmill.', stands: 'Leon Trotsky, Stalin’s rival who was exiled.', arc: 'He is a war hero and inventive leader until Napoleon’s dogs chase him away; afterwards he is blamed for every disaster and turned into a traitor.' },
+    { name: 'Squealer', who: 'A small, fat, persuasive pig who explains the leaders’ decisions to the others.', stands: 'Propaganda and the state-controlled media.', arc: 'He grows fatter and bolder, from justifying the milk and apples to rewriting the commandments himself and finally walking on two legs.' },
+    { name: 'Boxer', who: 'A huge, strong and loyal carthorse who is not very clever.', stands: 'The hard-working, trusting working class.', arc: 'He gives everything to the farm and trusts Napoleon completely, only to be sold to the knacker when his strength fails.' },
+    { name: 'Clover', who: 'A kind, motherly mare who looks after the weaker animals.', stands: 'Working people who sensed the betrayal but stayed loyal.', arc: 'She notices the commandments changing and feels the dream has gone wrong, but she never finds the words to resist.' },
+    { name: 'Benjamin', who: 'An old, grumpy donkey who can read but refuses to get involved.', stands: 'Cynical people who saw the truth but did nothing.', arc: 'He stays detached for most of the novel, breaks his silence only when Boxer is taken away, and reads the final commandment to Clover.' },
+    { name: 'Mollie', who: 'A vain white mare who loves sugar and ribbons.', stands: 'The wealthy middle and upper classes who fled after the revolution.', arc: 'She never accepts the Rebellion and runs away to work for humans, after which she is never mentioned.' },
+    { name: 'Moses', who: 'Jones’s tame raven, who tells tales of Sugarcandy Mountain.', stands: 'The Church and religion.', arc: 'He leaves after the Rebellion, returns in Chapter 9 and is tolerated by the pigs because his stories keep the animals patient.' },
+    { name: 'Mr Jones', who: 'The drunken, careless owner of Manor Farm.', stands: 'Tsar Nicholas II and the old ruling class.', arc: 'He is driven out, fails to retake the farm at the Battle of the Cowshed and later dies far away, but the pigs keep using fear of his return.' },
+    { name: 'The dogs', who: 'Nine puppies that Napoleon raises in secret into fierce guards.', stands: 'The secret police.', arc: 'They appear suddenly to drive out Snowball, then kill the animals who confess, and become Napoleon’s constant bodyguard.' },
+    { name: 'The sheep', who: 'Simple animals who chant slogans on cue.', stands: 'The easily led masses who repeat propaganda.', arc: 'They bleat “Four legs good, two legs bad” to drown out debate, and are later retrained to chant that two legs are better.' },
+    { name: 'Minimus', who: 'A pig who writes poems and songs.', stands: 'Propaganda poets and artists who glorified Stalin.', arc: 'He writes the anthem that replaces Beasts of England and a poem praising Napoleon.' },
+    { name: 'Mr Frederick', who: 'The tough, shrewd owner of Pinchfield farm.', stands: 'Adolf Hitler and Nazi Germany.', arc: 'He cheats Napoleon with forged banknotes for the timber and then attacks the farm, blowing up the windmill.' },
+    { name: 'Mr Pilkington', who: 'The easy-going owner of Foxwood farm.', stands: 'Britain and the Western powers.', arc: 'He is at first hostile to Animal Farm, but ends the novel drinking and playing cards with the pigs as an equal.' },
+    { name: 'Mr Whymper', who: 'A solicitor who handles the farm’s trade with humans.', stands: 'Westerners who did business with the Soviet Union.', arc: 'He becomes the go-between for Napoleon’s deals and is fooled by the sand-filled bins into reporting that the farm is thriving.' },
+    { name: 'Muriel', who: 'A white goat who can read a little.', stands: 'Ordinary citizens who could see the changes but had little power.', arc: 'She reads the altered commandments aloud to Clover, and by the last chapter she has died.' },
+    { name: 'The hens', who: 'The farm’s egg-layers, led by three young pullets in their protest.', stands: 'Peasants who resisted Stalin’s takeover of their farms.', arc: 'They rebel when Napoleon takes their eggs to sell, are starved into giving in, and some later confess and are executed.' },
+  ];
+
+  return { CHAPTERS, CAST, SOURCE: 'https://gutenberg.net.au/ebooks01/0100011h.html' };
+})();
+if (typeof module !== 'undefined') module.exports = RD;
+
+</script>
+<script>
 /* ===== Lock In — writing feedback (no DOM, no AI) =====
    Reads an essay, a paragraph, a short answer or a piece of creative writing and checks the things
    HSC markers look for: a clear thesis, topic sentences, quotes with techniques and effects, formal
@@ -6416,7 +7183,7 @@ if (typeof module !== 'undefined') module.exports = Badges;
         <div class="heat" role="img" aria-label="Study activity over the last 12 weeks">${hm.map(d => `<i class="h${d.level}" title="${esc(new Date(d.date + 'T12:00').toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' }))}: ${d.min} min focused, ${d.marks} marks"></i>`).join('')}</div>
         <div class="heat-key" aria-hidden="true">Less <i class="h0"></i><i class="h1"></i><i class="h2"></i><i class="h3"></i><i class="h4"></i> More</div>
         ${badgesHtml()}
-        <div class="row"><button class="btn" type="button" id="shareCard">Make a share card</button><button class="btn btn-ghost" type="button" id="shareSite">Share Lock in</button>${Gate.isOwner() ? '<button class="btn btn-ghost" type="button" id="keysBtn">Invite keys</button>' : ''}</div>
+        <div class="row"><button class="btn" type="button" id="shareCard">Make a share card</button><button class="btn btn-ghost" type="button" id="shareSite">Share Lock in</button>${Gate.isAdmin() ? '<button class="btn btn-ghost" type="button" id="keysBtn">Admin</button>' : ''}</div>
       </section>
       <section class="inside" aria-labelledby="inH">
         <h2 id="inH">What's inside</h2>
@@ -6426,7 +7193,7 @@ if (typeof module !== 'undefined') module.exports = Badges;
     </div>
     <section class="features" aria-labelledby="ftH"><h2 id="ftH">What it does</h2><dl>${FEATURES.map(([t, d]) => `<div><dt>${t}</dt><dd>${d}</dd></div>`).join('')}</dl></section>`;
     $('#shareSite').onclick = () => copyText(location.href.split('#')[0], Gate.enabled ? 'Link copied. They\'ll need a key from you too.' : 'Link copied. Send it to your mates.', el);
-    if ($('#keysBtn', el)) $('#keysBtn', el).onclick = openKeys;
+    if ($('#keysBtn', el)) $('#keysBtn', el).onclick = openAdmin;
     $('#shareCard', el).onclick = openShare;
     if ($('#dailyGo', el)) $('#dailyGo', el).onclick = openDaily;
     renderPlan();
@@ -6437,7 +7204,7 @@ if (typeof module !== 'undefined') module.exports = Badges;
     const s = getSubj(S.subj), ds = decksOf(s.id), el = $('#subject'), nm = mistakesOf(s.id).length;
     el.className = 'wrap section c-' + s.hue;
     el.innerHTML = `<div class="subj-head"><div><h2>${esc(s.name)}</h2><p class="subj-meta">${s.exam ? `Exam ${esc(s.when)}. ` : ''}${esc(s.format)}</p>${s.papers ? `<p class="subj-meta"><a class="linkbtn" href="${esc(s.papers)}" target="_blank" rel="noopener">Official HSC past papers and marking guidelines (NESA)</a></p>` : ''}${nm ? `<button class="linkbtn mist-link" type="button" data-act="mistakes" data-s="${esc(s.id)}">${nm} mistake${nm > 1 ? 's' : ''} to fix</button>` : ''}</div>
-      <div class="subj-actions">${s.id === 'eng' ? '<button class="btn btn-hot" type="button" data-act="writing">Writing feedback</button><button class="btn btn-ghost" type="button" data-act="quotes">Quote bank</button>' : ''}${s.mock ? `<button class="btn" type="button" data-act="mock" data-s="${s.id}">Practice exam${s.mock === 'geo' ? ', 45 min' : ''}</button>` : ''}${ds.length ? `<button class="btn btn-ghost" type="button" data-act="cards" data-s="${esc(s.id)}">All flashcards</button>` : ''}<button class="btn btn-ghost" type="button" data-act="upload" data-s="${esc(s.id)}">Upload notes</button></div></div>
+      <div class="subj-actions">${s.id === 'eng' ? '<button class="btn btn-hot" type="button" data-act="read">Read the book</button><button class="btn btn-ghost" type="button" data-act="writing">Writing feedback</button>' : ''}${s.mock ? `<button class="btn" type="button" data-act="mock" data-s="${s.id}">Practice exam${s.mock === 'geo' ? ', 45 min' : ''}</button>` : ''}${ds.length ? `<button class="btn btn-ghost" type="button" data-act="cards" data-s="${esc(s.id)}">All flashcards</button>` : ''}<button class="btn btn-ghost" type="button" data-act="upload" data-s="${esc(s.id)}">Upload notes</button></div></div>
       ${ds.length ? `<ol class="decks">${ds.map(d => { const m = mastery(d.id), L = levelOf(d); return `<li><button class="deck ${hue(d)}" type="button" data-open="${esc(d.id)}">
           <span class="d-ch">${esc(d.chapter || 'Yours')}</span>
           <span class="d-main"><span class="d-title">${esc(d.title)}${d.custom ? ` <small>${d.ai ? 'made by AI' : 'quick deck'}</small>` : ''}</span><span class="d-blurb">${fm(d.blurb || '')}</span></span>
@@ -6454,6 +7221,7 @@ if (typeof module !== 'undefined') module.exports = Badges;
     if (act === 'weak') openDeck(a.dataset.d, 'practice', a.dataset.t);
     if (act === 'mistakes') openMistakes(a.dataset.s);
     if (act === 'writing') openWriting();
+    if (act === 'read') openReader();
     if (act === 'quotes') openQuotes();
     if (act === 'upload') { upSubj = a.dataset.s; renderUpSubjects(); $('#upload').scrollIntoView({ behavior: reduce ? 'auto' : 'smooth' }); }
   });
@@ -7433,12 +8201,13 @@ Aim for 2-5 sections with 3-6 notes each, 10-20 flashcards (key terms, people, d
     act('Lock in: start a focus session', 'Focus', openFocus, 'timer pomodoro study');
     act('Daily challenge', 'Challenge', openDaily, 'question today');
     act('Mistakes to fix', 'Mistakes', () => openMistakes(), 'wrong redo');
-    act('Writing feedback', 'English', () => openWriting(), 'essay creative paragraph mark');
+    if (typeof RD !== 'undefined') { act('Read Animal Farm', 'English', () => openReader(), 'book chapter notes read'); RD.CHAPTERS.forEach(c => act(`Animal Farm chapter ${c.n}: ${c.title}`, 'Read', () => openReader(c.n), 'chapter')); }
+    act('Writing feedback', 'English', () => openWriting(), 'essay creative paragraph mark petal');
     act('Quote bank', 'English', openQuotes, 'quotes memorise learn');
     act('Make a share card', 'Show off', openShare, 'aura stats image picture');
     act('Change theme (dark / light / auto)', 'Settings', () => $('#themeBtn').click(), 'dark mode light');
     act('Home', 'Go to', () => goSubj('home'), 'plan report');
-    if (Gate.isOwner()) act('Invite keys', 'Owner', openKeys, 'keys invite friends gatekeep');
+    if (Gate.isAdmin()) act('Admin: make and manage keys', 'Admin', openAdmin, 'keys invite friends gatekeep admin');
     if (Cloud.available) act(me ? 'Your account' : 'Sign in', 'Account', () => (me && !S.profile ? openProfile(true) : openAccount()), 'google login');
     subjects().forEach(s => {
       act(s.name, 'Subject', () => goSubj(s.id), s.tab || '');
@@ -7569,6 +8338,54 @@ Aim for 2-5 sections with 3-6 notes each, 10-20 flashcards (key terms, people, d
         drip();
       }
     } catch (e) { sound.kind = 'off'; }
+  }
+
+  /* ---------------- Read: Animal Farm, chapter by chapter ---------------- */
+  // The book's key moments with short quotes and notes (src/reader.js). The full text isn't in the app:
+  // the "Read the full chapter" link opens a free copy at Project Gutenberg Australia.
+  const readState = () => (S.read ||= { ch: 1, done: {} });
+  function openReader(ch) {
+    if (typeof RD === 'undefined') return;
+    const R = readState(); if (ch) R.ch = ch;
+    cur = { kind: 'reader', tab: null }; ovFrame('Read: Animal Farm', 'c-pink', null); drawReader(); showOv();
+  }
+  function drawReader() {
+    const body = $('#ovBody'), R = readState(), C = RD.CHAPTERS, done = Object.keys(R.done).length;
+    const strip = `<div class="rd-strip" role="tablist" aria-label="Chapters">${C.map(c => `<button class="rd-ch${R.done[c.n] ? ' done' : ''}" type="button" role="tab" data-rch="${c.n}" aria-selected="${R.ch === c.n}" title="Chapter ${c.n}: ${esc(c.title)}">${c.n}</button>`).join('')}<button class="rd-ch rd-cast" type="button" role="tab" data-rch="cast" aria-selected="${R.ch === 'cast'}">Characters</button></div>
+      <p class="note rd-prog">${done ? `${done} of ${C.length} chapters done.` : 'Go chapter by chapter: read the moments, then take the quick check.'} <a class="linkbtn" href="${RD.SOURCE}" target="_blank" rel="noopener">Read the full book free</a></p>`;
+    if (R.ch === 'cast') {
+      body.innerHTML = strip + `<div class="rd-cast-grid">${RD.CAST.map(p => `<div class="rd-person"><h3>${esc(p.name)}</h3><p>${fm(p.who)}</p><p class="rd-tag"><b>Stands for</b> ${fm(p.stands)}</p><p class="rd-tag"><b>How they change</b> ${fm(p.arc)}</p></div>`).join('')}</div>`;
+      bindStrip(body); return;
+    }
+    const c = C.find(x => x.n === R.ch) || C[0];
+    body.innerHTML = strip + `<article class="rd">
+      <header class="rd-head"><span class="eyebrow">Chapter ${c.n}${R.done[c.n] ? ' · done' : ''}</span><h2>${esc(c.title)}</h2></header>
+      <section class="rd-sum"><h3>What happens</h3><p>${fm(c.summary)}</p></section>
+      <h3 class="rd-h">Key moments</h3>
+      <ol class="rd-moments">${c.moments.map((m, i) => `<li class="rd-m">
+        <h4><span class="rd-num">${i + 1}</span>${esc(m.title)}</h4>
+        <blockquote class="rd-q">“${esc(m.quote)}”</blockquote>
+        <dl class="rd-notes"><div><dt>What's happening</dt><dd>${fm(m.explain)}</dd></div><div><dt>How Orwell does it</dt><dd>${fm(m.technique)}</dd></div><div><dt>Why it matters</dt><dd>${fm(m.theme)}</dd></div>${m.history ? `<div><dt>Real history</dt><dd>${fm(m.history)}</dd></div>` : ''}</dl>
+        <details class="rd-think"><summary>Think about it: ${fm(m.think.q)}</summary><p>${fm(m.think.a)}</p></details></li>`).join('')}</ol>
+      <section class="rd-quiz"><h3>Quick check</h3><p class="note">Get them all right to tick off Chapter ${c.n}.</p><div id="rdQuiz"></div></section>
+      <div class="row rd-nav">${c.n > 1 ? `<button class="btn btn-ghost" type="button" data-rch="${c.n - 1}">← Chapter ${c.n - 1}</button>` : ''}<span style="flex:1"></span>${c.n < C.length ? `<button class="btn" type="button" data-rch="${c.n + 1}">Chapter ${c.n + 1} →</button>` : '<button class="btn" type="button" data-rch="cast">Characters →</button>'}</div></article>`;
+    bindStrip(body);
+    const d = getDeck('afplot') || decksOf('eng')[0], host = $('#rdQuiz', body), qs = [];
+    let right = 0, answered = 0;
+    c.quiz.forEach(([q, options, answer, why]) => {
+      const qq = mcqQ({ q, options, answer, why, tags: [] }, d); qs.push(qq);
+      host.appendChild(renderCard(qq, { mode: 'practice', onPart: (p) => {
+        answered++; if (p._got) right++; record(d.id, [], p._got || 0, 1); noteResult(qq, d);
+        if (answered === qs.length) {
+          if (right === qs.length && !R.done[c.n]) { R.done[c.n] = Date.now(); addXp(20); save(); renderStats(); burst(innerWidth / 2, innerHeight / 2, 120); toast(`Chapter ${c.n} done. +20 XP`); $$(`[data-rch="${c.n}"].rd-ch`, body).forEach(b => b.classList.add('done')); }
+          else if (right < qs.length) toast(`${right} of ${qs.length}. Reread the moments, then try again.`);
+        }
+      } }));
+    });
+    const again = document.createElement('button'); again.className = 'linkbtn'; again.type = 'button'; again.textContent = 'New attempt'; again.onclick = () => { drawReader(); $('.rd-quiz', $('#ovBody'))?.scrollIntoView({ block: 'start' }); }; host.appendChild(again);
+  }
+  function bindStrip(body) {
+    $$('[data-rch]', body).forEach(b => b.onclick = () => { const v = b.dataset.rch; readState().ch = v === 'cast' ? 'cast' : +v; save(); drawReader(); ov.scrollTo({ top: 0 }); });
   }
 
   /* ---------------- English: writing feedback ---------------- */
@@ -7766,69 +8583,99 @@ Reply with ONLY this JSON:
     }
   }
 
-  /* ---------------- invite keys (owner only) ---------------- */
-  // Keys are checked against keys.json in the repo. New keys and revokes are made here, then saved by
-  // pasting the new keys.json into GitHub's editor (opened for you). Labels stay on this device only.
-  const KEYS_EDIT = 'https://github.com/jamalmusialla81-hub/lock-in/edit/main/keys.json';
-  const kget = (k, d) => { try { return JSON.parse(localStorage.getItem(k)) || d; } catch (e) { return d; } };
-  const kset = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { } };
-  const keysJson = (list) => '{\n  "v": 1,\n  "keys": [\n' + list.keys.map(k => '    ' + JSON.stringify(k)).join(',\n') + '\n  ]\n}\n';
-  let keysFresh = false;
-  function openKeys() {
-    keysFresh = false; cur = { kind: 'keys', tab: null }; ovFrame('Invite keys', 'c-lilac', null); drawKeys(); showOv();
-    Gate.refresh().then(ok => { keysFresh = ok; if (cur?.kind === 'keys') drawKeys(); if (!ok) toast('Couldn\'t load the live key list. Check your connection.'); });
+  /* ---------------- admin panel (admin key only) ---------------- */
+  // Keys live in keys.json in the repo. Edits are kept on this device as a list of changes; "Save" applies
+  // them to the current keys.json on GitHub (with a token saved on this device), or you can paste it by hand.
+  // Names are private to this device; keys.json only holds hashes and generic labels.
+  const REPO = 'jamalmusialla81-hub/lock-in', KEYS_EDIT = `https://github.com/${REPO}/edit/main/keys.json`;
+  const kget = (k, d) => { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch (e) { return d; } };
+  const kset = (k, v) => { try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, JSON.stringify(v)); } catch (e) { } };
+  const LENGTHS = [['1', '1 day'], ['7', '1 week'], ['30', '1 month'], ['90', '3 months'], ['0', 'Never']];
+  const dayFmt = (t) => new Date(t).toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' });
+  let adm = { fresh: false, saving: false, filter: 'all', made: null, err: '' };
+  const ops = () => kget('lockin.keyOps', []);
+  const addOp = (o) => { kset('lockin.keyOps', [...ops(), o]); autoSave(); };
+  const siteUrl = () => (location.protocol === 'https:' ? location.href.split('#')[0].split('?')[0] : 'https://jamalmusialla81-hub.github.io/lock-in/');
+  function openAdmin() {
+    adm = { ...adm, fresh: false, made: null, err: '' }; cur = { kind: 'admin', tab: null }; ovFrame('Admin', 'c-lilac', null); drawAdmin(); showOv();
+    Gate.refresh().then(ok => { adm.fresh = ok; if (cur?.kind === 'admin') drawAdmin(); });
   }
-  function drawKeys(fresh) {
-    const body = $('#ovBody'), live = Gate.keys(), labels = kget('lockin.keyLabels', {}), pending = kget('lockin.keyPending', []);
-    const liveHashes = new Set(live.keys.map(k => k.hash)), waiting = pending.filter(p => !liveHashes.has(p.hash));
-    if (keysFresh && waiting.length < pending.length) kset('lockin.keyPending', waiting); // saved on GitHub now, so forget the key text
-    const label = (k) => labels[k.id] || k.label || (k.owner ? 'You' : k.id);
-    const nextId = () => 'k' + String(Math.max(0, ...live.keys.map(k => +k.id.slice(1) || 0), ...pending.map(p => +p.id.slice(1) || 0)) + 1).padStart(2, '0');
-    const site = location.protocol === 'file:' ? 'https://jamalmusialla81-hub.github.io/lock-in/' : location.href.split('#')[0].split('?')[0];
-    body.innerHTML = `<div class="sheet keys-sheet">
-      <p class="note">Anyone with a key can open Lock in on any device. Turn a key off and whoever has it is locked out next time they open the app.</p>
-      ${fresh ? `<div class="key-new"><span class="eyebrow">New key for ${esc(fresh.label)}</span><div class="key-big">${esc(fresh.key)}</div>
-        <div class="row"><button class="btn btn-sm" type="button" data-kc="link">Copy invite link</button><button class="btn btn-ghost btn-sm" type="button" data-kc="key">Copy key</button></div>
-        <p class="note" style="font-size:14px">It starts working once it's saved to GitHub (step below).</p></div>` : ''}
-      ${waiting.length ? `<div class="key-step"><h3>Save ${waiting.length} new key${waiting.length > 1 ? 's' : ''} to GitHub</h3><ol class="note"><li>Tap <b>Copy keys.json</b>.</li><li>Tap <b>Open GitHub</b>, select everything in the file and paste over it.</li><li>Press <b>Commit changes</b>. Keys work about a minute later.</li></ol>
-        <div class="row"><button class="btn btn-sm" type="button" data-kc="json">Copy keys.json</button><a class="btn btn-ghost btn-sm" href="${KEYS_EDIT}" target="_blank" rel="noopener">Open GitHub</a></div></div>` : ''}
-      <h3 style="margin-top:22px">Make a key</h3>
-      <div class="ans"><input class="field" id="kLabel" maxlength="30" placeholder="Who's it for? e.g. Sam" aria-label="Who the key is for"><button class="btn btn-ghost btn-sm" type="button" data-kc="new">Make key</button></div>
-      <h3 style="margin-top:22px">Keys</h3>
-      <ul class="key-list">${[...live.keys.map(k => ({ ...k, live: true })), ...waiting.map(p => ({ id: p.id, hash: p.hash, live: false }))].map(k => `<li class="${k.revoked ? 'off' : ''}">
-        <span class="mono">${esc(k.id)}</span><span class="kl">${esc(label(k))}${k.owner ? ' <small>owner</small>' : ''}</span>
-        <span class="ks">${!k.live ? 'Not saved yet' : k.revoked ? 'Turned off' : 'On'}</span>
-        ${k.live && !k.owner ? `<button class="linkbtn" type="button" data-kt="${esc(k.id)}">${k.revoked ? 'Turn on' : 'Turn off'}</button>` : '<span></span>'}
-        <button class="linkbtn" type="button" data-kn="${esc(k.id)}" aria-label="Rename ${esc(k.id)}">Rename</button></li>`).join('')}</ul>
-      <p class="note" style="font-size:13.5px;margin-top:14px">Names are only saved on this device. Keys you made here are remembered on this device too.</p>
-      <div class="row" style="margin-top:8px"><button class="linkbtn" type="button" data-kc="forget">Lock this device</button></div></div>`;
-    const draft = { v: 1, keys: [...live.keys.map(k => ({ ...k })), ...waiting.map(p => ({ id: p.id, hash: p.hash }))] };
-    $$('[data-kc]', body).forEach(b => b.onclick = () => {
-      const a = b.dataset.kc;
-      if (a === 'link') copyText(site + '#key=' + fresh.key, 'Invite link copied. Send it to them.', body);
-      if (a === 'key') copyText(fresh.key, 'Key copied', body);
-      if ((a === 'json') && !keysFresh) { toast('Still loading the live key list. Try again in a moment.'); return; }
-      if (a === 'json') copyText(keysJson(draft), 'keys.json copied. Now open GitHub and paste over it.', body);
-      if (a === 'new') {
-        const l = $('#kLabel', body).value.trim().slice(0, 30); if (!l) { toast('Who is it for?'); $('#kLabel', body).focus(); return; }
-        const key = Keys.make(), id = nextId();
-        kset('lockin.keyPending', [...pending, { id, key, hash: Keys.hash(key), label: l }]); kset('lockin.keyLabels', { ...labels, [id]: l });
-        drawKeys({ key, label: l });
+  async function ghSave() {
+    const tok = kget('lockin.ghToken', ''), pend = ops(); if (!tok || !pend.length || adm.saving) return;
+    adm.saving = true; adm.err = ''; if (cur?.kind === 'admin') drawAdmin();
+    const url = `https://api.github.com/repos/${REPO}/contents/keys.json`, h = { Authorization: 'Bearer ' + tok, Accept: 'application/vnd.github+json' };
+    try {
+      const r = await fetch(url + '?ref=main&t=' + Date.now(), { headers: h, cache: 'no-store' });
+      if (!r.ok) throw r.status;
+      const j = await r.json(), current = JSON.parse(decodeURIComponent(escape(atob(j.content.replace(/\s/g, ''))))), next = Keys.applyOps(current, pend);
+      const p = await fetch(url, { method: 'PUT', headers: { ...h, 'Content-Type': 'application/json' }, body: JSON.stringify({ message: `Invite keys: ${pend.length} change${pend.length > 1 ? 's' : ''}`, content: btoa(unescape(encodeURIComponent(Keys.toJson(next)))), sha: j.sha, branch: 'main' }) });
+      if (!p.ok) throw p.status;
+      kset('lockin.keyOps', ops().slice(pend.length)); Gate.setList(next); adm.fresh = true;
+      toast('Saved. Changes reach everyone in about a minute.');
+    } catch (e) {
+      adm.err = e === 401 ? 'GitHub said the token is wrong or has expired. Make a new one below.' : e === 403 || e === 404 ? 'GitHub refused: the token can\'t write to the repo, or the account is still suspended. Your changes are kept on this device.' : e === 409 || e === 422 ? 'keys.json changed while saving. Tap Save again.' : 'Couldn\'t reach GitHub. Your changes are kept on this device and will save when you\'re back online.';
+    }
+    adm.saving = false; if (cur?.kind === 'admin') drawAdmin();
+  }
+  let saveT = null; const autoSave = () => { clearTimeout(saveT); if (kget('lockin.ghToken', '')) saveT = setTimeout(ghSave, 600); };
+  function drawAdmin() {
+    const body = $('#ovBody'), live = Gate.keys(), pend = ops(), list = Keys.applyOps(live, pend), names = kget('lockin.keyLabels', {}), secrets = kget('lockin.keySecrets', {});
+    const tok = kget('lockin.ghToken', ''), now = Date.now(), liveIds = new Set(live.keys.map(k => k.id));
+    const nameOf = (k) => names[k.id] || k.label || k.id;
+    const stat = (k) => { const st = Keys.status(k, now), d = Keys.daysLeft(k, now); return st === 'off' ? ['off', 'Turned off'] : st === 'expired' ? ['exp', `Ran out ${dayFmt(k.exp)}`] : Keys.isAdmin(k) ? ['adm', 'Admin · never runs out'] : d == null ? ['ok', 'Never runs out'] : d <= 3 ? ['soon', `${d} day${d === 1 ? '' : 's'} left`] : ['ok', `Until ${dayFmt(k.exp)}`]; };
+    const rows = list.keys.filter(k => adm.filter === 'all' || (adm.filter === 'on' ? Keys.status(k, now) === 'ok' : adm.filter === 'soon' ? (Keys.daysLeft(k, now) ?? 99) <= 3 && Keys.status(k, now) === 'ok' : Keys.status(k, now) !== 'ok'));
+    const counts = { on: list.keys.filter(k => Keys.status(k, now) === 'ok').length, soon: list.keys.filter(k => Keys.status(k, now) === 'ok' && (Keys.daysLeft(k, now) ?? 99) <= 3).length, off: list.keys.filter(k => Keys.status(k, now) !== 'ok').length };
+    const m = adm.made;
+    body.innerHTML = `<div class="adm">
+      <div class="adm-stats"><div><b>${counts.on}</b><span>working</span></div><div><b>${counts.soon}</b><span>running out in 3 days</span></div><div><b>${counts.off}</b><span>off or ran out</span></div></div>
+      <div class="adm-save ${pend.length ? 'has' : ''}">${adm.saving ? '<b>Saving to GitHub…</b>' : pend.length ? `<b>${pend.length} change${pend.length > 1 ? 's' : ''} not saved yet.</b> ${tok ? '<button class="btn btn-sm" type="button" data-ad="save">Save now</button>' : `<span class="note">Connect GitHub below to save in one tap, or <button class="linkbtn" type="button" data-ad="copyjson">copy keys.json</button> and paste it on <a class="linkbtn" href="${KEYS_EDIT}" target="_blank" rel="noopener">GitHub</a>.</span>`}` : `<b>All saved.</b> <span class="note">${tok ? 'Connected to GitHub: changes save by themselves.' : 'Connect GitHub below so changes save by themselves.'}</span>`}${adm.err ? `<p class="adm-err">${esc(adm.err)}</p>` : ''}${!adm.fresh ? '<p class="note" style="font-size:13px;margin:6px 0 0">Showing the last key list this device saw.</p>' : ''}</div>
+      ${m ? `<div class="key-new"><span class="eyebrow">Key for ${esc(m.name)} · ${m.exp ? `works until ${dayFmt(m.exp)}` : 'never runs out'}</span><div class="key-big">${esc(m.key)}</div>
+        <div class="row"><button class="btn btn-sm" type="button" data-ad="msg">Copy message to send</button><button class="btn btn-ghost btn-sm" type="button" data-ad="link">Copy invite link</button><button class="btn btn-ghost btn-sm" type="button" data-ad="key">Copy key</button></div>
+        <p class="note" style="font-size:13.5px;margin:0">${tok ? 'It works for them about a minute after it saves.' : 'It works for them once keys.json is saved to GitHub.'}</p></div>` : ''}
+      <section class="panel adm-make"><h3>Make a key</h3>
+        <div class="ans"><input class="field" id="kName" maxlength="30" placeholder="Who's it for? e.g. Sam" aria-label="Who the key is for"></div>
+        <div class="pills" role="group" aria-label="How long it works">${LENGTHS.map(([d, l]) => `<button class="pill" type="button" data-len="${d}" aria-pressed="${String(adm.len ?? '7') === d}">${l}</button>`).join('')}</div>
+        <div class="row" style="margin-top:12px"><button class="btn" type="button" data-ad="make">Make key</button></div></section>
+      <section><div class="adm-head"><h3>Keys</h3><div class="filters" role="group" aria-label="Show">${[['all', 'All'], ['on', 'Working'], ['soon', 'Running out'], ['off', 'Off or ran out']].map(([k, l]) => `<button class="fchip" type="button" data-af="${k}" aria-pressed="${adm.filter === k}">${l}</button>`).join('')}</div></div>
+        <ul class="adm-list">${rows.map(k => { const [cls, txt] = stat(k), admin = Keys.isAdmin(k), saved = liveIds.has(k.id); return `<li class="st-${cls}">
+          <span class="mono">${esc(k.id)}</span><span class="nm">${esc(nameOf(k))}${!saved ? ' <small>not saved</small>' : ''}</span><span class="chip">${txt}</span>
+          <span class="acts">${admin ? '' : `<button class="linkbtn" type="button" data-ext="${esc(k.id)}">+1 week</button><button class="linkbtn" type="button" data-tog="${esc(k.id)}">${k.revoked ? 'Turn on' : 'Turn off'}</button>`}${secrets[k.id] ? `<button class="linkbtn" type="button" data-cl="${esc(k.id)}">Copy link</button>` : ''}<button class="linkbtn" type="button" data-rn="${esc(k.id)}">Rename</button>${admin ? '' : `<button class="linkbtn danger" type="button" data-del="${esc(k.id)}">Remove</button>`}</span></li>`; }).join('') || '<li class="empty-row">No keys here.</li>'}</ul></section>
+      <details class="panel adm-gh"${tok ? '' : ' open'}><summary><b>GitHub connection</b> <span class="note">${tok ? 'connected on this device' : 'not connected'}</span></summary>
+        <ol class="note"><li>Open <a class="linkbtn" href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">GitHub: new fine-grained token</a>.</li><li>Repository access: <b>Only select repositories</b> → <b>lock-in</b>.</li><li>Permissions → Repository → <b>Contents: Read and write</b>. Generate it.</li><li>Paste it here. It stays on this device only.</li></ol>
+        <div class="ans"><input class="field" id="ghTok" type="password" autocomplete="off" placeholder="${tok ? 'Saved. Paste a new one to replace it' : 'github_pat_…'}" aria-label="GitHub token"><button class="btn btn-ghost btn-sm" type="button" data-ad="tok">Save token</button>${tok ? '<button class="linkbtn" type="button" data-ad="forgettok">Forget it</button>' : ''}</div></details>
+      <div class="row" style="margin-top:14px"><button class="linkbtn" type="button" data-ad="lock">Lock this device</button></div></div>`;
+    const keyById = (id) => list.keys.find(k => k.id === id);
+    const msgFor = (name, key, exp) => `Here's your Lock in invite${exp ? ` (works until ${dayFmt(exp)})` : ''}: ${siteUrl()}#key=${key}`;
+    $$('[data-len]', body).forEach(b => b.onclick = () => { adm.len = b.dataset.len; $$('[data-len]', body).forEach(x => x.setAttribute('aria-pressed', x === b)); });
+    $$('[data-af]', body).forEach(b => b.onclick = () => { adm.filter = b.dataset.af; drawAdmin(); });
+    $$('[data-ad]', body).forEach(b => b.onclick = () => {
+      const a = b.dataset.ad;
+      if (a === 'make') {
+        const name = $('#kName', body).value.trim().slice(0, 30); if (!name) { toast('Who\'s it for?'); $('#kName', body).focus(); return; }
+        const days = +(adm.len ?? '7'), key = Keys.make(), id = 'k' + String(Math.max(0, ...list.keys.map(k => +String(k.id).slice(1) || 0)) + 1).padStart(2, '0');
+        const entry = { id, hash: Keys.hash(key), label: 'Friend' }; if (days) entry.exp = Date.now() + days * Keys.DAY;
+        kset('lockin.keyLabels', { ...names, [id]: name }); kset('lockin.keySecrets', { ...secrets, [id]: key });
+        adm.made = { name, key, exp: entry.exp }; addOp({ op: 'add', entry }); drawAdmin(); return;
       }
-      if (a === 'forget') { if (b.dataset.sure) { closeOv(); Gate.forget(); } else { b.dataset.sure = 1; b.textContent = 'Tap again: you\'ll need your key to get back in'; } }
+      if (a === 'msg') return copyText(msgFor(m.name, m.key, m.exp), 'Message copied. Send it to them.', body);
+      if (a === 'link') return copyText(siteUrl() + '#key=' + m.key, 'Invite link copied', body);
+      if (a === 'key') return copyText(m.key, 'Key copied', body);
+      if (a === 'save') return ghSave();
+      if (a === 'copyjson') return copyText(Keys.toJson(list), 'keys.json copied. On GitHub, select everything in the file and paste over it.', body);
+      if (a === 'tok') { const v = $('#ghTok', body).value.trim(); if (!/^(github_pat_|ghp_)\w{20,}$/.test(v)) { toast('That doesn\'t look like a GitHub token'); return; } kset('lockin.ghToken', v); toast('Token saved on this device'); drawAdmin(); ghSave(); return; }
+      if (a === 'forgettok') { kset('lockin.ghToken', null); drawAdmin(); return; }
+      if (a === 'lock') { if (b.dataset.sure) { closeOv(); Gate.forget(); } else { b.dataset.sure = 1; b.textContent = 'Tap again: you\'ll need your key to get back in'; } }
     });
-    $$('[data-kt]', body).forEach(b => b.onclick = () => {
-      if (!keysFresh) { toast('Still loading the live key list. Try again in a moment.'); return; }
-      const k = draft.keys.find(x => x.id === b.dataset.kt); if (k.revoked) delete k.revoked; else k.revoked = true;
-      copyText(keysJson(draft), `keys.json copied with ${k.id} turned ${k.revoked ? 'off' : 'on'}. Paste it on GitHub to save.`, body);
-      setTimeout(() => window.open(KEYS_EDIT, '_blank', 'noopener'), 400);
-    });
-    $$('[data-kn]', body).forEach(b => b.onclick = () => {
-      const li = b.closest('li'), cell = $('.kl', li), id = b.dataset.kn;
-      cell.innerHTML = `<input class="field" maxlength="30" value="${esc(labels[id] || '')}" aria-label="Name for ${esc(id)}" style="padding:6px 8px">`;
+    $$('[data-ext]', body).forEach(b => b.onclick = () => { const k = keyById(b.dataset.ext); const from = Math.max(Date.now(), k.exp || Date.now()); addOp({ op: 'set', id: k.id, patch: { exp: from + 7 * Keys.DAY, revoked: null } }); toast(`${nameOf(k)}: works until ${dayFmt(from + 7 * Keys.DAY)}`); drawAdmin(); });
+    $$('[data-tog]', body).forEach(b => b.onclick = () => { const k = keyById(b.dataset.tog); addOp({ op: 'set', id: k.id, patch: { revoked: k.revoked ? null : true } }); drawAdmin(); });
+    $$('[data-cl]', body).forEach(b => b.onclick = () => { const k = keyById(b.dataset.cl); copyText(msgFor(nameOf(k), secrets[k.id], k.exp), 'Message with the invite link copied', body); });
+    $$('[data-del]', body).forEach(b => b.onclick = () => { if (!b.dataset.sure) { b.dataset.sure = 1; b.textContent = 'Tap again to remove'; return; } addOp({ op: 'del', id: b.dataset.del }); drawAdmin(); });
+    $$('[data-rn]', body).forEach(b => b.onclick = () => {
+      const li = b.closest('li'), cell = $('.nm', li), id = b.dataset.rn;
+      cell.innerHTML = `<input class="field" maxlength="30" value="${esc(names[id] || '')}" aria-label="Name for ${esc(id)}" style="padding:6px 8px">`;
       const inp = $('input', cell); inp.focus();
-      const done = () => { const v = inp.value.trim(); const L = kget('lockin.keyLabels', {}); if (v) L[id] = v; else delete L[id]; kset('lockin.keyLabels', L); drawKeys(fresh); };
-      inp.onblur = done; inp.onkeydown = (e) => { if (e.key === 'Enter') inp.blur(); };
+      inp.onblur = () => { const L = kget('lockin.keyLabels', {}), v = inp.value.trim(); if (v) L[id] = v; else delete L[id]; kset('lockin.keyLabels', L); drawAdmin(); };
+      inp.onkeydown = (e) => { if (e.key === 'Enter') inp.blur(); };
     });
   }
 
@@ -7859,7 +8706,9 @@ Reply with ONLY this JSON:
   renderStats(); renderMistakeCount(); renderTabs(); renderNext(); renderBoard(); renderSubject(); renderWeek(); renderUpSubjects(); renderAiNote(); renderAcct(); renderLeague(); intro();
   AI.init();
   Cloud.init(onUser);
-  Gate.onOpen(() => { if (S.subj === 'home') renderSubject(); });
+  Gate.onOpen(() => { if (S.subj === 'home') renderSubject(); $('#adminBtn').hidden = !Gate.isAdmin(); if (Gate.isAdmin() && kget('lockin.keyOps', []).length) ghSave(); });
+  Gate.onExpirySoon((d) => toast(`Your key runs out in ${d} day${d === 1 ? '' : 's'}. Ask for a new one.`));
+  $('#adminBtn').onclick = openAdmin;
 })();
 
 </script>

@@ -365,7 +365,7 @@
         <div class="heat" role="img" aria-label="Study activity over the last 12 weeks">${hm.map(d => `<i class="h${d.level}" title="${esc(new Date(d.date + 'T12:00').toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' }))}: ${d.min} min focused, ${d.marks} marks"></i>`).join('')}</div>
         <div class="heat-key" aria-hidden="true">Less <i class="h0"></i><i class="h1"></i><i class="h2"></i><i class="h3"></i><i class="h4"></i> More</div>
         ${badgesHtml()}
-        <div class="row"><button class="btn" type="button" id="shareCard">Make a share card</button><button class="btn btn-ghost" type="button" id="shareSite">Share Lock in</button>${Gate.isOwner() ? '<button class="btn btn-ghost" type="button" id="keysBtn">Invite keys</button>' : ''}</div>
+        <div class="row"><button class="btn" type="button" id="shareCard">Make a share card</button><button class="btn btn-ghost" type="button" id="shareSite">Share Lock in</button>${Gate.isAdmin() ? '<button class="btn btn-ghost" type="button" id="keysBtn">Admin</button>' : ''}</div>
       </section>
       <section class="inside" aria-labelledby="inH">
         <h2 id="inH">What's inside</h2>
@@ -375,7 +375,7 @@
     </div>
     <section class="features" aria-labelledby="ftH"><h2 id="ftH">What it does</h2><dl>${FEATURES.map(([t, d]) => `<div><dt>${t}</dt><dd>${d}</dd></div>`).join('')}</dl></section>`;
     $('#shareSite').onclick = () => copyText(location.href.split('#')[0], Gate.enabled ? 'Link copied. They\'ll need a key from you too.' : 'Link copied. Send it to your mates.', el);
-    if ($('#keysBtn', el)) $('#keysBtn', el).onclick = openKeys;
+    if ($('#keysBtn', el)) $('#keysBtn', el).onclick = openAdmin;
     $('#shareCard', el).onclick = openShare;
     if ($('#dailyGo', el)) $('#dailyGo', el).onclick = openDaily;
     renderPlan();
@@ -386,7 +386,7 @@
     const s = getSubj(S.subj), ds = decksOf(s.id), el = $('#subject'), nm = mistakesOf(s.id).length;
     el.className = 'wrap section c-' + s.hue;
     el.innerHTML = `<div class="subj-head"><div><h2>${esc(s.name)}</h2><p class="subj-meta">${s.exam ? `Exam ${esc(s.when)}. ` : ''}${esc(s.format)}</p>${s.papers ? `<p class="subj-meta"><a class="linkbtn" href="${esc(s.papers)}" target="_blank" rel="noopener">Official HSC past papers and marking guidelines (NESA)</a></p>` : ''}${nm ? `<button class="linkbtn mist-link" type="button" data-act="mistakes" data-s="${esc(s.id)}">${nm} mistake${nm > 1 ? 's' : ''} to fix</button>` : ''}</div>
-      <div class="subj-actions">${s.id === 'eng' ? '<button class="btn btn-hot" type="button" data-act="writing">Writing feedback</button><button class="btn btn-ghost" type="button" data-act="quotes">Quote bank</button>' : ''}${s.mock ? `<button class="btn" type="button" data-act="mock" data-s="${s.id}">Practice exam${s.mock === 'geo' ? ', 45 min' : ''}</button>` : ''}${ds.length ? `<button class="btn btn-ghost" type="button" data-act="cards" data-s="${esc(s.id)}">All flashcards</button>` : ''}<button class="btn btn-ghost" type="button" data-act="upload" data-s="${esc(s.id)}">Upload notes</button></div></div>
+      <div class="subj-actions">${s.id === 'eng' ? '<button class="btn btn-hot" type="button" data-act="read">Read the book</button><button class="btn btn-ghost" type="button" data-act="writing">Writing feedback</button>' : ''}${s.mock ? `<button class="btn" type="button" data-act="mock" data-s="${s.id}">Practice exam${s.mock === 'geo' ? ', 45 min' : ''}</button>` : ''}${ds.length ? `<button class="btn btn-ghost" type="button" data-act="cards" data-s="${esc(s.id)}">All flashcards</button>` : ''}<button class="btn btn-ghost" type="button" data-act="upload" data-s="${esc(s.id)}">Upload notes</button></div></div>
       ${ds.length ? `<ol class="decks">${ds.map(d => { const m = mastery(d.id), L = levelOf(d); return `<li><button class="deck ${hue(d)}" type="button" data-open="${esc(d.id)}">
           <span class="d-ch">${esc(d.chapter || 'Yours')}</span>
           <span class="d-main"><span class="d-title">${esc(d.title)}${d.custom ? ` <small>${d.ai ? 'made by AI' : 'quick deck'}</small>` : ''}</span><span class="d-blurb">${fm(d.blurb || '')}</span></span>
@@ -403,6 +403,7 @@
     if (act === 'weak') openDeck(a.dataset.d, 'practice', a.dataset.t);
     if (act === 'mistakes') openMistakes(a.dataset.s);
     if (act === 'writing') openWriting();
+    if (act === 'read') openReader();
     if (act === 'quotes') openQuotes();
     if (act === 'upload') { upSubj = a.dataset.s; renderUpSubjects(); $('#upload').scrollIntoView({ behavior: reduce ? 'auto' : 'smooth' }); }
   });
@@ -1382,12 +1383,13 @@ Aim for 2-5 sections with 3-6 notes each, 10-20 flashcards (key terms, people, d
     act('Lock in: start a focus session', 'Focus', openFocus, 'timer pomodoro study');
     act('Daily challenge', 'Challenge', openDaily, 'question today');
     act('Mistakes to fix', 'Mistakes', () => openMistakes(), 'wrong redo');
-    act('Writing feedback', 'English', () => openWriting(), 'essay creative paragraph mark');
+    if (typeof RD !== 'undefined') { act('Read Animal Farm', 'English', () => openReader(), 'book chapter notes read'); RD.CHAPTERS.forEach(c => act(`Animal Farm chapter ${c.n}: ${c.title}`, 'Read', () => openReader(c.n), 'chapter')); }
+    act('Writing feedback', 'English', () => openWriting(), 'essay creative paragraph mark petal');
     act('Quote bank', 'English', openQuotes, 'quotes memorise learn');
     act('Make a share card', 'Show off', openShare, 'aura stats image picture');
     act('Change theme (dark / light / auto)', 'Settings', () => $('#themeBtn').click(), 'dark mode light');
     act('Home', 'Go to', () => goSubj('home'), 'plan report');
-    if (Gate.isOwner()) act('Invite keys', 'Owner', openKeys, 'keys invite friends gatekeep');
+    if (Gate.isAdmin()) act('Admin: make and manage keys', 'Admin', openAdmin, 'keys invite friends gatekeep admin');
     if (Cloud.available) act(me ? 'Your account' : 'Sign in', 'Account', () => (me && !S.profile ? openProfile(true) : openAccount()), 'google login');
     subjects().forEach(s => {
       act(s.name, 'Subject', () => goSubj(s.id), s.tab || '');
@@ -1518,6 +1520,54 @@ Aim for 2-5 sections with 3-6 notes each, 10-20 flashcards (key terms, people, d
         drip();
       }
     } catch (e) { sound.kind = 'off'; }
+  }
+
+  /* ---------------- Read: Animal Farm, chapter by chapter ---------------- */
+  // The book's key moments with short quotes and notes (src/reader.js). The full text isn't in the app:
+  // the "Read the full chapter" link opens a free copy at Project Gutenberg Australia.
+  const readState = () => (S.read ||= { ch: 1, done: {} });
+  function openReader(ch) {
+    if (typeof RD === 'undefined') return;
+    const R = readState(); if (ch) R.ch = ch;
+    cur = { kind: 'reader', tab: null }; ovFrame('Read: Animal Farm', 'c-pink', null); drawReader(); showOv();
+  }
+  function drawReader() {
+    const body = $('#ovBody'), R = readState(), C = RD.CHAPTERS, done = Object.keys(R.done).length;
+    const strip = `<div class="rd-strip" role="tablist" aria-label="Chapters">${C.map(c => `<button class="rd-ch${R.done[c.n] ? ' done' : ''}" type="button" role="tab" data-rch="${c.n}" aria-selected="${R.ch === c.n}" title="Chapter ${c.n}: ${esc(c.title)}">${c.n}</button>`).join('')}<button class="rd-ch rd-cast" type="button" role="tab" data-rch="cast" aria-selected="${R.ch === 'cast'}">Characters</button></div>
+      <p class="note rd-prog">${done ? `${done} of ${C.length} chapters done.` : 'Go chapter by chapter: read the moments, then take the quick check.'} <a class="linkbtn" href="${RD.SOURCE}" target="_blank" rel="noopener">Read the full book free</a></p>`;
+    if (R.ch === 'cast') {
+      body.innerHTML = strip + `<div class="rd-cast-grid">${RD.CAST.map(p => `<div class="rd-person"><h3>${esc(p.name)}</h3><p>${fm(p.who)}</p><p class="rd-tag"><b>Stands for</b> ${fm(p.stands)}</p><p class="rd-tag"><b>How they change</b> ${fm(p.arc)}</p></div>`).join('')}</div>`;
+      bindStrip(body); return;
+    }
+    const c = C.find(x => x.n === R.ch) || C[0];
+    body.innerHTML = strip + `<article class="rd">
+      <header class="rd-head"><span class="eyebrow">Chapter ${c.n}${R.done[c.n] ? ' · done' : ''}</span><h2>${esc(c.title)}</h2></header>
+      <section class="rd-sum"><h3>What happens</h3><p>${fm(c.summary)}</p></section>
+      <h3 class="rd-h">Key moments</h3>
+      <ol class="rd-moments">${c.moments.map((m, i) => `<li class="rd-m">
+        <h4><span class="rd-num">${i + 1}</span>${esc(m.title)}</h4>
+        <blockquote class="rd-q">“${esc(m.quote)}”</blockquote>
+        <dl class="rd-notes"><div><dt>What's happening</dt><dd>${fm(m.explain)}</dd></div><div><dt>How Orwell does it</dt><dd>${fm(m.technique)}</dd></div><div><dt>Why it matters</dt><dd>${fm(m.theme)}</dd></div>${m.history ? `<div><dt>Real history</dt><dd>${fm(m.history)}</dd></div>` : ''}</dl>
+        <details class="rd-think"><summary>Think about it: ${fm(m.think.q)}</summary><p>${fm(m.think.a)}</p></details></li>`).join('')}</ol>
+      <section class="rd-quiz"><h3>Quick check</h3><p class="note">Get them all right to tick off Chapter ${c.n}.</p><div id="rdQuiz"></div></section>
+      <div class="row rd-nav">${c.n > 1 ? `<button class="btn btn-ghost" type="button" data-rch="${c.n - 1}">← Chapter ${c.n - 1}</button>` : ''}<span style="flex:1"></span>${c.n < C.length ? `<button class="btn" type="button" data-rch="${c.n + 1}">Chapter ${c.n + 1} →</button>` : '<button class="btn" type="button" data-rch="cast">Characters →</button>'}</div></article>`;
+    bindStrip(body);
+    const d = getDeck('afplot') || decksOf('eng')[0], host = $('#rdQuiz', body), qs = [];
+    let right = 0, answered = 0;
+    c.quiz.forEach(([q, options, answer, why]) => {
+      const qq = mcqQ({ q, options, answer, why, tags: [] }, d); qs.push(qq);
+      host.appendChild(renderCard(qq, { mode: 'practice', onPart: (p) => {
+        answered++; if (p._got) right++; record(d.id, [], p._got || 0, 1); noteResult(qq, d);
+        if (answered === qs.length) {
+          if (right === qs.length && !R.done[c.n]) { R.done[c.n] = Date.now(); addXp(20); save(); renderStats(); burst(innerWidth / 2, innerHeight / 2, 120); toast(`Chapter ${c.n} done. +20 XP`); $$(`[data-rch="${c.n}"].rd-ch`, body).forEach(b => b.classList.add('done')); }
+          else if (right < qs.length) toast(`${right} of ${qs.length}. Reread the moments, then try again.`);
+        }
+      } }));
+    });
+    const again = document.createElement('button'); again.className = 'linkbtn'; again.type = 'button'; again.textContent = 'New attempt'; again.onclick = () => { drawReader(); $('.rd-quiz', $('#ovBody'))?.scrollIntoView({ block: 'start' }); }; host.appendChild(again);
+  }
+  function bindStrip(body) {
+    $$('[data-rch]', body).forEach(b => b.onclick = () => { const v = b.dataset.rch; readState().ch = v === 'cast' ? 'cast' : +v; save(); drawReader(); ov.scrollTo({ top: 0 }); });
   }
 
   /* ---------------- English: writing feedback ---------------- */
@@ -1715,69 +1765,99 @@ Reply with ONLY this JSON:
     }
   }
 
-  /* ---------------- invite keys (owner only) ---------------- */
-  // Keys are checked against keys.json in the repo. New keys and revokes are made here, then saved by
-  // pasting the new keys.json into GitHub's editor (opened for you). Labels stay on this device only.
-  const KEYS_EDIT = 'https://github.com/jamalmusialla81-hub/lock-in/edit/main/keys.json';
-  const kget = (k, d) => { try { return JSON.parse(localStorage.getItem(k)) || d; } catch (e) { return d; } };
-  const kset = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { } };
-  const keysJson = (list) => '{\n  "v": 1,\n  "keys": [\n' + list.keys.map(k => '    ' + JSON.stringify(k)).join(',\n') + '\n  ]\n}\n';
-  let keysFresh = false;
-  function openKeys() {
-    keysFresh = false; cur = { kind: 'keys', tab: null }; ovFrame('Invite keys', 'c-lilac', null); drawKeys(); showOv();
-    Gate.refresh().then(ok => { keysFresh = ok; if (cur?.kind === 'keys') drawKeys(); if (!ok) toast('Couldn\'t load the live key list. Check your connection.'); });
+  /* ---------------- admin panel (admin key only) ---------------- */
+  // Keys live in keys.json in the repo. Edits are kept on this device as a list of changes; "Save" applies
+  // them to the current keys.json on GitHub (with a token saved on this device), or you can paste it by hand.
+  // Names are private to this device; keys.json only holds hashes and generic labels.
+  const REPO = 'jamalmusialla81-hub/lock-in', KEYS_EDIT = `https://github.com/${REPO}/edit/main/keys.json`;
+  const kget = (k, d) => { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch (e) { return d; } };
+  const kset = (k, v) => { try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, JSON.stringify(v)); } catch (e) { } };
+  const LENGTHS = [['1', '1 day'], ['7', '1 week'], ['30', '1 month'], ['90', '3 months'], ['0', 'Never']];
+  const dayFmt = (t) => new Date(t).toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' });
+  let adm = { fresh: false, saving: false, filter: 'all', made: null, err: '' };
+  const ops = () => kget('lockin.keyOps', []);
+  const addOp = (o) => { kset('lockin.keyOps', [...ops(), o]); autoSave(); };
+  const siteUrl = () => (location.protocol === 'https:' ? location.href.split('#')[0].split('?')[0] : 'https://jamalmusialla81-hub.github.io/lock-in/');
+  function openAdmin() {
+    adm = { ...adm, fresh: false, made: null, err: '' }; cur = { kind: 'admin', tab: null }; ovFrame('Admin', 'c-lilac', null); drawAdmin(); showOv();
+    Gate.refresh().then(ok => { adm.fresh = ok; if (cur?.kind === 'admin') drawAdmin(); });
   }
-  function drawKeys(fresh) {
-    const body = $('#ovBody'), live = Gate.keys(), labels = kget('lockin.keyLabels', {}), pending = kget('lockin.keyPending', []);
-    const liveHashes = new Set(live.keys.map(k => k.hash)), waiting = pending.filter(p => !liveHashes.has(p.hash));
-    if (keysFresh && waiting.length < pending.length) kset('lockin.keyPending', waiting); // saved on GitHub now, so forget the key text
-    const label = (k) => labels[k.id] || k.label || (k.owner ? 'You' : k.id);
-    const nextId = () => 'k' + String(Math.max(0, ...live.keys.map(k => +k.id.slice(1) || 0), ...pending.map(p => +p.id.slice(1) || 0)) + 1).padStart(2, '0');
-    const site = location.protocol === 'file:' ? 'https://jamalmusialla81-hub.github.io/lock-in/' : location.href.split('#')[0].split('?')[0];
-    body.innerHTML = `<div class="sheet keys-sheet">
-      <p class="note">Anyone with a key can open Lock in on any device. Turn a key off and whoever has it is locked out next time they open the app.</p>
-      ${fresh ? `<div class="key-new"><span class="eyebrow">New key for ${esc(fresh.label)}</span><div class="key-big">${esc(fresh.key)}</div>
-        <div class="row"><button class="btn btn-sm" type="button" data-kc="link">Copy invite link</button><button class="btn btn-ghost btn-sm" type="button" data-kc="key">Copy key</button></div>
-        <p class="note" style="font-size:14px">It starts working once it's saved to GitHub (step below).</p></div>` : ''}
-      ${waiting.length ? `<div class="key-step"><h3>Save ${waiting.length} new key${waiting.length > 1 ? 's' : ''} to GitHub</h3><ol class="note"><li>Tap <b>Copy keys.json</b>.</li><li>Tap <b>Open GitHub</b>, select everything in the file and paste over it.</li><li>Press <b>Commit changes</b>. Keys work about a minute later.</li></ol>
-        <div class="row"><button class="btn btn-sm" type="button" data-kc="json">Copy keys.json</button><a class="btn btn-ghost btn-sm" href="${KEYS_EDIT}" target="_blank" rel="noopener">Open GitHub</a></div></div>` : ''}
-      <h3 style="margin-top:22px">Make a key</h3>
-      <div class="ans"><input class="field" id="kLabel" maxlength="30" placeholder="Who's it for? e.g. Sam" aria-label="Who the key is for"><button class="btn btn-ghost btn-sm" type="button" data-kc="new">Make key</button></div>
-      <h3 style="margin-top:22px">Keys</h3>
-      <ul class="key-list">${[...live.keys.map(k => ({ ...k, live: true })), ...waiting.map(p => ({ id: p.id, hash: p.hash, live: false }))].map(k => `<li class="${k.revoked ? 'off' : ''}">
-        <span class="mono">${esc(k.id)}</span><span class="kl">${esc(label(k))}${k.owner ? ' <small>owner</small>' : ''}</span>
-        <span class="ks">${!k.live ? 'Not saved yet' : k.revoked ? 'Turned off' : 'On'}</span>
-        ${k.live && !k.owner ? `<button class="linkbtn" type="button" data-kt="${esc(k.id)}">${k.revoked ? 'Turn on' : 'Turn off'}</button>` : '<span></span>'}
-        <button class="linkbtn" type="button" data-kn="${esc(k.id)}" aria-label="Rename ${esc(k.id)}">Rename</button></li>`).join('')}</ul>
-      <p class="note" style="font-size:13.5px;margin-top:14px">Names are only saved on this device. Keys you made here are remembered on this device too.</p>
-      <div class="row" style="margin-top:8px"><button class="linkbtn" type="button" data-kc="forget">Lock this device</button></div></div>`;
-    const draft = { v: 1, keys: [...live.keys.map(k => ({ ...k })), ...waiting.map(p => ({ id: p.id, hash: p.hash }))] };
-    $$('[data-kc]', body).forEach(b => b.onclick = () => {
-      const a = b.dataset.kc;
-      if (a === 'link') copyText(site + '#key=' + fresh.key, 'Invite link copied. Send it to them.', body);
-      if (a === 'key') copyText(fresh.key, 'Key copied', body);
-      if ((a === 'json') && !keysFresh) { toast('Still loading the live key list. Try again in a moment.'); return; }
-      if (a === 'json') copyText(keysJson(draft), 'keys.json copied. Now open GitHub and paste over it.', body);
-      if (a === 'new') {
-        const l = $('#kLabel', body).value.trim().slice(0, 30); if (!l) { toast('Who is it for?'); $('#kLabel', body).focus(); return; }
-        const key = Keys.make(), id = nextId();
-        kset('lockin.keyPending', [...pending, { id, key, hash: Keys.hash(key), label: l }]); kset('lockin.keyLabels', { ...labels, [id]: l });
-        drawKeys({ key, label: l });
+  async function ghSave() {
+    const tok = kget('lockin.ghToken', ''), pend = ops(); if (!tok || !pend.length || adm.saving) return;
+    adm.saving = true; adm.err = ''; if (cur?.kind === 'admin') drawAdmin();
+    const url = `https://api.github.com/repos/${REPO}/contents/keys.json`, h = { Authorization: 'Bearer ' + tok, Accept: 'application/vnd.github+json' };
+    try {
+      const r = await fetch(url + '?ref=main&t=' + Date.now(), { headers: h, cache: 'no-store' });
+      if (!r.ok) throw r.status;
+      const j = await r.json(), current = JSON.parse(decodeURIComponent(escape(atob(j.content.replace(/\s/g, ''))))), next = Keys.applyOps(current, pend);
+      const p = await fetch(url, { method: 'PUT', headers: { ...h, 'Content-Type': 'application/json' }, body: JSON.stringify({ message: `Invite keys: ${pend.length} change${pend.length > 1 ? 's' : ''}`, content: btoa(unescape(encodeURIComponent(Keys.toJson(next)))), sha: j.sha, branch: 'main' }) });
+      if (!p.ok) throw p.status;
+      kset('lockin.keyOps', ops().slice(pend.length)); Gate.setList(next); adm.fresh = true;
+      toast('Saved. Changes reach everyone in about a minute.');
+    } catch (e) {
+      adm.err = e === 401 ? 'GitHub said the token is wrong or has expired. Make a new one below.' : e === 403 || e === 404 ? 'GitHub refused: the token can\'t write to the repo, or the account is still suspended. Your changes are kept on this device.' : e === 409 || e === 422 ? 'keys.json changed while saving. Tap Save again.' : 'Couldn\'t reach GitHub. Your changes are kept on this device and will save when you\'re back online.';
+    }
+    adm.saving = false; if (cur?.kind === 'admin') drawAdmin();
+  }
+  let saveT = null; const autoSave = () => { clearTimeout(saveT); if (kget('lockin.ghToken', '')) saveT = setTimeout(ghSave, 600); };
+  function drawAdmin() {
+    const body = $('#ovBody'), live = Gate.keys(), pend = ops(), list = Keys.applyOps(live, pend), names = kget('lockin.keyLabels', {}), secrets = kget('lockin.keySecrets', {});
+    const tok = kget('lockin.ghToken', ''), now = Date.now(), liveIds = new Set(live.keys.map(k => k.id));
+    const nameOf = (k) => names[k.id] || k.label || k.id;
+    const stat = (k) => { const st = Keys.status(k, now), d = Keys.daysLeft(k, now); return st === 'off' ? ['off', 'Turned off'] : st === 'expired' ? ['exp', `Ran out ${dayFmt(k.exp)}`] : Keys.isAdmin(k) ? ['adm', 'Admin · never runs out'] : d == null ? ['ok', 'Never runs out'] : d <= 3 ? ['soon', `${d} day${d === 1 ? '' : 's'} left`] : ['ok', `Until ${dayFmt(k.exp)}`]; };
+    const rows = list.keys.filter(k => adm.filter === 'all' || (adm.filter === 'on' ? Keys.status(k, now) === 'ok' : adm.filter === 'soon' ? (Keys.daysLeft(k, now) ?? 99) <= 3 && Keys.status(k, now) === 'ok' : Keys.status(k, now) !== 'ok'));
+    const counts = { on: list.keys.filter(k => Keys.status(k, now) === 'ok').length, soon: list.keys.filter(k => Keys.status(k, now) === 'ok' && (Keys.daysLeft(k, now) ?? 99) <= 3).length, off: list.keys.filter(k => Keys.status(k, now) !== 'ok').length };
+    const m = adm.made;
+    body.innerHTML = `<div class="adm">
+      <div class="adm-stats"><div><b>${counts.on}</b><span>working</span></div><div><b>${counts.soon}</b><span>running out in 3 days</span></div><div><b>${counts.off}</b><span>off or ran out</span></div></div>
+      <div class="adm-save ${pend.length ? 'has' : ''}">${adm.saving ? '<b>Saving to GitHub…</b>' : pend.length ? `<b>${pend.length} change${pend.length > 1 ? 's' : ''} not saved yet.</b> ${tok ? '<button class="btn btn-sm" type="button" data-ad="save">Save now</button>' : `<span class="note">Connect GitHub below to save in one tap, or <button class="linkbtn" type="button" data-ad="copyjson">copy keys.json</button> and paste it on <a class="linkbtn" href="${KEYS_EDIT}" target="_blank" rel="noopener">GitHub</a>.</span>`}` : `<b>All saved.</b> <span class="note">${tok ? 'Connected to GitHub: changes save by themselves.' : 'Connect GitHub below so changes save by themselves.'}</span>`}${adm.err ? `<p class="adm-err">${esc(adm.err)}</p>` : ''}${!adm.fresh ? '<p class="note" style="font-size:13px;margin:6px 0 0">Showing the last key list this device saw.</p>' : ''}</div>
+      ${m ? `<div class="key-new"><span class="eyebrow">Key for ${esc(m.name)} · ${m.exp ? `works until ${dayFmt(m.exp)}` : 'never runs out'}</span><div class="key-big">${esc(m.key)}</div>
+        <div class="row"><button class="btn btn-sm" type="button" data-ad="msg">Copy message to send</button><button class="btn btn-ghost btn-sm" type="button" data-ad="link">Copy invite link</button><button class="btn btn-ghost btn-sm" type="button" data-ad="key">Copy key</button></div>
+        <p class="note" style="font-size:13.5px;margin:0">${tok ? 'It works for them about a minute after it saves.' : 'It works for them once keys.json is saved to GitHub.'}</p></div>` : ''}
+      <section class="panel adm-make"><h3>Make a key</h3>
+        <div class="ans"><input class="field" id="kName" maxlength="30" placeholder="Who's it for? e.g. Sam" aria-label="Who the key is for"></div>
+        <div class="pills" role="group" aria-label="How long it works">${LENGTHS.map(([d, l]) => `<button class="pill" type="button" data-len="${d}" aria-pressed="${String(adm.len ?? '7') === d}">${l}</button>`).join('')}</div>
+        <div class="row" style="margin-top:12px"><button class="btn" type="button" data-ad="make">Make key</button></div></section>
+      <section><div class="adm-head"><h3>Keys</h3><div class="filters" role="group" aria-label="Show">${[['all', 'All'], ['on', 'Working'], ['soon', 'Running out'], ['off', 'Off or ran out']].map(([k, l]) => `<button class="fchip" type="button" data-af="${k}" aria-pressed="${adm.filter === k}">${l}</button>`).join('')}</div></div>
+        <ul class="adm-list">${rows.map(k => { const [cls, txt] = stat(k), admin = Keys.isAdmin(k), saved = liveIds.has(k.id); return `<li class="st-${cls}">
+          <span class="mono">${esc(k.id)}</span><span class="nm">${esc(nameOf(k))}${!saved ? ' <small>not saved</small>' : ''}</span><span class="chip">${txt}</span>
+          <span class="acts">${admin ? '' : `<button class="linkbtn" type="button" data-ext="${esc(k.id)}">+1 week</button><button class="linkbtn" type="button" data-tog="${esc(k.id)}">${k.revoked ? 'Turn on' : 'Turn off'}</button>`}${secrets[k.id] ? `<button class="linkbtn" type="button" data-cl="${esc(k.id)}">Copy link</button>` : ''}<button class="linkbtn" type="button" data-rn="${esc(k.id)}">Rename</button>${admin ? '' : `<button class="linkbtn danger" type="button" data-del="${esc(k.id)}">Remove</button>`}</span></li>`; }).join('') || '<li class="empty-row">No keys here.</li>'}</ul></section>
+      <details class="panel adm-gh"${tok ? '' : ' open'}><summary><b>GitHub connection</b> <span class="note">${tok ? 'connected on this device' : 'not connected'}</span></summary>
+        <ol class="note"><li>Open <a class="linkbtn" href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">GitHub: new fine-grained token</a>.</li><li>Repository access: <b>Only select repositories</b> → <b>lock-in</b>.</li><li>Permissions → Repository → <b>Contents: Read and write</b>. Generate it.</li><li>Paste it here. It stays on this device only.</li></ol>
+        <div class="ans"><input class="field" id="ghTok" type="password" autocomplete="off" placeholder="${tok ? 'Saved. Paste a new one to replace it' : 'github_pat_…'}" aria-label="GitHub token"><button class="btn btn-ghost btn-sm" type="button" data-ad="tok">Save token</button>${tok ? '<button class="linkbtn" type="button" data-ad="forgettok">Forget it</button>' : ''}</div></details>
+      <div class="row" style="margin-top:14px"><button class="linkbtn" type="button" data-ad="lock">Lock this device</button></div></div>`;
+    const keyById = (id) => list.keys.find(k => k.id === id);
+    const msgFor = (name, key, exp) => `Here's your Lock in invite${exp ? ` (works until ${dayFmt(exp)})` : ''}: ${siteUrl()}#key=${key}`;
+    $$('[data-len]', body).forEach(b => b.onclick = () => { adm.len = b.dataset.len; $$('[data-len]', body).forEach(x => x.setAttribute('aria-pressed', x === b)); });
+    $$('[data-af]', body).forEach(b => b.onclick = () => { adm.filter = b.dataset.af; drawAdmin(); });
+    $$('[data-ad]', body).forEach(b => b.onclick = () => {
+      const a = b.dataset.ad;
+      if (a === 'make') {
+        const name = $('#kName', body).value.trim().slice(0, 30); if (!name) { toast('Who\'s it for?'); $('#kName', body).focus(); return; }
+        const days = +(adm.len ?? '7'), key = Keys.make(), id = 'k' + String(Math.max(0, ...list.keys.map(k => +String(k.id).slice(1) || 0)) + 1).padStart(2, '0');
+        const entry = { id, hash: Keys.hash(key), label: 'Friend' }; if (days) entry.exp = Date.now() + days * Keys.DAY;
+        kset('lockin.keyLabels', { ...names, [id]: name }); kset('lockin.keySecrets', { ...secrets, [id]: key });
+        adm.made = { name, key, exp: entry.exp }; addOp({ op: 'add', entry }); drawAdmin(); return;
       }
-      if (a === 'forget') { if (b.dataset.sure) { closeOv(); Gate.forget(); } else { b.dataset.sure = 1; b.textContent = 'Tap again: you\'ll need your key to get back in'; } }
+      if (a === 'msg') return copyText(msgFor(m.name, m.key, m.exp), 'Message copied. Send it to them.', body);
+      if (a === 'link') return copyText(siteUrl() + '#key=' + m.key, 'Invite link copied', body);
+      if (a === 'key') return copyText(m.key, 'Key copied', body);
+      if (a === 'save') return ghSave();
+      if (a === 'copyjson') return copyText(Keys.toJson(list), 'keys.json copied. On GitHub, select everything in the file and paste over it.', body);
+      if (a === 'tok') { const v = $('#ghTok', body).value.trim(); if (!/^(github_pat_|ghp_)\w{20,}$/.test(v)) { toast('That doesn\'t look like a GitHub token'); return; } kset('lockin.ghToken', v); toast('Token saved on this device'); drawAdmin(); ghSave(); return; }
+      if (a === 'forgettok') { kset('lockin.ghToken', null); drawAdmin(); return; }
+      if (a === 'lock') { if (b.dataset.sure) { closeOv(); Gate.forget(); } else { b.dataset.sure = 1; b.textContent = 'Tap again: you\'ll need your key to get back in'; } }
     });
-    $$('[data-kt]', body).forEach(b => b.onclick = () => {
-      if (!keysFresh) { toast('Still loading the live key list. Try again in a moment.'); return; }
-      const k = draft.keys.find(x => x.id === b.dataset.kt); if (k.revoked) delete k.revoked; else k.revoked = true;
-      copyText(keysJson(draft), `keys.json copied with ${k.id} turned ${k.revoked ? 'off' : 'on'}. Paste it on GitHub to save.`, body);
-      setTimeout(() => window.open(KEYS_EDIT, '_blank', 'noopener'), 400);
-    });
-    $$('[data-kn]', body).forEach(b => b.onclick = () => {
-      const li = b.closest('li'), cell = $('.kl', li), id = b.dataset.kn;
-      cell.innerHTML = `<input class="field" maxlength="30" value="${esc(labels[id] || '')}" aria-label="Name for ${esc(id)}" style="padding:6px 8px">`;
+    $$('[data-ext]', body).forEach(b => b.onclick = () => { const k = keyById(b.dataset.ext); const from = Math.max(Date.now(), k.exp || Date.now()); addOp({ op: 'set', id: k.id, patch: { exp: from + 7 * Keys.DAY, revoked: null } }); toast(`${nameOf(k)}: works until ${dayFmt(from + 7 * Keys.DAY)}`); drawAdmin(); });
+    $$('[data-tog]', body).forEach(b => b.onclick = () => { const k = keyById(b.dataset.tog); addOp({ op: 'set', id: k.id, patch: { revoked: k.revoked ? null : true } }); drawAdmin(); });
+    $$('[data-cl]', body).forEach(b => b.onclick = () => { const k = keyById(b.dataset.cl); copyText(msgFor(nameOf(k), secrets[k.id], k.exp), 'Message with the invite link copied', body); });
+    $$('[data-del]', body).forEach(b => b.onclick = () => { if (!b.dataset.sure) { b.dataset.sure = 1; b.textContent = 'Tap again to remove'; return; } addOp({ op: 'del', id: b.dataset.del }); drawAdmin(); });
+    $$('[data-rn]', body).forEach(b => b.onclick = () => {
+      const li = b.closest('li'), cell = $('.nm', li), id = b.dataset.rn;
+      cell.innerHTML = `<input class="field" maxlength="30" value="${esc(names[id] || '')}" aria-label="Name for ${esc(id)}" style="padding:6px 8px">`;
       const inp = $('input', cell); inp.focus();
-      const done = () => { const v = inp.value.trim(); const L = kget('lockin.keyLabels', {}); if (v) L[id] = v; else delete L[id]; kset('lockin.keyLabels', L); drawKeys(fresh); };
-      inp.onblur = done; inp.onkeydown = (e) => { if (e.key === 'Enter') inp.blur(); };
+      inp.onblur = () => { const L = kget('lockin.keyLabels', {}), v = inp.value.trim(); if (v) L[id] = v; else delete L[id]; kset('lockin.keyLabels', L); drawAdmin(); };
+      inp.onkeydown = (e) => { if (e.key === 'Enter') inp.blur(); };
     });
   }
 
@@ -1808,5 +1888,7 @@ Reply with ONLY this JSON:
   renderStats(); renderMistakeCount(); renderTabs(); renderNext(); renderBoard(); renderSubject(); renderWeek(); renderUpSubjects(); renderAiNote(); renderAcct(); renderLeague(); intro();
   AI.init();
   Cloud.init(onUser);
-  Gate.onOpen(() => { if (S.subj === 'home') renderSubject(); });
+  Gate.onOpen(() => { if (S.subj === 'home') renderSubject(); $('#adminBtn').hidden = !Gate.isAdmin(); if (Gate.isAdmin() && kget('lockin.keyOps', []).length) ghSave(); });
+  Gate.onExpirySoon((d) => toast(`Your key runs out in ${d} day${d === 1 ? '' : 's'}. Ask for a new one.`));
+  $('#adminBtn').onclick = openAdmin;
 })();

@@ -40,17 +40,42 @@ const Keys = (() => {
   const pretty = (n) => 'LOCK-' + n.match(/.{4}/g).join('-');
   const hash = (key) => { const n = norm(key); return n ? sha256(SALT + n) : ''; };
 
-  // Returns the matching, switched-on entry from keys.json, or null.
-  function check(key, list) {
+  // The entry for this key in keys.json (on, off or expired), or null if it isn't there at all.
+  function find(key, list) {
     const h = hash(key); if (!h || !list || !Array.isArray(list.keys)) return null;
-    return list.keys.find(k => k.hash === h && !k.revoked) || null;
+    return list.keys.find(k => k.hash === h) || null;
   }
+  const isAdmin = (e) => !!(e && (e.admin || e.owner));
+  // 'ok', 'off' (turned off) or 'expired'. The admin key never expires.
+  function status(e, now = Date.now()) {
+    if (!e) return 'missing';
+    if (e.revoked) return 'off';
+    if (!isAdmin(e) && e.exp && now >= e.exp) return 'expired';
+    return 'ok';
+  }
+  // Returns the matching entry if it works right now, or null.
+  function check(key, list, now = Date.now()) { const e = find(key, list); return status(e, now) === 'ok' ? e : null; }
+  const DAY = 864e5;
+  const daysLeft = (e, now = Date.now()) => (e && e.exp && !isAdmin(e) ? Math.ceil((e.exp - now) / DAY) : null);
   // A fresh random key. `rand` returns 0..1 (crypto-backed in the browser).
   function make(rand) {
     const r = rand || (() => { const a = new Uint32Array(1); (globalThis.crypto || require('crypto').webcrypto).getRandomValues(a); return a[0] / 2 ** 32; });
     return pretty(Array.from({ length: LEN }, () => ABC[Math.floor(r() * ABC.length) % ABC.length]).join(''));
   }
 
-  return { sha256, norm, pretty, hash, check, make, ABC, LEN };
+  // Admin edits, applied to whatever keys.json currently holds (so edits made elsewhere aren't lost):
+  // {op:'add', entry} · {op:'set', id, patch} (a null value deletes that field) · {op:'del', id}
+  function applyOps(list, ops) {
+    const keys = JSON.parse(JSON.stringify((list && list.keys) || [])), next = () => 'k' + String(Math.max(0, ...keys.map(k => +String(k.id).slice(1) || 0)) + 1).padStart(2, '0');
+    for (const o of ops || []) {
+      if (o.op === 'add') { if (keys.some(k => k.hash === o.entry.hash)) continue; const e = { ...o.entry }; if (keys.some(k => k.id === e.id)) e.id = next(); keys.push(e); }
+      else if (o.op === 'set') { const k = keys.find(x => x.id === o.id); if (k) for (const [f, v] of Object.entries(o.patch)) { if (v == null) delete k[f]; else k[f] = v; } }
+      else if (o.op === 'del') { const i = keys.findIndex(x => x.id === o.id && !isAdmin(x)); if (i >= 0) keys.splice(i, 1); }
+    }
+    return { ...(list || {}), v: 1, keys };
+  }
+  const toJson = (list) => '{\n  "v": 1,\n  "keys": [\n' + list.keys.map(k => '    ' + JSON.stringify(k)).join(',\n') + '\n  ]\n}\n';
+
+  return { sha256, norm, pretty, hash, find, check, status, isAdmin, daysLeft, make, applyOps, toJson, ABC, LEN, DAY };
 })();
 if (typeof module !== 'undefined') module.exports = Keys;

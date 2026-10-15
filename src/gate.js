@@ -9,7 +9,7 @@ const Gate = (() => {
   const get = (k) => { try { return localStorage.getItem(k); } catch (e) { return null; } };
   const set = (k, v) => { try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch (e) { } };
   let list = (() => { try { return JSON.parse(get(CACHE)) || KEYS; } catch (e) { return KEYS; } })();
-  let entry = null, onOpen = [], el = null, fails = 0, waitUntil = 0;
+  let entry = null, onOpen = [], onWarn = [], el = null, fails = 0, waitUntil = 0, warned = false;
 
   const locked = () => document.documentElement.classList.contains('locked');
   function open(silent) {
@@ -20,6 +20,11 @@ const Gate = (() => {
   }
   function lock(msg) {
     entry = null; document.documentElement.classList.add('locked'); show(msg);
+  }
+  const when = (t) => new Date(t).toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' });
+  function whyNot(k) {
+    const e = Keys.find(k, list), st = Keys.status(e);
+    return st === 'expired' ? `That key ran out on ${when(e.exp)}. Ask for a new one.` : st === 'off' ? 'That key has been turned off. Ask for a new one.' : 'That key doesn\'t work. Check it with whoever sent it.';
   }
   function tryKey(k) {
     const e = Keys.check(k, list); if (!e) return false;
@@ -49,7 +54,7 @@ const Gate = (() => {
       if (!Keys.norm(inp.value)) return wrong('Keys look like LOCK-XXXX-XXXX-XXXX.');
       if (!tryKey(inp.value)) {
         note('Checking…'); await refresh(); // a brand-new key is only in the live keys.json
-        if (!tryKey(inp.value)) { if (++fails >= 5) { fails = 0; waitUntil = Date.now() + 30000; } return wrong('That key doesn\'t work. Check it with whoever sent it.'); }
+        if (!tryKey(inp.value)) { if (++fails >= 5) { fails = 0; waitUntil = Date.now() + 30000; } return wrong(whyNot(inp.value)); }
       }
       el.classList.remove('shake'); el.classList.add('opening'); note('You\'re in.');
       setTimeout(() => open(false), 900);
@@ -77,21 +82,32 @@ const Gate = (() => {
     const fromLink = (location.hash.match(/(?:^#|&)key=([A-Za-z0-9-]+)/) || [])[1];
     if (fromLink) history.replaceState(null, '', location.pathname + location.search); // don't leave the key in the address bar
     if ((fromLink && tryKey(fromLink)) || tryKey(get(SAVED) || '')) open(true);
-    else show(fromLink ? 'That invite link\'s key doesn\'t work.' : '');
-    // Re-check online: a revoked key locks again, and a brand-new key works once keys.json updates.
-    refresh().then(ok => {
-      if (!ok) return;
-      const k = get(SAVED);
-      if (!locked() && !(k && Keys.check(k, list))) { set(SAVED, null); lock('This key has been turned off. Ask for a new one.'); }
-      else if (!locked()) entry = Keys.check(k, list);
-    });
+    else show(fromLink ? whyNot(fromLink) : get(SAVED) ? whyNot(get(SAVED)) : '');
+    recheck();
+    // Check again whenever the app comes back to the front, and every half hour while it's open.
+    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') recheck(); });
+    setInterval(recheck, 30 * 6e4);
+  }
+  // Re-check online: a turned-off or expired key locks again, and a brand-new key works once keys.json updates.
+  // Offline, the last list we saw still applies, so expiry still happens on time.
+  async function recheck() {
+    await refresh();
+    const k = get(SAVED); if (locked() || !k) return;
+    const e = Keys.check(k, list);
+    if (!e) { const msg = whyNot(k); set(SAVED, null); lock(msg); return; }
+    entry = e;
+    const d = Keys.daysLeft(e);
+    if (d != null && d <= 3 && !warned) { warned = true; onWarn.forEach(f => f(d, e)); }
   }
 
   return {
     start, refresh, enabled,
     onOpen: (f) => { onOpen.push(f); if (!locked()) f(entry); },
     entry: () => entry,
-    isOwner: () => !!(entry && entry.owner),
+    isOwner: () => Keys.isAdmin(entry),
+    isAdmin: () => Keys.isAdmin(entry),
+    onExpirySoon: (f) => onWarn.push(f),
+    setList(j) { list = j; set(CACHE, JSON.stringify(j)); }, // after the admin saves keys.json
     keys: () => list,
     forget() { set(SAVED, null); lock(''); },
   };

@@ -39,7 +39,33 @@ test('keys.json in the repo is well-formed', () => {
   assert.ok(Array.isArray(list.keys) && list.keys.length);
   const ids = list.keys.map(k => k.id); assert.strictEqual(new Set(ids).size, ids.length, 'ids unique');
   list.keys.forEach(k => assert.match(k.hash, /^[0-9a-f]{64}$/, k.id + ' hash'));
-  assert.strictEqual(list.keys.filter(k => k.owner).length, 1, 'exactly one owner key');
+  assert.strictEqual(list.keys.filter(k => k.admin).length, 1, 'exactly one admin key');
+});
+
+test('keys expire, except the admin key', () => {
+  const a = Keys.make(), b = Keys.make(), now = Date.UTC(2026, 9, 20);
+  const list = { keys: [{ id: 'a', hash: Keys.hash(a), admin: true, exp: now - 1 }, { id: 'b', hash: Keys.hash(b), exp: now + 2.5 * Keys.DAY }] };
+  assert.strictEqual(Keys.check(a, list, now).id, 'a', 'admin ignores exp');
+  assert.strictEqual(Keys.check(b, list, now).id, 'b');
+  assert.strictEqual(Keys.daysLeft(list.keys[1], now), 3);
+  assert.strictEqual(Keys.check(b, list, now + 3 * Keys.DAY), null);
+  assert.strictEqual(Keys.status(Keys.find(b, list), now + 3 * Keys.DAY), 'expired');
+  assert.strictEqual(Keys.status({ revoked: true }), 'off');
+  assert.ok(Keys.isAdmin({ owner: true }), 'old owner flag still counts as admin');
+});
+
+test('admin edits apply on top of the current list', () => {
+  const base = { v: 1, keys: [{ id: 'k01', hash: 'a', admin: true }, { id: 'k02', hash: 'b' }, { id: 'k03', hash: 'c', exp: 5 }] };
+  const out = Keys.applyOps(base, [
+    { op: 'add', entry: { id: 'k03', hash: 'd', exp: 9 } },   // id taken elsewhere -> renumbered
+    { op: 'set', id: 'k02', patch: { revoked: true } },
+    { op: 'set', id: 'k03', patch: { exp: null } },
+    { op: 'del', id: 'k01' },                                  // the admin key can't be removed
+    { op: 'add', entry: { id: 'k09', hash: 'b' } },             // same key twice -> ignored
+  ]);
+  assert.deepStrictEqual(out.keys, [{ id: 'k01', hash: 'a', admin: true }, { id: 'k02', hash: 'b', revoked: true }, { id: 'k03', hash: 'c' }, { id: 'k04', hash: 'd', exp: 9 }]);
+  assert.strictEqual(base.keys[1].revoked, undefined, 'input not changed');
+  assert.deepStrictEqual(JSON.parse(Keys.toJson(out)), out);
 });
 
 let fail = 0;
