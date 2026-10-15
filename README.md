@@ -2,7 +2,7 @@
 
 A study app for HSC Maths Extension 1, Maths Extension 2 and Physics, plus Year 8 English (Animal Farm), Geography and Maths.
 
-**Invite only:** the website and the app ask for an invite key (`LOCK-XXXX-XXXX-XXXX`) the first time. Got an invite link? Open it and you're in.
+**Invite only:** the website and the app ask for an invite key (`LOCK-XXXX-XXXX-XXXX`) the first time. Got an invite link? Open it and you're in. Keys can run out (1 day to 3 months, or never); the admin key opens an **Admin** panel to make, extend, turn off and remove keys.
 
 **Website:** https://jamalmusialla81-hub.github.io/lock-in/
 
@@ -32,7 +32,7 @@ Prefer clicking? Download `Lock-In-Setup.exe` from the [latest release](https://
 
 Windows may show "Windows protected your PC" because the app isn't code-signed. Click **More info**, then **Run anyway**.
 
-The app works offline. Sign-in, syncing and leaderboards are on the website.
+The app works offline. **Sign in with Google** works in the app too: it opens your normal browser to sign in, then takes you back. **AI features** (marking, Ask AI, AI-made decks) switch on by themselves if [Claude Code](https://claude.com/claude-code) is installed and signed in on the computer.
 
 ## What it does
 
@@ -67,6 +67,6 @@ Official HSC past papers: [Ext 1](https://www.nsw.gov.au/education-and-training/
   - `viz.js` diagrams; `app.js` the app; `shell.html` layout and styles
   - `keys.js`, `gate.js` invite keys and the lock screen; `english.js` English decks; `writing.js` writing feedback (tested); `badges.js` badges and ranks (tested)
 - Tests: `node tests/all.js`
-- Invite keys: `keys.json` holds SHA-256 hashes only. `python3 tools/keys.py new "Friend 16"` makes a key (the key itself goes in `../lock-in-keys.md`, outside the repo); `python3 tools/keys.py revoke k07` turns one off. Commit and push `keys.json` afterwards. The owner key also gets an **Invite keys** button on Home to do this from the app.
-- Windows app (`desktop/`): `npm install`, then `npm start` to run it or `npm run dist` to build `dist/Lock-In-Setup.exe`.
+- Invite keys: `keys.json` holds SHA-256 hashes (plus `exp` in ms and `revoked`) only. The Admin panel saves straight to it with a fine-grained GitHub token (Contents: read and write on this repo) stored on the admin's device. `python3 tools/keys.py new "Friend 16" --days 7` makes a key (the key itself goes in `../lock-in-keys.md`, outside the repo); `python3 tools/keys.py revoke k07` turns one off. Commit and push `keys.json` afterwards. The admin key gets an **Admin** button to do all this from the app.
+- Windows app (`desktop/`): `npm install`, then `npm start` to run it or `npm run dist` to build `dist/Lock-In-Setup.exe`. The app serves itself on `http://localhost:47823` (Firebase allows sign-in from `localhost`); `desktop/signin.html` runs Google sign-in in the system browser and hands the credential back; `preload.js` exposes only sign-in and the Claude Code bridge (`claude -p` with every tool off). `LOCKIN_SELFTEST=<temp folder> npm start` runs a self-check and quits.
   To publish a new version, bump `version` in `desktop/package.json`, then push a matching tag (e.g. `git tag v1.0.1 && git push origin v1.0.1`). GitHub Actions builds the installer on Windows and attaches it to a release.

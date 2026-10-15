@@ -13,20 +13,30 @@
     "dist": "node prepare.js && electron-builder --win nsis --publish never",
     "release": "node prepare.js && electron-builder --win nsis --publish always"
   },
-  "dependencies": {},
   "devDependencies": {
     "@fontsource/atkinson-hyperlegible": "5.1.0",
     "electron": "33.2.1",
     "electron-builder": "25.1.8",
+    "firebase": "10.14.1",
     "gsap": "3.12.5",
     "mathjax": "3.2.2"
   },
   "build": {
     "appId": "io.github.jamalmusialla81-hub.lockin",
     "productName": "Lock in",
-    "files": ["main.js", "app/**/*"],
-    "directories": { "buildResources": "build", "output": "dist" },
-    "win": { "target": "nsis", "icon": "build/icon.png" },
+    "files": [
+      "main.js",
+      "preload.js",
+      "app/**/*"
+    ],
+    "directories": {
+      "buildResources": "build",
+      "output": "dist"
+    },
+    "win": {
+      "target": "nsis",
+      "icon": "build/icon.png"
+    },
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
@@ -35,6 +45,13 @@
       "shortcutName": "Lock in",
       "artifactName": "Lock-In-Setup.${ext}"
     },
-    "publish": [{ "provider": "github", "owner": "jamalmusialla81-hub", "repo": "lock-in", "releaseType": "release" }]
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "jamalmusialla81-hub",
+        "repo": "lock-in",
+        "releaseType": "release"
+      }
+    ]
   }
 }

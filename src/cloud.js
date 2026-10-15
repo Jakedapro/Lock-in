@@ -23,6 +23,13 @@ const Cloud = (() => {
     available,
     init(onUser) { if (!available) return onUser(null); auth.onAuthStateChanged(u => onUser(u ? { uid: u.uid } : null)); },
     async signIn() {
+      // Desktop app: Google doesn't allow sign-in inside apps, so it happens in the normal browser
+      // and comes back as a credential (see desktop/main.js and desktop/signin.html).
+      if (window.lockinDesktop) {
+        const t = await window.lockinDesktop.signInWithGoogle();
+        if (!t) { const e = new Error('closed'); e.code = 'auth/popup-closed-by-user'; throw e; }
+        return auth.signInWithCredential(firebase.auth.GoogleAuthProvider.credential(t.idToken, t.accessToken));
+      }
       const p = new firebase.auth.GoogleAuthProvider(); p.setCustomParameters({ prompt: 'select_account' });
       await auth.signInWithPopup(p); // popup only: redirect sign-in breaks on iPhone when the site isn't on firebaseapp.com
     },

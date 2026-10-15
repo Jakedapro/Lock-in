@@ -111,19 +111,40 @@
     fn: null, state: 'checking', imgMax: 0, reason: '',
     async init() {
       try {
-        if (!window.claude || typeof window.claude.use !== 'function') throw 0;
+        if (!window.claude || typeof window.claude.use !== 'function') { if (await this.desktop()) return; throw 0; }
         const fn = await window.claude.use('sample');
         if (!fn) throw 0;
         this.fn = fn; this.state = 'ready';
         const lim = await fn.limits().catch(() => null); this.imgMax = lim?.images?.maxCount || 0;
-      } catch (e) { this.state = 'off'; this.reason = 'AI features work when this page is opened from its Claude link while signed in to Claude.'; }
+      } catch (e) { this.state = 'off'; this.reason = window.lockinDesktop ? 'AI turns on by itself when Claude Code is installed on this computer (claude.com/claude-code).' : 'AI features work when this page is opened from its Claude link while signed in to Claude.'; }
       renderAiNote(); if (cur && !ov.hidden) refreshOverlay();
+    },
+    // Desktop app: use Claude Code on this computer, if it's installed. Same shape as the Claude page's sampler.
+    async desktop() {
+      const D = window.lockinDesktop; if (!D || !(await D.ai.available().catch(() => false))) return false;
+      const flat = (input) => typeof input === 'string' ? input : input.map(m => `${m.role === 'user' ? 'STUDENT' : 'TUTOR'}:\n${m.content}`).join('\n\n') + '\n\nReply as the TUTOR to the last STUDENT message.';
+      const ask = async (input, opts = {}) => {
+        const r = await D.ai.ask(flat(input), opts.modelTier);
+        if (!r.ok) throw { code: r.code === 'signed_out' ? 'session_expired' : r.code === 'not_installed' ? 'sampling_disabled' : 'error', text: '' };
+        opts.onText && opts.onText({ text: r.text, delta: r.text });
+        return { text: r.text, truncated: false };
+      };
+      const fn = (input, opts) => ask(input, opts);
+      fn.json = async (input, opts = {}) => {
+        const { text } = await ask(flat(input) + '\n\nReply with ONLY the JSON, no other text.', opts);
+        const m = text.match(/[\[{][\s\S]*[\]}]/); try { return JSON.parse(m ? m[0] : text); } catch (e) { throw { code: 'invalid_json' }; }
+      };
+      fn.limits = async () => ({ images: null });
+      this.fn = fn; this.state = 'ready'; this.via = 'Claude Code'; this.imgMax = 0;
+      renderAiNote(); if (cur && !ov.hidden) refreshOverlay();
+      return true;
     },
     msg(e) {
       const c = e && e.code;
       if (c === 'not_granted') { this.state = 'off'; this.reason = 'AI is turned off for this page because it wasn\'t allowed. Reload the page to be asked again.'; renderAiNote(); return 'You didn\'t allow AI for this page. Reload to be asked again.'; }
       if (c === 'rate_limited') return 'You\'ve hit your Claude usage limit for now. Try again a bit later.';
-      if (c === 'session_expired') return 'Your Claude sign-in expired. Sign in again, then retry.';
+      if (c === 'session_expired') return this.via ? 'Claude Code isn\'t signed in. Open a terminal, type claude, sign in, then try again.' : 'Your Claude sign-in expired. Sign in again, then retry.';
+      if (c === 'timeout') return 'Claude took too long. Try again.';
       if (c === 'sampling_disabled') { this.state = 'off'; this.reason = 'Claude AI isn\'t available on this account.'; renderAiNote(); return this.reason; }
       if (c === 'images_unavailable' || c === 'image_rejected') return 'Claude couldn\'t read those images here. Try pasting the text, or a smaller PDF.';
       if (c === 'prompt_too_large') return 'That was too much at once. Try fewer pages.';
@@ -137,7 +158,7 @@
   const aiReady = () => AI.state === 'ready' && !!AI.fn;
   function renderAiNote() {
     const n = $('#aiNote'), t = $('#aiNoteT'); if (!n) return;
-    if (aiReady()) { n.className = 'ai-note ok'; t.textContent = 'AI is on. It runs on your own Claude account (Claude asks you to allow it the first time). Scanned pages and photos work.'; }
+    if (aiReady()) { n.className = 'ai-note ok'; t.textContent = AI.via ? 'AI is on through Claude Code on this computer. Typed or text-based notes work; scans and photos need the Claude version.' : 'AI is on. It runs on your own Claude account (Claude asks you to allow it the first time). Scanned pages and photos work.'; }
     else if (AI.state === 'checking') { n.className = 'ai-note'; t.textContent = 'Checking whether AI is available…'; }
     else { n.className = 'ai-note'; t.textContent = AI.reason + ' Without AI, quick mode still makes flashcards from notes written as "term: meaning".'; }
   }

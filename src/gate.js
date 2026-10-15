@@ -66,7 +66,8 @@ const Gate = (() => {
 
   // Fetch the live keys.json. Same site first (GitHub Pages), raw GitHub for the desktop app.
   async function refresh() {
-    const urls = location.protocol === 'file:' ? [RAW] : ['keys.json', RAW];
+    // The desktop app (file:// or localhost) asks the live website; the website asks itself.
+    const urls = location.protocol === 'https:' ? ['keys.json', RAW] : ['https://jamalmusialla81-hub.github.io/lock-in/keys.json', RAW];
     for (const u of urls) {
       try {
         const r = await fetch(u + '?t=' + Date.now(), { cache: 'no-store' }); if (!r.ok) continue;

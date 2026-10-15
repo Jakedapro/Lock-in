@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sign in to Lock in</title>
+<link rel="stylesheet" href="vendor/fonts.css">
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 24px 16px; background: radial-gradient(closest-side at 50% 40%, #1E2A46 0%, #12161C 70%); color: #E7ECF2; font-family: "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif; }
+  main { width: min(420px, 100%); text-align: center; display: grid; gap: 14px; justify-items: center; }
+  h1 { margin: 0; font-size: 32px; } h1 span { background: linear-gradient(90deg, #2DD4BF, #7FA2FF, #A78BFA); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  p { margin: 0; color: #B4BDC9; line-height: 1.5; }
+  button { font: 700 16px inherit; font-family: inherit; display: inline-flex; gap: 10px; align-items: center; padding: 13px 22px; border-radius: 10px; border: 0; background: #E7ECF2; color: #12161C; cursor: pointer; }
+  button:focus-visible { outline: 3px solid #7FA2FF; outline-offset: 2px; }
+  #msg { min-height: 1.5em; font-weight: 700; }
+  .ok { color: #6BD49A; } .bad { color: #FF8A7D; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Lock <span>in</span></h1>
+  <p>Sign in with Google here, then you'll go straight back to the Lock in app.</p>
+  <button type="button" id="go"><svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#4285F4" d="M45 24.5c0-1.6-.1-3.1-.4-4.5H24v8.5h11.8c-.5 2.8-2.1 5.1-4.4 6.7v5.5h7.1c4.2-3.8 6.5-9.5 6.5-16.2z"/><path fill="#34A853" d="M24 46c5.9 0 10.9-2 14.5-5.3l-7.1-5.5c-2 1.3-4.5 2.1-7.4 2.1-5.7 0-10.5-3.8-12.2-9H4.5v5.7C8.1 41.1 15.5 46 24 46z"/><path fill="#FBBC05" d="M11.8 28.3c-.4-1.3-.7-2.8-.7-4.3s.3-3 .7-4.3V14H4.5C3 17 2 20.4 2 24s1 7 2.5 10l7.3-5.7z"/><path fill="#EA4335" d="M24 10.7c3.2 0 6.1 1.1 8.4 3.3l6.3-6.3C34.9 4.2 29.9 2 24 2 15.5 2 8.1 6.9 4.5 14l7.3 5.7c1.7-5.2 6.5-9 12.2-9z"/></svg>Sign in with Google</button>
+  <p id="msg" role="status" aria-live="polite"></p>
+</main>
+<script src="vendor/firebase-app-compat.js"></script>
+<script src="vendor/firebase-auth-compat.js"></script>
+<script>
+  // Runs in your normal browser (Google doesn't allow sign-in inside apps). It hands the sign-in
+  // back to the Lock in app running on this computer, then signs this browser tab out again.
+  const CONFIG = /*CONFIG*/null;
+  const state = (location.hash.match(/state=([a-f0-9]+)/) || [])[1];
+  const msg = (t, cls) => { const m = document.getElementById('msg'); m.textContent = t; m.className = cls || ''; };
+  if (!state) msg('Open this from the Lock in app.', 'bad');
+  firebase.initializeApp(CONFIG);
+  const auth = firebase.auth();
+  auth.setPersistence(firebase.auth.Auth.Persistence.NONE);
+  document.getElementById('go').onclick = async () => {
+    if (!state) return;
+    try {
+      const p = new firebase.auth.GoogleAuthProvider(); p.setCustomParameters({ prompt: 'select_account' });
+      const res = await auth.signInWithPopup(p);
+      const c = res.credential || {};
+      const r = await fetch('/auth-callback', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ state, idToken: c.idToken, accessToken: c.accessToken }) });
+      await auth.signOut();
+      if (!r.ok) throw new Error('expired');
+      document.getElementById('go').hidden = true;
+      msg('You\'re signed in. Go back to the Lock in app. You can close this tab.', 'ok');
+    } catch (e) {
+      msg(e.message === 'expired' ? 'That sign-in link expired. Click Sign in again in the app.' : e.code === 'auth/popup-blocked' ? 'Your browser blocked the sign-in window. Allow pop-ups for this page and try again.' : e.code === 'auth/popup-closed-by-user' ? '' : 'Sign-in didn\'t work. Try again.', 'bad');
+    }
+  };
+</script>
+</body>
+</html>
