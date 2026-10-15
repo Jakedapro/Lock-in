@@ -406,8 +406,8 @@
     if (S.subj === 'home') return renderHome($('#subject'));
     const s = getSubj(S.subj), ds = decksOf(s.id), el = $('#subject'), nm = mistakesOf(s.id).length;
     el.className = 'wrap section c-' + s.hue;
-    el.innerHTML = `<div class="subj-head"><div><h2>${esc(s.name)}</h2><p class="subj-meta">${s.exam ? `Exam ${esc(s.when)}. ` : ''}${esc(s.format)}</p>${s.papers ? `<p class="subj-meta"><a class="linkbtn" href="${esc(s.papers)}" target="_blank" rel="noopener">Official HSC past papers and marking guidelines (NESA)</a></p>` : ''}${nm ? `<button class="linkbtn mist-link" type="button" data-act="mistakes" data-s="${esc(s.id)}">${nm} mistake${nm > 1 ? 's' : ''} to fix</button>` : ''}</div>
-      <div class="subj-actions">${s.id === 'eng' ? '<button class="btn btn-hot" type="button" data-act="read">Read the book</button><button class="btn btn-ghost" type="button" data-act="writing">Writing feedback</button>' : ''}${s.mock ? `<button class="btn" type="button" data-act="mock" data-s="${s.id}">Practice exam${s.mock === 'geo' ? ', 45 min' : ''}</button>` : ''}${ds.length ? `<button class="btn btn-ghost" type="button" data-act="cards" data-s="${esc(s.id)}">All flashcards</button>` : ''}<button class="btn btn-ghost" type="button" data-act="upload" data-s="${esc(s.id)}">Upload notes</button></div></div>
+    el.innerHTML = `<div class="subj-head"><div><h2>${esc(s.name)}</h2><p class="subj-meta">${s.exam ? `Exam ${esc(s.when)}. ` : ''}${esc(s.format)}</p>${hasPapers(s.id) ? (() => { const done = papersOf(s.id).filter(p => p.result); return `<p class="subj-meta">${done.length ? `Past papers: ${done.length} of ${PAPERS.LIST[s.id].length} done, best ${Math.max(...done.map(p => pct(p.result)))}%.` : `${PAPERS.LIST[s.id].length} official HSC past papers to sit.`}</p>`; })() : s.papers ? `<p class="subj-meta"><a class="linkbtn" href="${esc(s.papers)}" target="_blank" rel="noopener">Official HSC past papers and marking guidelines (NESA)</a></p>` : ''}${nm ? `<button class="linkbtn mist-link" type="button" data-act="mistakes" data-s="${esc(s.id)}">${nm} mistake${nm > 1 ? 's' : ''} to fix</button>` : ''}</div>
+      <div class="subj-actions">${hasPapers(s.id) ? `<button class="btn btn-hot" type="button" data-act="papers" data-s="${esc(s.id)}">Past papers</button>` : ''}${s.id === 'eng' ? '<button class="btn btn-hot" type="button" data-act="read">Read the book</button><button class="btn btn-ghost" type="button" data-act="writing">Writing feedback</button>' : ''}${s.mock ? `<button class="btn" type="button" data-act="mock" data-s="${s.id}">Practice exam${s.mock === 'geo' ? ', 45 min' : ''}</button>` : ''}${ds.length ? `<button class="btn btn-ghost" type="button" data-act="cards" data-s="${esc(s.id)}">All flashcards</button>` : ''}<button class="btn btn-ghost" type="button" data-act="upload" data-s="${esc(s.id)}">Upload notes</button></div></div>
       ${ds.length ? `<ol class="decks">${ds.map(d => { const m = mastery(d.id), L = levelOf(d); return `<li><button class="deck ${hue(d)}" type="button" data-open="${esc(d.id)}">
           <span class="d-ch">${esc(d.chapter || 'Yours')}</span>
           <span class="d-main"><span class="d-title">${esc(d.title)}${d.custom ? ` <small>${d.ai ? 'made by AI' : 'quick deck'}</small>` : ''}</span><span class="d-blurb">${fm(d.blurb || '')}</span></span>
@@ -425,6 +425,7 @@
     if (act === 'mistakes') openMistakes(a.dataset.s);
     if (act === 'writing') openWriting();
     if (act === 'read') openReader();
+    if (act === 'papers') openPapers(a.dataset.s);
     if (act === 'quotes') openQuotes();
     if (act === 'upload') { upSubj = a.dataset.s; renderUpSubjects(); $('#upload').scrollIntoView({ behavior: reduce ? 'auto' : 'smooth' }); }
   });
@@ -1415,6 +1416,7 @@ Aim for 2-5 sections with 3-6 notes each, 10-20 flashcards (key terms, people, d
     subjects().forEach(s => {
       act(s.name, 'Subject', () => goSubj(s.id), s.tab || '');
       if (s.mock) act(`${s.name} practice exam`, 'Exam', () => openMock(s.id), 'mock paper test');
+      if (hasPapers(s.id)) { act(`${s.name} past papers`, 'HSC', () => openPapers(s.id), 'past paper hsc nesa official'); PAPERS.LIST[s.id].forEach(p => act(`${p.year} HSC ${s.name}`, 'Past paper', () => openPapers(s.id), 'past paper')); }
       if (decksOf(s.id).length) act(`${s.name} flashcards`, 'Cards', () => openSubjectCards(s.id), 'flashcards');
     });
     allDecks().forEach(d => {
@@ -1589,6 +1591,100 @@ Aim for 2-5 sections with 3-6 notes each, 10-20 flashcards (key terms, people, d
   }
   function bindStrip(body) {
     $$('[data-rch]', body).forEach(b => b.onclick = () => { const v = b.dataset.rch; readState().ch = v === 'cast' ? 'cast' : +v; save(); drawReader(); ov.scrollTo({ top: 0 }); });
+  }
+
+  /* ---------------- official HSC past papers ---------------- */
+  // Papers open from NESA's website (src/papers.js has links only). Here you sit them on a real exam
+  // timer, then mark yourself with NESA's marking guidelines. Topics you lose marks on count as weak
+  // spots, so the plan and "weakest topic" send you back to them.
+  const hasPapers = (sid) => typeof PAPERS !== 'undefined' && !!PAPERS.LIST[sid];
+  const paperKey = (sid, y) => `${sid}-${y}`;
+  const SIT_KEY = 'lockin.sit';
+  const sitState = () => { try { return JSON.parse(localStorage.getItem(SIT_KEY)) || null; } catch (e) { return null; } };
+  const setSit = (v) => { try { v ? localStorage.setItem(SIT_KEY, JSON.stringify(v)) : localStorage.removeItem(SIT_KEY); } catch (e) { } };
+  const pct = (r) => Math.round(r.total / r.outOf * 100);
+  const papersOf = (sid) => (PAPERS.LIST[sid] || []).map(p => ({ ...p, result: (S.papers || {})[paperKey(sid, p.year)] }));
+  function openPapers(sid) {
+    if (!hasPapers(sid)) return;
+    const sit = sitState(); if (sit) return openSit(sit.sid, sit.year);
+    cur = { kind: 'papers', tab: null, sid }; const s = getSubj(sid), F = PAPERS.FORMAT[sid];
+    const body = ovFrame(`Past papers: ${s.name}`, 'c-' + s.hue, null), list = papersOf(sid), done = list.filter(p => p.result);
+    const avg = done.length ? Math.round(done.reduce((a, p) => a + pct(p.result), 0) / done.length) : null;
+    body.innerHTML = `<div class="pp">
+      <p class="note">Every official HSC paper for the current course, straight from NESA. <b>Sit it</b> runs the real timer (${F.reading} min reading, ${F.writing / 60} hours writing). Then mark it with the marking guidelines and tick the topics you lost marks on: they go into your plan.</p>
+      ${done.length ? `<div class="adm-stats"><div><b>${done.length}/${list.length}</b><span>papers done</span></div><div><b>${avg}%</b><span>average</span></div><div><b>${Math.max(...done.map(p => pct(p.result)))}%</b><span>best</span></div></div>` : ''}
+      <ul class="pp-list">${list.map(p => `<li${p.result ? ' class="done"' : ''}>
+        <span class="pp-year">${p.year}</span>
+        <span class="pp-res">${p.result ? `<b>${p.result.total}/${p.result.outOf}</b> <span class="note">${pct(p.result)}% · ${new Date(p.result.at).toLocaleDateString('en-AU', { day: 'numeric', month: 'short' })}</span>` : '<span class="note">Not done yet</span>'}</span>
+        <span class="pp-links">${p.paper ? `<a class="linkbtn" href="${esc(p.paper)}" target="_blank" rel="noopener">Paper</a>` : ''}${p.mg ? `<a class="linkbtn" href="${esc(p.mg)}" target="_blank" rel="noopener">Marking guidelines</a>` : ''}${p.feedback ? `<a class="linkbtn" href="${esc(p.feedback)}" target="_blank" rel="noopener">Marker feedback</a>` : ''}</span>
+        <span class="pp-acts"><button class="btn btn-sm" type="button" data-sit="${p.year}">${p.result ? 'Sit again' : 'Sit it'}</button><button class="btn btn-ghost btn-sm" type="button" data-mark="${p.year}">${p.result ? 'Edit marks' : 'Enter marks'}</button></span></li>`).join('')}</ul>
+      <p class="note" style="font-size:13px">Papers and marking guidelines © NSW Education Standards Authority, opened from nsw.gov.au.</p></div>`;
+    $$('[data-sit]', body).forEach(b => b.onclick = () => { const now = Date.now(); setSit({ sid, year: +b.dataset.sit, start: now, readEnd: now + F.reading * 6e4, end: now + (F.reading + F.writing) * 6e4, paused: null }); openSit(sid, +b.dataset.sit); });
+    $$('[data-mark]', body).forEach(b => b.onclick = () => openMarkSheet(sid, +b.dataset.mark, null));
+    showOv();
+  }
+  let sitTick = null;
+  function openSit(sid, year) {
+    const s = getSubj(sid), p = (PAPERS.LIST[sid] || []).find(x => x.year === year), F = PAPERS.FORMAT[sid];
+    cur = { kind: 'sit', tab: null }; const body = ovFrame(`${year} HSC ${s.name}`, 'c-' + s.hue, null); ov.classList.add('focus');
+    body.innerHTML = `<div class="focus-run sit"><p class="focus-sub" id="sitPhase"></p><div class="focus-time" id="sitTime" role="timer" aria-live="off"></div><div class="focus-bar"><i id="sitBar"></i></div>
+      <p class="focus-task" id="sitTip"></p>
+      <div class="row" style="justify-content:center;margin-top:20px">${p.paper ? `<a class="btn" href="${esc(p.paper)}" target="_blank" rel="noopener">Open the paper</a>` : ''}<button class="btn btn-ghost" type="button" id="sitPause"></button><button class="btn btn-ghost" type="button" id="sitDone">Finish</button><button class="linkbtn" type="button" id="sitQuit">Quit</button></div></div>`;
+    const draw = () => {
+      const st = sitState(); if (!st) return;
+      const now = st.paused || Date.now(), reading = now < st.readEnd, left = Math.max(0, (reading ? st.readEnd : st.end) - now);
+      const h = Math.floor(left / 36e5), mm = Math.floor(left % 36e5 / 6e4), ss = Math.floor(left % 6e4 / 1e3);
+      $('#sitTime').textContent = `${h ? h + ':' + pad(mm) : mm}:${pad(ss)}`; document.title = `${$('#sitTime').textContent} · ${year} ${s.tab || s.name}`;
+      $('#sitPhase').textContent = st.paused ? 'Paused' : reading ? `Reading time · ${F.reading} minutes` : `Writing time · ${F.writing / 60} hours`;
+      $('#sitTip').textContent = reading ? 'Read the whole paper. No writing yet: plan which questions you\'ll start with.' : left < 15 * 6e4 ? 'Last 15 minutes: make sure every multiple choice question has an answer.' : 'Do the questions you know first. Show all working: method marks add up.';
+      $('#sitBar').style.width = `${Math.min(100, (now - st.start) / (st.end - st.start) * 100)}%`;
+      $('#sitPause').textContent = st.paused ? 'Resume' : 'Pause';
+      if (reading && !st.paused && !st.chimedRead && left <= 0) { st.chimedRead = 1; setSit(st); chime(); }
+      if (!reading && left <= 0 && !st.paused) finish(true);
+    };
+    const finish = (timeUp) => {
+      clearInterval(sitTick); const st = sitState(); setSit(null); document.title = baseTitle; ov.classList.remove('focus');
+      const mins = st ? Math.max(0, Math.round(((st.paused || Date.now()) - st.readEnd) / 6e4)) : 0;
+      if (timeUp) { chime(); toast('Pens down. Time to mark it.'); }
+      if (mins >= 5) { Logic.addSession(S, { id: 'p' + (st?.start || Date.now()).toString(36), date: today(), min: Math.min(mins, F.writing), sid }); save(); }
+      openMarkSheet(sid, year, mins);
+    };
+    $('#sitPause').onclick = () => { const st = sitState(); if (st.paused) { const d = Date.now() - st.paused; st.readEnd += d; st.end += d; st.paused = null; } else st.paused = Date.now(); setSit(st); draw(); };
+    $('#sitDone').onclick = () => finish(false);
+    $('#sitQuit').onclick = (e) => { const b = e.target; if (!b.dataset.sure) { b.dataset.sure = 1; b.textContent = 'Tap again to quit (nothing is saved)'; return; } clearInterval(sitTick); setSit(null); document.title = baseTitle; ov.classList.remove('focus'); openPapers(sid); };
+    clearInterval(sitTick); sitTick = setInterval(() => { if (cur?.kind !== 'sit') { clearInterval(sitTick); document.title = baseTitle; return; } draw(); }, 500); draw();
+    showOv();
+  }
+  function openMarkSheet(sid, year, mins) {
+    const s = getSubj(sid), p = (PAPERS.LIST[sid] || []).find(x => x.year === year), F = PAPERS.FORMAT[sid], old = (S.papers || {})[paperKey(sid, year)];
+    cur = { kind: 'marksheet', tab: null }; const body = ovFrame(`Mark: ${year} ${s.name}`, 'c-' + s.hue, null);
+    const topics = decksOf(sid).flatMap(d => (d.sections || []).map(sec => ({ id: d.id + ':' + sec.code, code: sec.code, name: sec.name, deck: d.title })));
+    const lost = new Set(old?.lost || []);
+    body.innerHTML = `<div class="pp-mark">
+      <p class="note">${p.mg ? `Open the <a class="linkbtn" href="${esc(p.mg)}" target="_blank" rel="noopener">marking guidelines</a> and mark each question honestly.` : 'Mark each question.'}${mins != null ? ` You wrote for ${mins} minute${mins === 1 ? '' : 's'}.` : ''}</p>
+      <div class="pp-parts">${F.parts.map(([k, l, max]) => `<label class="pp-part"><span>${esc(l)}</span><span class="pp-in"><input class="field" type="number" inputmode="numeric" min="0" max="${max}" step="1" data-pt="${k}" value="${old?.scores?.[k] ?? ''}" aria-label="${esc(l)} marks"> / ${max}</span></label>`).join('')}</div>
+      <div class="pp-total">Total <b id="ppTotal">0</b> / ${PAPERS.outOf(sid)} <span id="ppPct" class="note"></span></div>
+      <h3>Which topics did you lose marks on?</h3><p class="note">Tick them and they become weak spots in your plan.</p>
+      ${decksOf(sid).map(d => `<div class="pp-topics"><b>${esc(d.title)}</b><div class="pills">${(d.sections || []).map(sec => { const id = d.id + ':' + sec.code; return `<button class="pill" type="button" data-lt="${esc(id)}" aria-pressed="${lost.has(id)}">${esc(sec.code)} ${fm(sec.name)}</button>`; }).join('')}</div></div>`).join('')}
+      <div class="row" style="margin-top:18px"><button class="btn btn-hot" type="button" id="ppSave">Save my mark</button><button class="btn btn-ghost" type="button" id="ppBack">Back to papers</button></div></div>`;
+    const sum = () => { let t = 0, any = false; $$('[data-pt]', body).forEach(i => { const v = Math.max(0, Math.min(+i.max, Math.round(+i.value || 0))); if (i.value !== '') any = true; t += v; }); $('#ppTotal', body).textContent = t; $('#ppPct', body).textContent = any ? `${Math.round(t / PAPERS.outOf(sid) * 100)}%` : ''; return t; };
+    $$('[data-pt]', body).forEach(i => i.oninput = sum); sum();
+    $$('[data-lt]', body).forEach(b => b.onclick = () => { const id = b.dataset.lt; lost.has(id) ? lost.delete(id) : lost.add(id); b.setAttribute('aria-pressed', lost.has(id)); });
+    $('#ppBack', body).onclick = () => openPapers(sid);
+    $('#ppSave', body).onclick = () => {
+      const scores = {}; $$('[data-pt]', body).forEach(i => { if (i.value !== '') scores[i.dataset.pt] = Math.max(0, Math.min(+i.max, Math.round(+i.value))); });
+      if (!Object.keys(scores).length) { toast('Enter your marks first'); return; }
+      const first = !old, total = sum(), outOf = PAPERS.outOf(sid);
+      // New weak spots count as two missed attempts on that topic (only ones not already ticked for this paper).
+      [...lost].filter(id => !(old?.lost || []).includes(id)).forEach(id => { const [deckId, code] = id.split(':'); const t = (prog(deckId).tags[code] ||= [0, 0]); t[0] += 2; });
+      (S.papers ||= {})[paperKey(sid, year)] = { at: Date.now(), scores, total, outOf, lost: [...lost], mins: mins ?? old?.mins ?? null };
+      if (first) { addXp(100); bumpStreak(); }
+      save(); renderStats(); renderBoard();
+      if (first) { burst(innerWidth / 2, innerHeight / 3, total / outOf >= 0.8 ? 180 : 90); toast(`${year} saved: ${total}/${outOf} (${Math.round(total / outOf * 100)}%). +100 XP`); }
+      else toast('Marks updated');
+      openPapers(sid);
+    };
+    showOv();
   }
 
   /* ---------------- English: writing feedback ---------------- */
@@ -1904,6 +2000,7 @@ Reply with ONLY this JSON:
   applyTheme(theme);
   $('#themeBtn').onclick = () => { theme = THEMES[(THEMES.indexOf(theme) + 1) % 3]; try { localStorage.setItem('lockin.theme', theme); } catch (e) { } applyTheme(theme); };
   if (focusState()) openFocus(); // a session survives a reload
+  else if (typeof sitState === 'function' && sitState()) { const st = sitState(); Gate.onOpen(() => openSit(st.sid, st.year)); } // so does a past paper
   $('#acctBtn').onclick = () => (me && !S.profile ? openProfile(true) : openAccount());
   if (S.subj !== 'home' && !subjects().some(s => s.id === S.subj)) S.subj = 'home';
   renderStats(); renderMistakeCount(); renderTabs(); renderNext(); renderBoard(); renderSubject(); renderWeek(); renderUpSubjects(); renderAiNote(); renderAcct(); renderLeague(); intro();

@@ -7,7 +7,7 @@ const Logic = (() => {
     const s = S || {};
     s.lvl ||= {}; s.mistakes ||= []; s.week ||= { start: '', xp: 0 };
     s.groups ||= []; s.cleared ||= {}; s.gone ||= {}; s.sessions ||= []; s.days ||= {}; s.planDone ||= {}; if (s.profile === undefined) s.profile = null;
-    s.badges ||= {}; s.flags ||= {}; s.quotes ||= []; s.goneQ ||= {}; s.daily ||= { done: {} }; s.daily.done ||= {}; s.read ||= { ch: 1, done: {} }; s.read.done ||= {};
+    s.badges ||= {}; s.flags ||= {}; s.quotes ||= []; s.goneQ ||= {}; s.daily ||= { done: {} }; s.daily.done ||= {}; s.read ||= { ch: 1, done: {} }; s.read.done ||= {}; s.papers ||= {};
     return s;
   }
 
@@ -148,6 +148,7 @@ const Logic = (() => {
     m.quotes = unionBy(a.quotes, b.quotes, 'id', (x, y) => ((y.seen || 0) > (x.seen || 0) ? y : x)).filter(q => !m.goneQ[q.id]);
     m.daily = { ...a.daily, ...b.daily, done: { ...a.daily.done, ...b.daily.done } };
     m.read = { ...a.read, ...b.read, done: { ...a.read.done, ...b.read.done } };
+    m.papers = { ...a.papers }; for (const [k, r] of Object.entries(b.papers)) if (!m.papers[k] || (r.at || 0) >= (m.papers[k].at || 0)) m.papers[k] = r; // newest marking wins
     if (a.eng || b.eng) {
       const ea = a.eng || {}, eb = b.eng || {};
       m.eng = { ...ea, ...eb, best: Math.max(ea.best || 0, eb.best || 0), history: unionBy(ea.history, eb.history, 'id').sort((x, y) => x.at - y.at).slice(-25) };

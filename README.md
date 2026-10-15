@@ -50,6 +50,7 @@ The app works offline. **Sign in with Google** works in the app too: it opens yo
 - **Levels:** Foundation, Standard and Complex. Three right in a row moves you up; two wrong drops you back.
 - **Mistakes list:** wrong answers are saved until you get them right twice.
 - **Practice exams:** timed papers for every subject.
+- **Official HSC past papers:** every Ext 1, Ext 2 and Physics paper for the current course (2019/2020 to 2025), opened from NESA. Sit them on a real timer with reading time, mark them with NESA's marking guidelines, and tick the topics you lost marks on so they go into your plan.
 - **Real maths:** fractions, integrals, vectors and more, typeset properly. Answers can be typed like `3π/4`, `2√3` or `4.1e-19`.
 - **Dark mode:** auto, dark or light (button in the top bar).
 - **Accounts (website):** sign in with Google to sync between devices and join a private leaderboard with your mates.
