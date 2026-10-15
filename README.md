@@ -50,7 +50,7 @@ The app works offline. **Sign in with Google** works in the app too: it opens yo
 - **Levels:** Foundation, Standard and Complex. Three right in a row moves you up; two wrong drops you back.
 - **Mistakes list:** wrong answers are saved until you get them right twice.
 - **Practice exams:** timed papers for every subject.
-- **Official HSC past papers:** every Ext 1, Ext 2 and Physics paper for the current course (2019/2020 to 2025), opened from NESA. Sit them on a real timer with reading time, mark them with NESA's marking guidelines, and tick the topics you lost marks on so they go into your plan.
+- **Official HSC past papers:** every Ext 1, Ext 2 and Physics paper for the current course (2019/2020 to 2025), opened from NESA. Sit them on a real timer with reading time, mark them with NESA's marking guidelines, and tick the topics you lost marks on so they go into your plan. **Mix and match** builds new papers out of real HSC questions from different years: a random full-length paper, or any topics you pick (15 to 60 marks). Each question opens on the right page of the official paper, and your marks feed your topic accuracy.
 - **Real maths:** fractions, integrals, vectors and more, typeset properly. Answers can be typed like `3π/4`, `2√3` or `4.1e-19`.
 - **Dark mode:** auto, dark or light (button in the top bar).
 - **Accounts (website):** sign in with Google to sync between devices and join a private leaderboard with your mates.
@@ -66,6 +66,7 @@ Official HSC past papers: [Ext 1](https://www.nsw.gov.au/education-and-training/
   - `texkit.js` helpers for generated questions
   - `content.js`, `exam.js`, `y8more.js`, `geo.js` Year 8 decks; `ext2.js`, `e1.js`, `physics.js` HSC decks
   - `viz.js` diagrams; `app.js` the app; `shell.html` layout and styles
+  - `papers.js` links to NESA papers; `paperindex.js` where every question is (metadata only, built by `tools/paper_index.py`); `mix.js` mix-and-match (tested)
   - `keys.js`, `gate.js` invite keys and the lock screen; `english.js` English decks; `writing.js` writing feedback (tested); `badges.js` badges and ranks (tested)
 - Tests: `node tests/all.js`
 - Invite keys: `keys.json` holds SHA-256 hashes (plus `exp` in ms and `revoked`) only. The Admin panel saves straight to it with a fine-grained GitHub token (Contents: read and write on this repo) stored on the admin's device. `python3 tools/keys.py new "Friend 16" --days 7` makes a key (the key itself goes in `../lock-in-keys.md`, outside the repo); `python3 tools/keys.py revoke k07` turns one off. Commit and push `keys.json` afterwards. The admin key gets an **Admin** button to do all this from the app.

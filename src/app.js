@@ -1613,6 +1613,8 @@ Aim for 2-5 sections with 3-6 notes each, 10-20 flashcards (key terms, people, d
     body.innerHTML = `<div class="pp">
       <p class="note">Every official HSC paper for the current course, straight from NESA. <b>Sit it</b> runs the real timer (${F.reading} min reading, ${F.writing / 60} hours writing). Then mark it with the marking guidelines and tick the topics you lost marks on: they go into your plan.</p>
       ${done.length ? `<div class="adm-stats"><div><b>${done.length}/${list.length}</b><span>papers done</span></div><div><b>${avg}%</b><span>average</span></div><div><b>${Math.max(...done.map(p => pct(p.result)))}%</b><span>best</span></div></div>` : ''}
+      ${mixPanelHtml(sid)}
+      <h3 class="pp-h">Full papers</h3>
       <ul class="pp-list">${list.map(p => `<li${p.result ? ' class="done"' : ''}>
         <span class="pp-year">${p.year}</span>
         <span class="pp-res">${p.result ? `<b>${p.result.total}/${p.result.outOf}</b> <span class="note">${pct(p.result)}% · ${new Date(p.result.at).toLocaleDateString('en-AU', { day: 'numeric', month: 'short' })}</span>` : '<span class="note">Not done yet</span>'}</span>
@@ -1621,21 +1623,108 @@ Aim for 2-5 sections with 3-6 notes each, 10-20 flashcards (key terms, people, d
       <p class="note" style="font-size:13px">Papers and marking guidelines © NSW Education Standards Authority, opened from nsw.gov.au.</p></div>`;
     $$('[data-sit]', body).forEach(b => b.onclick = () => { const now = Date.now(); setSit({ sid, year: +b.dataset.sit, start: now, readEnd: now + F.reading * 6e4, end: now + (F.reading + F.writing) * 6e4, paused: null }); openSit(sid, +b.dataset.sit); });
     $$('[data-mark]', body).forEach(b => b.onclick = () => openMarkSheet(sid, +b.dataset.mark, null));
+    bindMixPanel(body, sid);
+    showOv();
+  }
+  /* ---------------- mix and match: papers made of questions from different years ---------------- */
+  const hasIndex = (sid) => typeof PAPER_INDEX !== 'undefined' && !!PAPER_INDEX[sid] && typeof Mix !== 'undefined';
+  const yearPaper = (sid, y) => (PAPERS.LIST[sid] || []).find(p => p.year === +y) || {};
+  const itemUrl = (sid, i) => (yearPaper(sid, i.year).paper || '') + (i.page ? `#page=${i.page}` : '');
+  const codeName = (sid) => { const m = {}; decksOf(sid).forEach(d => (d.sections || []).forEach(sec => { m[sec.code] = { name: sec.name, deck: d.id }; })); return m; };
+  const mixesOf = (sid) => Object.values(S.mixes || {}).filter(m => m.sid === sid).sort((a, b) => b.at - a.at);
+  function mixPanelHtml(sid) {
+    if (!hasIndex(sid)) return '';
+    const names = codeName(sid), counts = Mix.topicCounts(PAPER_INDEX[sid]), sel = new Set(cur.mixTopics || []), len = cur.mixLen || 30, mixes = mixesOf(sid);
+    return `<section class="panel mix-panel"><h3>Mix and match</h3>
+      <p class="note">Real HSC questions from different years, mixed into a new paper. Each one opens on the right page of the official paper.</p>
+      <div class="row"><button class="btn" type="button" data-mx="random">Random HSC paper</button><span class="note">Full length, every question from a random year.</span></div>
+      <h4>Or pick topics</h4>
+      ${decksOf(sid).map(d => { const secs = (d.sections || []).filter(sec => counts[sec.code]); return secs.length ? `<div class="pp-topics"><b>${esc(d.title)}</b><div class="pills">${secs.map(sec => `<button class="pill" type="button" data-mt="${esc(sec.code)}" aria-pressed="${sel.has(sec.code)}" title="${counts[sec.code]} marks across all papers">${esc(sec.code)} ${fm(sec.name)}</button>`).join('')}</div></div>` : ''; }).join('')}
+      <div class="row" style="margin-top:10px"><span class="note">Length</span><div class="pills" role="group" aria-label="Length">${[15, 30, 45, 60].map(n => `<button class="pill" type="button" data-ml="${n}" aria-pressed="${len === n}">${n} marks</button>`).join('')}</div><button class="btn btn-hot" type="button" data-mx="topic">Build it</button></div>
+      ${mixes.length ? `<h4>Your mixes</h4><ul class="mix-list">${mixes.slice(0, 8).map(m => `<li><button class="linkbtn" type="button" data-mo="${esc(m.id)}">${esc(m.title)}</button> <span class="note">${Mix.total(m.items)} marks${m.result ? ` · <b>${m.result.total}/${m.result.outOf}</b> (${pct(m.result)}%)` : ''}</span></li>`).join('')}</ul>` : ''}</section>`;
+  }
+  function bindMixPanel(body, sid) {
+    if (!hasIndex(sid)) return;
+    $$('[data-mt]', body).forEach(b => b.onclick = () => { const set = new Set(cur.mixTopics || []), c = b.dataset.mt; set.has(c) ? set.delete(c) : set.add(c); cur.mixTopics = [...set]; b.setAttribute('aria-pressed', set.has(c)); });
+    $$('[data-ml]', body).forEach(b => b.onclick = () => { cur.mixLen = +b.dataset.ml; $$('[data-ml]', body).forEach(x => x.setAttribute('aria-pressed', x === b)); });
+    $$('[data-mo]', body).forEach(b => b.onclick = () => openMix(b.dataset.mo));
+    $$('[data-mx]', body).forEach(b => b.onclick = () => {
+      const s = getSubj(sid), F = PAPERS.FORMAT[sid], perMark = F.writing / PAPERS.outOf(sid), names = codeName(sid);
+      let items, title;
+      if (b.dataset.mx === 'random') { items = Mix.randomPaper(sid, PAPER_INDEX[sid]); title = `Mixed ${s.tab || s.name} paper`; }
+      else {
+        const t = cur.mixTopics || []; if (!t.length) { toast('Pick at least one topic'); return; }
+        items = Mix.byTopic(sid, PAPER_INDEX[sid], t, cur.mixLen || 30);
+        if (!items.length) { toast('No past questions on those topics yet'); return; }
+        if (Mix.total(items) < (cur.mixLen || 30) * 0.8) toast(`Only ${Mix.total(items)} marks of past questions on ${t.length > 1 ? 'those topics' : 'that topic'}, so this mix is shorter.`);
+        const nm = (c) => String(names[c]?.name || c).replace(/\$[^$]*\$/g, '').trim();
+        title = t.length <= 2 ? `${t.map(nm).join(' + ')} mix` : `${t.length}-topic ${s.tab || s.name} mix`;
+      }
+      const id = 'mx' + Date.now().toString(36), minutes = b.dataset.mx === 'random' ? F.writing : Mix.minutes(items, perMark);
+      const all = { ...(S.mixes || {}), [id]: { id, sid, at: Date.now(), title, minutes, items } };
+      S.mixes = Object.fromEntries(Object.entries(all).sort((x, y) => y[1].at - x[1].at).slice(0, 30)); save();
+      openMix(id);
+    });
+  }
+  function openMix(id) {
+    const m = (S.mixes || {})[id]; if (!m) return;
+    const sid = m.sid, s = getSubj(sid), names = codeName(sid), Y = [...new Set(m.items.map(i => i.year))].sort();
+    cur = { kind: 'mix', tab: null, sid }; const body = ovFrame(m.title, 'c-' + s.hue, null);
+    body.innerHTML = `<div class="pp">
+      <p class="note">${m.items.length} questions · ${Mix.total(m.items)} marks · ${m.minutes} minutes · from ${Y.length > 1 ? `${Y[0]}–${Y[Y.length - 1]}` : Y[0]}. <b>Open</b> takes you to the question in the official paper.</p>
+      <div class="row"><button class="btn btn-hot" type="button" id="mxSit">Start the timer</button><button class="btn btn-ghost" type="button" id="mxMark">${m.result ? 'Edit marks' : 'Enter marks'}</button><button class="linkbtn" type="button" id="mxBack">← Past papers</button></div>
+      ${m.result ? `<p><b>Your score: ${m.result.total}/${m.result.outOf} (${pct(m.result)}%)</b></p>` : ''}
+      <ol class="mix-items">${m.items.map((i, k) => `<li><span class="mx-n">${k + 1}</span><div><b>${esc(Mix.name(i))}</b> <span class="note">${i.kind === 'mc' ? 'multiple choice' : i.kind === 'q' ? 'whole question' : 'part'} · ${i.marks} mark${i.marks > 1 ? 's' : ''}</span>
+        <div class="note">${i.about ? esc(i.about) + ' · ' : ''}${i.topics.map(c => `${esc(c)} ${fm(names[c]?.name || '')}`).join(', ')}</div></div>
+        <span class="mx-links"><a class="btn btn-ghost btn-sm" href="${esc(itemUrl(sid, i))}" target="_blank" rel="noopener">Open</a>${yearPaper(sid, i.year).mg ? `<a class="linkbtn" href="${esc(yearPaper(sid, i.year).mg)}" target="_blank" rel="noopener">Marking</a>` : ''}</span></li>`).join('')}</ol>
+      <p class="note" style="font-size:13px">Questions © NSW Education Standards Authority, opened from nsw.gov.au.</p></div>`;
+    $('#mxSit', body).onclick = () => { const now = Date.now(); setSit({ sid, mix: id, start: now, readEnd: now + 5 * 6e4, end: now + (5 + m.minutes) * 6e4, paused: null }); openSit(sid, null); };
+    $('#mxMark', body).onclick = () => openMixMark(id, null);
+    $('#mxBack', body).onclick = () => openPapers(sid);
+    showOv();
+  }
+  function openMixMark(id, mins) {
+    const m = (S.mixes || {})[id]; if (!m) return;
+    const sid = m.sid, s = getSubj(sid), names = codeName(sid), old = m.result;
+    cur = { kind: 'marksheet', tab: null }; const body = ovFrame(`Mark: ${m.title}`, 'c-' + s.hue, null);
+    body.innerHTML = `<div class="pp-mark"><p class="note">Use each year's marking guidelines.${mins != null ? ` You wrote for ${mins} minute${mins === 1 ? '' : 's'}.` : ''} Every mark here counts towards your topic accuracy, so your plan knows what to work on.</p>
+      <div class="pp-parts">${m.items.map((i, k) => `<label class="pp-part"><span>${k + 1}. ${esc(Mix.name(i))}${yearPaper(sid, i.year).mg ? ` <a class="linkbtn" href="${esc(yearPaper(sid, i.year).mg)}" target="_blank" rel="noopener">marking</a>` : ''}</span><span class="pp-in"><input class="field" type="number" inputmode="numeric" min="0" max="${i.marks}" step="1" data-mi="${k}" value="${old?.scores?.[k] ?? ''}" aria-label="Marks for ${esc(Mix.name(i))}"> / ${i.marks}</span></label>`).join('')}</div>
+      <div class="pp-total">Total <b id="ppTotal">0</b> / ${Mix.total(m.items)} <span id="ppPct" class="note"></span></div>
+      <div class="row" style="margin-top:18px"><button class="btn btn-hot" type="button" id="mxSave">Save my mark</button><button class="btn btn-ghost" type="button" id="mxBack2">Back</button></div></div>`;
+    const vals = () => $$('[data-mi]', body).map(i => i.value === '' ? null : Math.max(0, Math.min(+i.max, Math.round(+i.value))));
+    const sum = () => { const v = vals(), t = v.reduce((a, x) => a + (x || 0), 0); $('#ppTotal', body).textContent = t; $('#ppPct', body).textContent = v.some(x => x != null) ? `${Math.round(t / Mix.total(m.items) * 100)}%` : ''; return t; };
+    $$('[data-mi]', body).forEach(i => i.oninput = sum); sum();
+    $('#mxBack2', body).onclick = () => openMix(id);
+    $('#mxSave', body).onclick = () => {
+      const v = vals(); if (!v.some(x => x != null)) { toast('Enter your marks first'); return; }
+      // Each marked item counts as attempts on its main topic (only the first time it's marked).
+      if (!old) m.items.forEach((i, k) => { if (v[k] == null) return; const c = i.topics[0], d = names[c]?.deck; if (!d) return; const t = (prog(d).tags[c] ||= [0, 0]); t[0] += i.marks; t[1] += v[k]; });
+      const total = sum(), outOf = Mix.total(m.items);
+      m.result = { at: Date.now(), total, outOf, scores: v };
+      if (!old) { addXp(30 + total); bumpStreak(); Logic.logActivity(S, today(), outOf); }
+      save(); renderStats(); renderBoard();
+      if (!old) { burst(innerWidth / 2, innerHeight / 3, total / outOf >= 0.8 ? 160 : 80); toast(`${total}/${outOf} (${Math.round(total / outOf * 100)}%). +${30 + total} XP`); } else toast('Marks updated');
+      openMix(id);
+    };
     showOv();
   }
   let sitTick = null;
   function openSit(sid, year) {
-    const s = getSubj(sid), p = (PAPERS.LIST[sid] || []).find(x => x.year === year), F = PAPERS.FORMAT[sid];
-    cur = { kind: 'sit', tab: null }; const body = ovFrame(`${year} HSC ${s.name}`, 'c-' + s.hue, null); ov.classList.add('focus');
+    const s = getSubj(sid), st0 = sitState() || {}, mix = st0.mix ? (S.mixes || {})[st0.mix] : null;
+    const p = mix ? {} : (PAPERS.LIST[sid] || []).find(x => x.year === year) || {}, F = PAPERS.FORMAT[sid];
+    const readMin = Math.round((st0.readEnd - st0.start) / 6e4) || F.reading, writeMin = Math.round((st0.end - st0.readEnd) / 6e4) || F.writing;
+    const label = mix ? mix.title : `${year} ${s.tab || s.name}`;
+    cur = { kind: 'sit', tab: null }; const body = ovFrame(mix ? mix.title : `${year} HSC ${s.name}`, 'c-' + s.hue, null); ov.classList.add('focus');
     body.innerHTML = `<div class="focus-run sit"><p class="focus-sub" id="sitPhase"></p><div class="focus-time" id="sitTime" role="timer" aria-live="off"></div><div class="focus-bar"><i id="sitBar"></i></div>
       <p class="focus-task" id="sitTip"></p>
-      <div class="row" style="justify-content:center;margin-top:20px">${p.paper ? `<a class="btn" href="${esc(p.paper)}" target="_blank" rel="noopener">Open the paper</a>` : ''}<button class="btn btn-ghost" type="button" id="sitPause"></button><button class="btn btn-ghost" type="button" id="sitDone">Finish</button><button class="linkbtn" type="button" id="sitQuit">Quit</button></div></div>`;
+      <div class="row" style="justify-content:center;margin-top:20px">${p.paper ? `<a class="btn" href="${esc(p.paper)}" target="_blank" rel="noopener">Open the paper</a>` : ''}<button class="btn btn-ghost" type="button" id="sitPause"></button><button class="btn btn-ghost" type="button" id="sitDone">Finish</button><button class="linkbtn" type="button" id="sitQuit">Quit</button></div>
+      ${mix ? `<ol class="mix-mini">${mix.items.map(i => `<li><a class="linkbtn" href="${esc(itemUrl(sid, i))}" target="_blank" rel="noopener">${esc(Mix.name(i))}</a> <span class="note">${i.marks} mark${i.marks > 1 ? 's' : ''}</span></li>`).join('')}</ol>` : ''}</div>`;
     const draw = () => {
       const st = sitState(); if (!st) return;
       const now = st.paused || Date.now(), reading = now < st.readEnd, left = Math.max(0, (reading ? st.readEnd : st.end) - now);
       const h = Math.floor(left / 36e5), mm = Math.floor(left % 36e5 / 6e4), ss = Math.floor(left % 6e4 / 1e3);
-      $('#sitTime').textContent = `${h ? h + ':' + pad(mm) : mm}:${pad(ss)}`; document.title = `${$('#sitTime').textContent} · ${year} ${s.tab || s.name}`;
-      $('#sitPhase').textContent = st.paused ? 'Paused' : reading ? `Reading time · ${F.reading} minutes` : `Writing time · ${F.writing / 60} hours`;
+      $('#sitTime').textContent = `${h ? h + ':' + pad(mm) : mm}:${pad(ss)}`; document.title = `${$('#sitTime').textContent} · ${label}`;
+      $('#sitPhase').textContent = st.paused ? 'Paused' : reading ? `Reading time · ${readMin} minutes` : `Writing time · ${writeMin >= 60 && writeMin % 60 === 0 ? `${writeMin / 60} hour${writeMin > 60 ? 's' : ''}` : `${writeMin} minutes`}`;
       $('#sitTip').textContent = reading ? 'Read the whole paper. No writing yet: plan which questions you\'ll start with.' : left < 15 * 6e4 ? 'Last 15 minutes: make sure every multiple choice question has an answer.' : 'Do the questions you know first. Show all working: method marks add up.';
       $('#sitBar').style.width = `${Math.min(100, (now - st.start) / (st.end - st.start) * 100)}%`;
       $('#sitPause').textContent = st.paused ? 'Resume' : 'Pause';
@@ -1646,8 +1735,8 @@ Aim for 2-5 sections with 3-6 notes each, 10-20 flashcards (key terms, people, d
       clearInterval(sitTick); const st = sitState(); setSit(null); document.title = baseTitle; ov.classList.remove('focus');
       const mins = st ? Math.max(0, Math.round(((st.paused || Date.now()) - st.readEnd) / 6e4)) : 0;
       if (timeUp) { chime(); toast('Pens down. Time to mark it.'); }
-      if (mins >= 5) { Logic.addSession(S, { id: 'p' + (st?.start || Date.now()).toString(36), date: today(), min: Math.min(mins, F.writing), sid }); save(); }
-      openMarkSheet(sid, year, mins);
+      if (mins >= 5) { Logic.addSession(S, { id: 'p' + (st?.start || Date.now()).toString(36), date: today(), min: Math.min(mins, writeMin), sid }); save(); }
+      if (mix) openMixMark(mix.id, mins); else openMarkSheet(sid, year, mins);
     };
     $('#sitPause').onclick = () => { const st = sitState(); if (st.paused) { const d = Date.now() - st.paused; st.readEnd += d; st.end += d; st.paused = null; } else st.paused = Date.now(); setSit(st); draw(); };
     $('#sitDone').onclick = () => finish(false);
@@ -1657,24 +1746,28 @@ Aim for 2-5 sections with 3-6 notes each, 10-20 flashcards (key terms, people, d
   }
   function openMarkSheet(sid, year, mins) {
     const s = getSubj(sid), p = (PAPERS.LIST[sid] || []).find(x => x.year === year), F = PAPERS.FORMAT[sid], old = (S.papers || {})[paperKey(sid, year)];
+    // Real marks per question for that year when the question map has them (some Ext 1 questions are 14 or 16).
+    const yi = hasIndex(sid) ? PAPER_INDEX[sid][year] : null;
+    const parts = yi && sid !== 'phys' ? F.parts.map(([k, l, max]) => { const q = k[0] === 'Q' && yi.q.find(x => `Q${x.n}` === k); return [k, l, q ? q.marks : max]; }) : F.parts;
+    const outOf = parts.reduce((a, x) => a + x[2], 0);
     cur = { kind: 'marksheet', tab: null }; const body = ovFrame(`Mark: ${year} ${s.name}`, 'c-' + s.hue, null);
     const topics = decksOf(sid).flatMap(d => (d.sections || []).map(sec => ({ id: d.id + ':' + sec.code, code: sec.code, name: sec.name, deck: d.title })));
     const lost = new Set(old?.lost || []);
     body.innerHTML = `<div class="pp-mark">
       <p class="note">${p.mg ? `Open the <a class="linkbtn" href="${esc(p.mg)}" target="_blank" rel="noopener">marking guidelines</a> and mark each question honestly.` : 'Mark each question.'}${mins != null ? ` You wrote for ${mins} minute${mins === 1 ? '' : 's'}.` : ''}</p>
-      <div class="pp-parts">${F.parts.map(([k, l, max]) => `<label class="pp-part"><span>${esc(l)}</span><span class="pp-in"><input class="field" type="number" inputmode="numeric" min="0" max="${max}" step="1" data-pt="${k}" value="${old?.scores?.[k] ?? ''}" aria-label="${esc(l)} marks"> / ${max}</span></label>`).join('')}</div>
-      <div class="pp-total">Total <b id="ppTotal">0</b> / ${PAPERS.outOf(sid)} <span id="ppPct" class="note"></span></div>
+      <div class="pp-parts">${parts.map(([k, l, max]) => `<label class="pp-part"><span>${esc(l)}</span><span class="pp-in"><input class="field" type="number" inputmode="numeric" min="0" max="${max}" step="1" data-pt="${k}" value="${old?.scores?.[k] ?? ''}" aria-label="${esc(l)} marks"> / ${max}</span></label>`).join('')}</div>
+      <div class="pp-total">Total <b id="ppTotal">0</b> / ${outOf} <span id="ppPct" class="note"></span></div>
       <h3>Which topics did you lose marks on?</h3><p class="note">Tick them and they become weak spots in your plan.</p>
       ${decksOf(sid).map(d => `<div class="pp-topics"><b>${esc(d.title)}</b><div class="pills">${(d.sections || []).map(sec => { const id = d.id + ':' + sec.code; return `<button class="pill" type="button" data-lt="${esc(id)}" aria-pressed="${lost.has(id)}">${esc(sec.code)} ${fm(sec.name)}</button>`; }).join('')}</div></div>`).join('')}
       <div class="row" style="margin-top:18px"><button class="btn btn-hot" type="button" id="ppSave">Save my mark</button><button class="btn btn-ghost" type="button" id="ppBack">Back to papers</button></div></div>`;
-    const sum = () => { let t = 0, any = false; $$('[data-pt]', body).forEach(i => { const v = Math.max(0, Math.min(+i.max, Math.round(+i.value || 0))); if (i.value !== '') any = true; t += v; }); $('#ppTotal', body).textContent = t; $('#ppPct', body).textContent = any ? `${Math.round(t / PAPERS.outOf(sid) * 100)}%` : ''; return t; };
+    const sum = () => { let t = 0, any = false; $$('[data-pt]', body).forEach(i => { const v = Math.max(0, Math.min(+i.max, Math.round(+i.value || 0))); if (i.value !== '') any = true; t += v; }); $('#ppTotal', body).textContent = t; $('#ppPct', body).textContent = any ? `${Math.round(t / outOf * 100)}%` : ''; return t; };
     $$('[data-pt]', body).forEach(i => i.oninput = sum); sum();
     $$('[data-lt]', body).forEach(b => b.onclick = () => { const id = b.dataset.lt; lost.has(id) ? lost.delete(id) : lost.add(id); b.setAttribute('aria-pressed', lost.has(id)); });
     $('#ppBack', body).onclick = () => openPapers(sid);
     $('#ppSave', body).onclick = () => {
       const scores = {}; $$('[data-pt]', body).forEach(i => { if (i.value !== '') scores[i.dataset.pt] = Math.max(0, Math.min(+i.max, Math.round(+i.value))); });
       if (!Object.keys(scores).length) { toast('Enter your marks first'); return; }
-      const first = !old, total = sum(), outOf = PAPERS.outOf(sid);
+      const first = !old, total = sum();
       // New weak spots count as two missed attempts on that topic (only ones not already ticked for this paper).
       [...lost].filter(id => !(old?.lost || []).includes(id)).forEach(id => { const [deckId, code] = id.split(':'); const t = (prog(deckId).tags[code] ||= [0, 0]); t[0] += 2; });
       (S.papers ||= {})[paperKey(sid, year)] = { at: Date.now(), scores, total, outOf, lost: [...lost], mins: mins ?? old?.mins ?? null };

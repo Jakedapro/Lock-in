@@ -564,6 +564,15 @@ footer { padding-block: 26px 44px; color: var(--ink-3); font-size: 14px; border-
 .pp-mark h3 { margin: 10px 0 0; font-size: 19px; }
 .pp-topics b { display: block; font-size: 14px; margin: 6px 0 6px; color: var(--ink-2); }
 @media (max-width: 640px) { .pp-list li { grid-template-columns: 52px minmax(0, 1fr); } .pp-acts { grid-column: 1 / -1; grid-row: auto; justify-content: flex-start; } .pp-year { grid-row: auto; } }
+.pp-h { margin: 6px 0 0; font-size: 19px; }
+.mix-panel h3 { margin: 0 0 4px; font-size: 20px; } .mix-panel h4 { margin: 14px 0 6px; font-size: 16px; }
+.mix-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 4px; }
+.mix-items { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+.mix-items li { display: grid; grid-template-columns: 30px minmax(0, 1fr) auto; gap: 12px; align-items: center; background: var(--sheet); border: 1px solid var(--rule); border-radius: 12px; padding: 10px 14px; }
+.mx-n { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; font-size: 13px; font-weight: 700; background: var(--acc); color: var(--sheet); }
+.mx-links { display: flex; gap: 10px; align-items: center; }
+.mix-mini { text-align: left; max-width: 520px; margin: 22px auto 0; columns: 2; font-size: 14px; }
+@media (max-width: 560px) { .mix-items li { grid-template-columns: 26px minmax(0, 1fr); } .mx-links { grid-column: 2; } .mix-mini { columns: 1; } }
 /* ---- quote bank ---- */
 .qb { display: grid; gap: 18px; max-width: 860px; }
 .qb-add h3 { margin: 0 0 4px; }
