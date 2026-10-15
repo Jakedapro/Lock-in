@@ -5952,7 +5952,7 @@ const RD = (() => {
       moments: [
         {
           title: 'The neighbouring farmers',
-          quote: 'bad terms',
+          quote: 'the owners of the two farms which adjoined Animal Farm were on permanently bad terms.',
           explain: 'Pilkington and Frederick are rivals who cannot agree, even though both fear the Rebellion spreading to their own animals. Their quarrel stops them from acting together.',
           technique: 'Contrast in characterisation: the easy-going Pilkington and the tough, shrewd Frederick are set against each other, preparing for later plot twists.',
           theme: 'Power and corruption (H1): Orwell shows that the powerful outsiders care only about their own interests.',
@@ -6097,7 +6097,7 @@ const RD = (() => {
         },
         {
           title: 'The pigs move into the farmhouse',
-          quote: 'No animal shall sleep in a bed with sheets.',
+          quote: 'No animal shall sleep in a bed with sheets',
           explain: 'Clover remembers a rule against beds, but the wall now has extra words added. The pigs have quietly changed the commandment to suit themselves.',
           technique: 'Altered commandment: adding just a few words reverses the meaning of the rule while making it look as if nothing has changed.',
           theme: 'Equality, class and the Seven Commandments (H3): the pigs bend the rules to justify their new luxury.',
@@ -8365,7 +8365,7 @@ Aim for 2-5 sections with 3-6 notes each, 10-20 flashcards (key terms, people, d
       <ol class="rd-moments">${c.moments.map((m, i) => `<li class="rd-m">
         <h4><span class="rd-num">${i + 1}</span>${esc(m.title)}</h4>
         <blockquote class="rd-q">“${esc(m.quote)}”</blockquote>
-        <dl class="rd-notes"><div><dt>What's happening</dt><dd>${fm(m.explain)}</dd></div><div><dt>How Orwell does it</dt><dd>${fm(m.technique)}</dd></div><div><dt>Why it matters</dt><dd>${fm(m.theme)}</dd></div>${m.history ? `<div><dt>Real history</dt><dd>${fm(m.history)}</dd></div>` : ''}</dl>
+        <dl class="rd-notes"><div><dt>What's happening</dt><dd>${fm(m.explain)}</dd></div><div><dt>How Orwell does it</dt><dd>${fm(m.technique)}</dd></div><div><dt>Why it matters</dt><dd>${fm(m.theme.replace(/\s*\(H\d\)/g, ''))}</dd></div>${m.history ? `<div><dt>Real history</dt><dd>${fm(m.history)}</dd></div>` : ''}</dl>
         <details class="rd-think"><summary>Think about it: ${fm(m.think.q)}</summary><p>${fm(m.think.a)}</p></details></li>`).join('')}</ol>
       <section class="rd-quiz"><h3>Quick check</h3><p class="note">Get them all right to tick off Chapter ${c.n}.</p><div id="rdQuiz"></div></section>
       <div class="row rd-nav">${c.n > 1 ? `<button class="btn btn-ghost" type="button" data-rch="${c.n - 1}">← Chapter ${c.n - 1}</button>` : ''}<span style="flex:1"></span>${c.n < C.length ? `<button class="btn" type="button" data-rch="${c.n + 1}">Chapter ${c.n + 1} →</button>` : '<button class="btn" type="button" data-rch="cast">Characters →</button>'}</div></article>`;

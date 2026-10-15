@@ -1547,7 +1547,7 @@ Aim for 2-5 sections with 3-6 notes each, 10-20 flashcards (key terms, people, d
       <ol class="rd-moments">${c.moments.map((m, i) => `<li class="rd-m">
         <h4><span class="rd-num">${i + 1}</span>${esc(m.title)}</h4>
         <blockquote class="rd-q">“${esc(m.quote)}”</blockquote>
-        <dl class="rd-notes"><div><dt>What's happening</dt><dd>${fm(m.explain)}</dd></div><div><dt>How Orwell does it</dt><dd>${fm(m.technique)}</dd></div><div><dt>Why it matters</dt><dd>${fm(m.theme)}</dd></div>${m.history ? `<div><dt>Real history</dt><dd>${fm(m.history)}</dd></div>` : ''}</dl>
+        <dl class="rd-notes"><div><dt>What's happening</dt><dd>${fm(m.explain)}</dd></div><div><dt>How Orwell does it</dt><dd>${fm(m.technique)}</dd></div><div><dt>Why it matters</dt><dd>${fm(m.theme.replace(/\s*\(H\d\)/g, ''))}</dd></div>${m.history ? `<div><dt>Real history</dt><dd>${fm(m.history)}</dd></div>` : ''}</dl>
         <details class="rd-think"><summary>Think about it: ${fm(m.think.q)}</summary><p>${fm(m.think.a)}</p></details></li>`).join('')}</ol>
       <section class="rd-quiz"><h3>Quick check</h3><p class="note">Get them all right to tick off Chapter ${c.n}.</p><div id="rdQuiz"></div></section>
       <div class="row rd-nav">${c.n > 1 ? `<button class="btn btn-ghost" type="button" data-rch="${c.n - 1}">← Chapter ${c.n - 1}</button>` : ''}<span style="flex:1"></span>${c.n < C.length ? `<button class="btn" type="button" data-rch="${c.n + 1}">Chapter ${c.n + 1} →</button>` : '<button class="btn" type="button" data-rch="cast">Characters →</button>'}</div></article>`;
