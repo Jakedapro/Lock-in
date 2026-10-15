@@ -1,6 +1,6 @@
 # Lock in
 
-A study app for HSC Maths Extension 1, Maths Extension 2, Physics and English, plus Year 8 Geography and Maths.
+A study app for HSC Maths Extension 1, Maths Extension 2 and Physics, plus Year 8 English (Animal Farm), Geography and Maths.
 
 **Invite only:** the website and the app ask for an invite key (`LOCK-XXXX-XXXX-XXXX`) the first time. Got an invite link? Open it and you're in.
 
@@ -37,8 +37,8 @@ The app works offline. Sign-in, syncing and leaderboards are on the website.
 ## What it does
 
 - **Home:** exam timeline, the daily challenge, your study plan, a report card with your rank and badges, and a heatmap of your study days.
-- **English:** five decks (techniques, essay writing, the Common Module, Modules A to C, unseen texts with original extracts).
-- **Writing feedback:** paste an essay, paragraph, short answer or story and get instant feedback: thesis, topic sentences, quotes and techniques, dropped quotes, retelling, vague or informal words, showing not telling, clichés. Your writing comes back marked up, and your scores are saved so you can watch them climb. In the Claude version, AI gives a mark too.
+- **English (Year 8, Animal Farm):** plot and characters, themes, techniques, and PETAL paragraphs, with extract questions and a practice exam set out like Task 4 (20 marks, 60 minutes).
+- **Writing feedback:** paste PETAL paragraphs, a short answer, an essay or a story and get instant feedback: Point, Evidence, Technique, Analysis and Link in every paragraph, thesis, topic sentences, quotes and techniques, dropped quotes, retelling, vague or informal words, showing not telling, clichés. Your writing comes back marked up, and your scores are saved so you can watch them climb. In the Claude version, AI gives a mark too.
 - **Quote bank:** save quotes for your texts, then drill them until you can write them word for word.
 - **Daily challenge:** one Complex question a day, the same for everyone. Beat it for +50 XP.
 - **Badges and ranks:** 31 badges, and ranks from Rookie to Mythic.
@@ -55,7 +55,7 @@ The app works offline. Sign-in, syncing and leaderboards are on the website.
 - **Accounts (website):** sign in with Google to sync between devices and join a private leaderboard with your mates.
 - **AI (Claude version):** short answers marked against the criteria, an AI tutor for every deck, and decks made from your own notes.
 
-Official HSC past papers: [English Advanced](https://www.nsw.gov.au/education-and-training/nesa/curriculum/hsc-exam-papers/english-advanced), [Ext 1](https://www.nsw.gov.au/education-and-training/nesa/curriculum/hsc-exam-papers/mathematics-extension-1), [Ext 2](https://www.nsw.gov.au/education-and-training/nesa/curriculum/hsc-exam-papers/mathematics-extension-2), [Physics](https://www.nsw.gov.au/education-and-training/nesa/curriculum/hsc-exam-papers/physics).
+Official HSC past papers: [Ext 1](https://www.nsw.gov.au/education-and-training/nesa/curriculum/hsc-exam-papers/mathematics-extension-1), [Ext 2](https://www.nsw.gov.au/education-and-training/nesa/curriculum/hsc-exam-papers/mathematics-extension-2), [Physics](https://www.nsw.gov.au/education-and-training/nesa/curriculum/hsc-exam-papers/physics).
 
 ## For developers
 

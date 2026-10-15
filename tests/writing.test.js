@@ -109,6 +109,20 @@ test('recall scores word-by-word, ignoring case and punctuation', () => {
   assert.ok(WR.recall(t + ' and more extra words here', t) < 1, 'padding does not get full marks');
 });
 
+const SQ = 'How does Orwell use Squealer to show the power of language?';
+test('PETAL: a complete paragraph ticks all five parts', () => {
+  const t = 'Orwell uses Squealer to show how language can be used to control the other animals. When the animals question the pigs taking the milk and apples, Squealer asks "Surely, comrades, you do not want Jones back?" This rhetorical question uses fear to stop the animals thinking for themselves, because Jones is the one thing they all fear. It suggests that Squealer twists the truth so the pigs can keep their privileges. Therefore, Orwell warns readers that people in power can use clever language to control others.';
+  const r = WR.analyse(t, { kind: 'petal', question: SQ });
+  assert.deepStrictEqual(chk(r, 'petal').petal, [{ P: true, E: true, T: true, A: true, L: true }]);
+  assert.strictEqual(chk(r, 'author').status, 'good');
+  assert.ok(!r.marks.some(m => m.kind === 'weak' && /shows?|uses/.test(t.slice(m.start, m.end))), '"shows" and "uses" are fine in PETAL');
+});
+test('PETAL: retelling with no quote misses E, T, A and L and the point is weak', () => {
+  const r = WR.analyse('Squealer is a pig. He talks a lot and says things to the animals. The animals listen to him. Then Napoleon takes over the farm and the animals work hard.', { kind: 'petal', question: SQ });
+  assert.deepStrictEqual(chk(r, 'petal').petal, [{ P: false, E: false, T: false, A: false, L: false }]);
+  assert.strictEqual(chk(r, 'petal').tips.length, 5);
+});
+
 let fail = 0;
 for (const [name, fn] of tests) { try { fn(); } catch (e) { fail++; console.log('FAIL', name, '\n ', e.message); } }
 console.log(fail ? `${fail}/${tests.length} failed` : `ok (${tests.length} tests)`);

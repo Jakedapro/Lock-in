@@ -74,22 +74,43 @@ for (const id of PH_IDS) test(`Physics deck ${id}`, () => {
 });
 
 const EN = () => require('../src/english.js');
-const EN_IDS = ['engtech', 'engessay', 'engcommon', 'engmods', 'engunseen'];
+const EN_IDS = ['afplot', 'afthemes', 'aftech', 'afwrite', 'engtech'], AF_IDS = EN_IDS.slice(0, 4);
 test('English has its five decks', () => assert.deepStrictEqual(EN().DECKS.map(d => d.id), EN_IDS));
 for (const id of EN_IDS) test(`English deck ${id}`, () => {
   const d = EN().DECKS.find(x => x.id === id); assert.strictEqual(d.subject, 'eng'); checkDeck(d);
   assert.ok((d.short || []).length >= 3, id + ' has 3+ short answers');
   const codes = new Set(d.sections.map(s => s.code));
   d.short.forEach(q => {
-    assert.ok(q.criteria.length >= 2 && q.model && q.marks >= 2, id + ' short answer has criteria and a model answer');
+    assert.ok(q.criteria.length >= 1 && q.model && q.marks >= 1, id + ' short answer has criteria and a model answer');
     assert.strictEqual(q.criteria.length, q.marks, id + ' short answer has one criterion per mark: ' + q.q);
     (q.tags || []).forEach(t => assert.ok(codes.has(t), `${id} short tag ${t} matches a section`));
   });
 });
-test('English unseen deck has 10+ short answers on passages', () => {
-  const d = EN().DECKS.find(x => x.id === 'engunseen');
-  assert.ok(d.short.filter(q => typeof q.passage === 'string' && q.passage.length > 50).length >= 10);
-  for (let i = 0; i < 50; i++) for (const L of ['F', 'S', 'C']) assert.ok(d.bank[0](L).passage, 'unseen bank question has a passage');
+test('afwrite has at least two 8-mark extended responses', () => assert.ok(EN().DECKS.find(d => d.id === 'afwrite').short.filter(q => q.marks === 8).length >= 2));
+test('Animal Farm decks have 10+ short answers on extracts', () => {
+  const n = EN().DECKS.filter(d => AF_IDS.includes(d.id)).flatMap(d => d.short).filter(q => typeof q.passage === 'string' && q.passage.length > 20).length;
+  assert.ok(n >= 10, n + ' passage short answers');
+});
+test('Animal Farm quotations in passages match the novel (if the text is available)', () => {
+  const fs = require('fs'), path = require('path'), os = require('os');
+  const candidates = [process.env.ANIMAL_FARM_TXT, path.join(__dirname, 'animalfarm.txt'), path.join(os.tmpdir(), 'animalfarm.txt'),
+    '/private/tmp/claude-501/-Users-jakoblal-Library-Application-Support-Claude-scratch-workspaces-cb9a84c2-d0ba-4c42-af29-689206bd6e58-a9818a8e-fdf3-4fe8-9391-fb1b7233a4cf-scratch-2026-10-14-aab07a/54c14f92-da97-4318-b014-0dc01b83fd52/scratchpad/animalfarm.txt'].filter(Boolean);
+  const file = candidates.find(f => { try { return fs.statSync(f).isFile(); } catch (e) { return false; } });
+  if (!file) return; // book text not available here: skip silently
+  const norm = (s) => s.replace(/http:\/\/www\.mudmap\S+ \(\d+ of \d+\) \[[^\]]+\]\s+Animal Farm by George Orwell/g, ' ').replace(/=== page \d+ ===/g, ' ')
+    .replace(/[\u2018\u2019]/g, "'").replace(/[\u201C\u201D]/g, '"').replace(/\s+/g, ' ');
+  const book = norm(fs.readFileSync(file, 'utf8'));
+  const passages = new Set();
+  for (const d of EN().DECKS.filter(x => AF_IDS.includes(x.id))) {
+    d.short.forEach(q => q.passage && passages.add(q.passage));
+    for (const fn of d.bank) for (let i = 0; i < 100; i++) for (const L of ['F', 'S', 'C']) { const q = fn(L); if (q.passage) passages.add(q.passage); }
+  }
+  let n = 0;
+  for (const p of passages) for (const m of p.matchAll(/\u201C([^\u201D]+)\u201D/g)) {
+    assert.ok(m[1].split(/\s+/).length <= 40, 'quotation is 40 words or fewer: ' + m[1]);
+    for (const piece of m[1].split('\u2026').map(x => norm(x).trim()).filter(Boolean)) { assert.ok(book.includes(piece), 'quotation not found in the novel: ' + piece); n++; }
+  }
+  assert.ok(n >= 10, 'checked ' + n + ' quotations');
 });
 test('English text has no asterisks, dollar signs or digit/digit fractions', () => {
   const bad = (s, where) => { assert.ok(!/[*$]/.test(s), where + ' contains * or $: ' + s); assert.ok(!/\d\/\d/.test(s), where + ' contains a digit fraction: ' + s); };

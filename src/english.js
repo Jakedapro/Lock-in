@@ -1,8 +1,8 @@
-/* ===== Lock In — HSC English (Advanced and Standard) =====
-   Techniques, essay writing, the Common Module, Modules A to C and unseen texts.
-   Every note, example line, passage and question here is original: no syllabus, rubric,
-   exam or published-text wording. Literary examples are invented so they work whatever
-   your prescribed texts are. Formatter note: no asterisks or dollar signs in this file's strings. */
+/* ===== Lock In — Year 8 English: Animal Farm (Assessment Task 4) =====
+   Plot and characters, themes, techniques, and short answers and PETAL paragraphs for
+   George Orwell's Animal Farm, plus a general techniques toolkit. Quotations from the novel are
+   kept short and checked against the text; everything else (notes, questions, model answers)
+   is original. Formatter note: no asterisks or dollar signs in this file's strings. */
 
 const EN = (() => {
   const T = typeof TK !== 'undefined' ? TK : require('./texkit.js');
@@ -231,613 +231,725 @@ const EN = (() => {
     },
   ];
 
-  /* ================= ESSAY AND PARAGRAPH WRITING ================= */
-  const ESSAY_Q = [
-    // Directive verbs and questions (W1)
-    Q('F', 'W1', 'Which directive verb asks you to make a judgement about value or effectiveness, with reasons?', 'Evaluate', ['Describe', 'Identify', 'Outline'], 'Evaluate means weigh up and judge.'),
-    Q('F', 'W1', 'Which directive verb asks you to break a text into parts and show how they work together to create meaning?', 'Analyse', ['Outline', 'Recount', 'Identify'], 'Analyse means examine how the parts create meaning.'),
-    Q('S', 'W1', 'A question begins “To what extent…”. What does it require?', 'A clear position on a scale, such as largely or only partly, justified with evidence', ['A yes or no answer only', 'A summary of the plot', 'A list of techniques from the text'], 'Extent questions want a qualified judgement.'),
-    Q('S', 'W1', 'A question includes the statement “Texts reveal that fear divides us.” What should your response do?', 'Engage directly with the statement: agree, disagree or qualify it', ['Ignore the statement and write your prepared essay', 'Copy the statement as your conclusion', 'Only define the word fear'], 'The statement is the focus you are marked against.'),
-    Q('C', 'W1', 'The question asks you to “assess the effectiveness” of a composer’s use of form. Which plan best fits?', 'Judge how well form creates meaning, giving reasons and admitting any limits', ['Describe the form in as much detail as possible', 'Explain what happens in each act or chapter', 'Compare the text with your personal experiences only'], 'Assess means judge the quality or extent, with reasons.'),
-    // Thesis statements (W2)
-    Q('F', 'W2', 'Question: How does your prescribed text represent the importance of hope? Which is the strongest thesis?', 'The composer suggests that hope is a deliberate act of courage rather than naive optimism, as characters choose to imagine a future despite evidence against it.', ['My text has lots of hope in it.', 'Hope is shown in my text through many techniques.', 'In this essay I will talk about hope.'], 'It makes an arguable claim about hope and how the text represents it.'),
-    Q('F', 'W2', 'Question: How does your text explore the experience of loss? Which is the strongest thesis?', 'The novel portrays loss as a force that isolates individuals before, paradoxically, binding a fractured family together.', ['The novel shows loss.', 'Loss is sad and the characters are sad.', 'There are three examples of loss in the novel.'], 'It has a clear, nuanced claim, including a paradox.'),
-    Q('S', 'W2', 'Question: How does your text represent the tension between ambition and loyalty? Which thesis is strongest?', 'The play interrogates how ambition corrodes loyalty, ultimately suggesting that success gained through betrayal leaves its characters more isolated than failure ever could.', ['The play uses metaphors and dramatic irony to show ambition and loyalty.', 'Ambition and loyalty are both important in the play.', 'The play is about a man who betrays his brother to get rich.'], 'It argues a relationship between the key terms and reaches a judgement.'),
-    Q('S', 'W2', 'Question: To what extent does your text suggest that people can change? Which thesis best answers it?', 'While the text largely suggests people can change, it insists this change is slow and costly, demanding that characters confront the selves they would rather forget.', ['People can change in the text.', 'The text has a character who changes and a character who does not.', 'Change is a very important theme in literature.'], 'It answers the extent and qualifies the answer.'),
-    Q('C', 'W2', 'Question: “Texts are most powerful when they unsettle us.” Which thesis engages best with this view?', 'The film affirms that discomfort can be powerful, yet suggests its unsettling scenes matter only because they push audiences towards empathy, not shock for its own sake.', ['The film is unsettling and powerful.', 'I agree with this statement because the film has scary scenes.', 'The film uses lighting, sound and camera angles to unsettle us.'], 'It weighs the statement and refines it rather than simply agreeing.'),
-    Q('C', 'W2', 'Question: How does your text explore the conflict between individual desire and collective responsibility? Which thesis is most sophisticated?', 'The poems suggest that individual desire and collective responsibility are not opposites but entangled, as the speaker’s longing for escape is shaped by the very community she resents.', ['The poems are about a speaker who wants to leave her town.', 'The poems show individual desire and collective responsibility through imagery.', 'Desire is individual and responsibility is collective in the poems.'], 'It reframes the conflict with a nuanced, arguable insight.'),
-    // Topic sentences (W3)
-    Q('F', 'W3', 'Which is the strongest topic sentence for an essay on belonging?', 'The composer initially presents belonging as conditional, suggesting acceptance is earned through conformity rather than offered freely.', ['In chapter one, the main character moves to a new town.', 'The composer uses a metaphor in the first chapter.', 'Belonging is a big part of the novel.'], 'It states an idea about the concept, not plot or a technique.'),
-    Q('S', 'W3', 'Which topic sentence best opens a paragraph about grief?', 'Through the fractured structure of the middle section, the poet conveys grief as a disorientation of time itself.', ['The middle section of the poem is fragmented.', 'Grief is sad and everyone experiences it.', 'In the middle section, the speaker remembers her mother.'], 'It links an idea about grief to how the text creates it.'),
-    Q('S', 'W3', 'An essay argues that the text represents resilience as communal. Which topic sentence best fits?', 'The composer reveals that resilience is sustained by others, as the protagonist only recovers once she accepts the help she first refuses.', ['The protagonist is very resilient throughout the novel.', 'The composer uses lots of techniques to show resilience.', 'Resilience means being able to bounce back.'], 'It proves one part of the thesis and keeps the key term.'),
-    Q('C', 'W3', 'Which topic sentence best develops (rather than repeats) a thesis about the cost of ambition?', 'Yet the play’s final act complicates this critique, suggesting ambition is destructive only when it severs characters from the communities that shaped them.', ['Ambition is destructive in the play.', 'Again, the play shows that ambition has a cost.', 'In the final act, the main character dies alone.'], 'It extends the argument with a qualification.'),
-    // Analysis sentences (W4 and W6)
-    Q('F', 'W4', 'Which sentence is analysis rather than retelling?', 'The metaphor of the town as “a mouth closing behind her” presents home as devouring, suggesting her departure is an escape.', ['Then she leaves the town and goes to the city.', 'She leaves the town in chapter three.', 'She is sad to leave the town but also happy.'], 'It names a technique, quotes, and explains the effect.'),
-    Q('S', 'W4', 'Which sentence best explains the effect of a technique?', 'The repetition of “not yet” stalls the poem’s rhythm, mirroring the speaker’s reluctance to accept that her father is gone.', ['The poet repeats “not yet” three times.', 'There is repetition in the poem, which is a technique.', 'The repetition of “not yet” is very effective and interesting.'], 'It links the technique to meaning, not just to “effective”.'),
-    Q('C', 'W4', 'Which sentence best links a piece of evidence back to the question about human connection?', 'By ending on an unanswered phone call, the composer suggests connection is fragile, sustained only when someone chooses to reach back.', ['The film ends with a phone ringing.', 'The ending is sad because nobody answers.', 'The phone call is a symbol, which is a common technique in film.'], 'It ties the evidence to the concept in the question.'),
-    Q('F', 'W6', 'Which verb is most precise for a composer overturning a reader’s expectations?', 'Subverts', ['Shows', 'Uses', 'Has'], 'Subvert means undermine or overturn.'),
-    Q('S', 'W6', 'Which sentence uses the strongest language of analysis?', 'Hartley foregrounds the mother’s silence, underscoring how grief can isolate even within a family.', ['Hartley shows the mother is silent, which shows grief.', 'I think the mother is quiet because she’s sad.', 'The mother doesn’t talk much, which is pretty sad.'], 'Precise verbs, formal register, present tense.'),
-    Q('C', 'W6', 'Which verb best fits a text that raises questions about an idea without settling them?', 'Interrogates', ['Celebrates', 'Reinforces', 'Describes'], 'To interrogate an idea is to question it.'),
-    // Embedding quotations (W4)
-    Q('F', 'W4', 'Which sentence embeds the quotation “a house full of locked rooms” most smoothly?', 'The narrator’s description of home as “a house full of locked rooms” suggests a family built on secrets.', ['“A house full of locked rooms.” This shows secrets.', 'The quote is “a house full of locked rooms” and it is a metaphor.', 'Here is a quote: “a house full of locked rooms”.'], 'The quote is woven into the writer’s own sentence.'),
-    Q('S', 'W4', 'Which sentence best embeds a short quotation from a poem about migration?', 'The speaker’s longing for “a street that knows my name” reveals belonging as recognition, not merely shelter.', ['The speaker says “I miss a street that knows my name and I miss the bakery and I miss the sea” which shows they miss home.', '“A street that knows my name.” Personification.', 'In the poem, there is a quote about a street.'], 'A short, precise quote inside an analytical sentence.'),
-    Q('C', 'W4', 'Original quote: “I was never going to stay.” Which sentence uses square brackets correctly?', 'Her admission that she “[was] never going to stay” reframes her earlier promises as self-protection.', ['Her admission that she [said] “I was never going to stay” reframes her promises.', 'Her admission that “she was never going to stay” reframes her promises.', 'Her admission that she “was [definitely] not going to stay” reframes her promises.'], 'Brackets may adjust a word to fit your grammar without changing the meaning; you cannot alter the quote silently.'),
-    // Introductions, conclusions and timing (W5)
-    Q('F', 'W5', 'What should a conclusion do?', 'Restate the thesis in fresh words, draw the arguments together and end with a wider insight', ['Introduce a new piece of evidence', 'Retell the ending of the text', 'Apologise for anything you left out'], 'No new evidence in a conclusion.'),
-    Q('S', 'W5', 'In Paper 2, about how long should you spend on each of the three sections?', 'About 40 minutes each', ['About 20 minutes each', 'About 60 minutes each', 'An hour on the first, then whatever is left'], 'Two hours of writing across three equally weighted sections.'),
-    Q('C', 'W5', 'Ten minutes before time is up, you have written two body paragraphs of a planned three. What is the best move?', 'Write a short version of the third paragraph’s key argument, then a brief conclusion', ['Keep perfecting the second paragraph', 'Start rewriting your introduction', 'Stop and leave the essay unfinished'], 'A complete argument scores better than a polished fragment.'),
-  ];
-  const ESSAY_GROUPS = { W1: ['W1'], W2: ['W2'], W3: ['W3'], W4: ['W4', 'W6'], W5: ['W5'] };
-  const essayPool = (key) => ESSAY_Q.filter(i => ESSAY_GROUPS[key].includes(i.tag));
+  /* ================= ANIMAL FARM: SHARED HELPERS ================= */
+  // n distinct items from list that are not equal to right.
+  const othersOf = (list, right, n = 3) => shuffle([...new Set(list)].filter(x => x !== right)).slice(0, n);
 
-  const essay = finish({
-    id: 'engessay', subject: SUBJECT, title: 'Essay and paragraph writing', chapter: 'English · Skills', hue: HUE,
-    blurb: 'Unpacking questions, thesis statements, topic sentences, analytical paragraphs, timing and the language of analysis.',
+  /* ================= ANIMAL FARM: PLOT AND CHARACTERS ================= */
+  // [name, description, what they represent in the allegory]
+  const CHARS = [
+    ['Old Major', 'A wise, prize-winning old boar whose dream of a world without humans inspires the Rebellion. He dies three nights after his speech.', 'Karl Marx and Lenin'],
+    ['Napoleon', 'A large, fierce-looking Berkshire boar who says little, wins power with his dogs and becomes a dictator.', 'Joseph Stalin'],
+    ['Snowball', 'A lively, clever pig with big ideas, such as the windmill. He is chased off the farm and then blamed for everything.', 'Leon Trotsky'],
+    ['Squealer', 'A small, fat pig with a shrill voice who is so persuasive the others say he could turn black into white.', 'Propaganda and state-controlled media'],
+    ['Boxer', 'A huge, strong carthorse who is loyal and hard-working but not clever. His mottos are “I will work harder” and “Napoleon is always right.”', 'The loyal, hard-working working class'],
+    ['Clover', 'A kind, motherly carthorse who senses something is wrong but cannot find the words to say it.', 'Working people who sensed the betrayal but stayed loyal'],
+    ['Benjamin', 'An old, bad-tempered donkey who can read as well as any pig but refuses to get involved.', 'Cynical people who saw the truth but did nothing'],
+    ['Mollie', 'A vain white mare who loves sugar and ribbons and runs away to live with humans.', 'The middle and upper classes who fled the revolution'],
+    ['Moses', 'Jones’s tame raven, who tells stories of Sugarcandy Mountain, a paradise for animals after death.', 'The Church and religion'],
+    ['Mr Jones', 'The drunken, careless owner of Manor Farm who is driven out in the Rebellion.', 'Tsar Nicholas II'],
+    ['The dogs', 'Nine puppies that Napoleon raises in secret. They grow into fierce dogs that protect him and attack his enemies.', 'The secret police'],
+    ['The sheep', 'Animals that cannot learn much but bleat slogans on cue, drowning out debate.', 'The easily led masses who repeat slogans'],
+    ['Minimus', 'A pig who writes songs and poems, including the new anthem and a poem praising Napoleon.', 'Propaganda poets and artists who glorified Stalin'],
+    ['Mr Frederick', 'The tough owner of Pinchfield, a neighbouring farm. He cheats Napoleon with forged banknotes and then attacks the farm.', 'Adolf Hitler and Nazi Germany'],
+    ['Mr Pilkington', 'The easy-going owner of Foxwood, a neighbouring farm. He plays cards with the pigs at the end.', 'Britain and the Western powers'],
+    ['Mr Whymper', 'A human solicitor who acts as Napoleon’s go-between for trade with the outside world.', 'Westerners who did business with the Soviet Union'],
+  ];
+  const MAIN_CHARS = CHARS.slice(0, 11);
+
+  // Events in the order they happen.
+  const EVENTS = [
+    'Old Major tells the animals about his dream and teaches them Beasts of England',
+    'Old Major dies in his sleep',
+    'The Rebellion drives Mr Jones off the farm',
+    'Snowball paints the Seven Commandments on the barn wall',
+    'The cows’ milk mysteriously disappears',
+    'Napoleon takes nine puppies from their mothers, saying he will be responsible for their education',
+    'Squealer explains why only the pigs get the milk and apples',
+    'The animals win the Battle of the Cowshed',
+    'Mollie runs away from the farm',
+    'Napoleon’s dogs chase Snowball off the farm',
+    'Napoleon abolishes the Sunday meetings',
+    'The pigs move into the farmhouse',
+    'A storm knocks down the half-built windmill',
+    'The hens rebel against having their eggs sold',
+    'Animals confess to crimes and are killed by the dogs',
+    'Beasts of England is banned',
+    'The Sixth Commandment is found to end with “without cause”',
+    'Frederick pays for the timber with forged banknotes',
+    'Frederick’s men blow up the windmill',
+    'The pigs get drunk on whisky they found in the farmhouse',
+    'Animal Farm becomes a Republic with Napoleon as President',
+    'Boxer is taken away in the knacker’s van',
+    'The pigs begin walking on two legs',
+    'Napoleon announces the farm will be called Manor Farm again',
+  ];
+
+  // Who did it: [level, action, character, wrong characters]
+  const WHO_DID = [
+    ['F', 'Gives the speech about a dream of a world without humans.', 'Old Major', ['Snowball', 'Napoleon', 'Squealer']],
+    ['F', 'Works harder than anyone and says “I will work harder!”', 'Boxer', ['Clover', 'Benjamin', 'Napoleon']],
+    ['F', 'Explains to the animals why the pigs must have the milk and apples.', 'Squealer', ['Snowball', 'Boxer', 'Old Major']],
+    ['F', 'Draws up the plans for the windmill.', 'Snowball', ['Napoleon', 'Squealer', 'Boxer']],
+    ['F', 'Runs away because she misses sugar and ribbons.', 'Mollie', ['Clover', 'Muriel', 'Benjamin']],
+    ['F', 'Reads the words on the side of the van and realises Boxer is being taken to the slaughterer.', 'Benjamin', ['Clover', 'Squealer', 'Muriel']],
+    ['S', 'Takes the puppies from their mothers and raises them in secret.', 'Napoleon', ['Snowball', 'Squealer', 'Mr Jones']],
+    ['S', 'Plans the defence in the Battle of the Cowshed after studying Julius Caesar’s campaigns.', 'Snowball', ['Napoleon', 'Boxer', 'Squealer']],
+    ['S', 'Tells stories about Sugarcandy Mountain.', 'Moses', ['Old Major', 'Minimus', 'Squealer']],
+    ['S', 'Reads the changed commandments aloud to Clover.', 'Muriel', ['Squealer', 'Boxer', 'Mollie']],
+    ['S', 'Writes the new anthem that replaces Beasts of England.', 'Minimus', ['Squealer', 'Snowball', 'Old Major']],
+    ['S', 'Pays for the farm’s timber with forged banknotes.', 'Mr Frederick', ['Mr Pilkington', 'Mr Whymper', 'Mr Jones']],
+    ['C', 'Is found at night lying beside a broken ladder and a pot of white paint near the barn wall.', 'Squealer', ['Napoleon', 'Benjamin', 'Snowball']],
+    ['C', 'Acts as the go-between when the farm begins trading with humans.', 'Mr Whymper', ['Mr Pilkington', 'Mr Frederick', 'Mr Jones']],
+    ['C', 'Remembers on the hill after the executions that this was not what Old Major had promised.', 'Clover', ['Boxer', 'Benjamin', 'Mollie']],
+    ['C', 'Returns to the farm in Chapter 9 and is allowed to stay, with a daily ration of beer.', 'Moses', ['Snowball', 'Mollie', 'Mr Jones']],
+    ['C', 'Raises a glass to the pigs and jokes that humans have their “lower classes” just as the pigs have their lower animals.', 'Mr Pilkington', ['Mr Frederick', 'Mr Whymper', 'Mr Jones']],
+  ];
+
+  const afplot = finish({
+    id: 'afplot', subject: SUBJECT, title: 'Animal Farm: plot and characters', chapter: 'Animal Farm', hue: HUE,
+    blurb: 'What happens in each part of the novel, who does what, and who each character stands for in the story of the Russian Revolution.',
+    sections: [
+      { code: 'P1', name: 'Chapters 1–2: the dream and the Rebellion', notes: [
+        'The setting is Manor Farm, owned by Mr Jones, a careless farmer who drinks too much. The very first sentence shows him too drunk to shut the popholes of the hen-houses.',
+        'Old Major, a respected old boar, gathers the animals in the big barn. He says their lives are “miserable, laborious, and short”, blames humans for all their suffering and describes a dream of a world without Man.',
+        'He tells them that all men are enemies and all animals are comrades, and teaches them the song Beasts of England. Three nights later he dies peacefully in his sleep.',
+        'The pigs, the cleverest animals, take over the teaching. Snowball, Napoleon and Squealer turn Major’s ideas into a system called Animalism.',
+        'Moses, Jones’s tame raven, tells the animals about Sugarcandy Mountain, a paradise they will go to when they die. The pigs argue hard against him.',
+        'The Rebellion comes suddenly, on Midsummer’s Eve. Jones gets drunk and forgets to feed the animals, they break into the store-shed, and when Jones and his men attack them with whips they fight back and chase the humans off the farm.',
+        'The animals destroy the whips, nose-rings and other reminders of Jones. Snowball paints over the name Manor Farm with Animal Farm, and paints the Seven Commandments on the end wall of the big barn.',
+        'At the end of Chapter 2 the cows’ milk disappears while everyone else is out harvesting. It is the first hint that the pigs are keeping good things for themselves.',
+      ] },
+      { code: 'P2', name: 'Chapters 3–4: early success and the Battle of the Cowshed', notes: [
+        'The first harvest is a great success. Every animal works, and Boxer, the enormous carthorse, works hardest of all with his motto “I will work harder!”',
+        'The pigs do not do physical work. They direct and supervise the others. This is the first sign of a new ruling class.',
+        'Snowball sets up committees and reading classes, but most animals learn very little. Boxer cannot get past the letter D. Snowball sums up the Commandments for them in one maxim: “Four legs good, two legs bad”, which the sheep bleat for hours.',
+        'Napoleon takes nine newborn puppies away from their mothers, Jessie and Bluebell, saying he will educate them himself. He keeps them hidden in a loft.',
+        'The milk and the windfall apples go to the pigs only. Squealer explains that the pigs are brainworkers who need this food, and warns that if the pigs failed, Jones would come back.',
+        'The flag is green for the fields of England, with a white hoof and horn for the future Republic of the Animals.',
+        'Battle of the Cowshed (Chapter 4): Jones and men from the neighbouring farms try to retake the farm. Snowball, who has studied Julius Caesar’s battles, plans the ambush and is wounded leading the charge. The humans flee.',
+        'Boxer thinks he has killed a stable-lad and is upset; the boy was only stunned. Snowball and Boxer are given the medal “Animal Hero, First Class”, and a sheep killed in the battle is honoured too.',
+      ] },
+      { code: 'P3', name: 'Chapter 5: Snowball versus Napoleon', notes: [
+        'Mollie, the vain white mare, is seen letting a man from a neighbouring farm stroke her nose. She disappears, and is later seen in town pulling a smart cart, wearing a ribbon.',
+        'Snowball and Napoleon disagree about almost everything. Snowball is a brilliant speaker full of plans; Napoleon is better at quietly winning support between meetings, especially from the sheep.',
+        'The biggest argument is the windmill. Snowball says it will make electricity and cut the working week to three days. Napoleon says they should grow food instead, and shows his contempt by urinating on Snowball’s plans.',
+        'At the deciding meeting Napoleon makes a strange high-pitched whimper. Nine huge dogs, the puppies he took, burst in and chase Snowball off the farm. He is never seen again.',
+        'Napoleon abolishes the Sunday meetings: from now on a special committee of pigs led by him will decide everything. Four young pigs protest, but the dogs growl them into silence and the sheep drown them out.',
+        'Squealer tells the animals that Napoleon has made a great sacrifice by taking on leadership, and that Snowball was a criminal. Boxer adopts a new motto: “Napoleon is always right.”',
+        'Three weeks later Napoleon announces that the windmill will be built after all. Squealer explains that Napoleon never really opposed it; that was just “tactics”.',
+      ] },
+      { code: 'P4', name: 'Chapters 6–7: hard work, trade and terror', notes: [
+        'The animals work like slaves all year. Sunday afternoon work is called voluntary, but any animal that skips it has its rations cut by half.',
+        'Napoleon announces that the farm will trade with neighbouring farms through a solicitor, Mr Whymper. The animals remember resolutions against trade and money, but Squealer assures them that no such resolution was ever passed: it was “pure imagination”.',
+        'The pigs move into the farmhouse and sleep in the beds. Clover asks Muriel to read the Fourth Commandment, which now says: “No animal shall sleep in a bed with sheets.”',
+        'In November a storm knocks down the half-built windmill. Napoleon blames Snowball, sentences him to death and orders the windmill rebuilt.',
+        'Chapter 7: a hard winter and a food shortage. Napoleon fools Mr Whymper by filling empty bins with sand and covering it with grain, so the outside world thinks the farm is doing well.',
+        'Napoleon orders the hens to give up their eggs to be sold. The hens rebel; Napoleon stops their food, and nine hens die.',
+        'Snowball is now blamed for every problem. Squealer claims Snowball was working for Jones all along, even at the Battle of the Cowshed.',
+        'The purge: four pigs, the hens who led the rebellion and other animals confess to plotting with Snowball, and the dogs kill them on the spot. The dogs even attack Boxer, who pins one under his hoof.',
+        'Afterwards the animals huddle on a hill. Clover thinks this is not what they hoped for when Old Major spoke. They sing Beasts of England, and Squealer announces that the song is now banned and replaced by a new anthem written by Minimus.',
+      ] },
+      { code: 'P5', name: 'Chapters 8–10: lies, war and the ending', notes: [
+        'The Sixth Commandment now reads: “No animal shall kill any other animal without cause.” Napoleon is rarely seen in public, is given grand titles, and Minimus writes a poem praising him.',
+        'Napoleon plays Mr Pilkington of Foxwood and Mr Frederick of Pinchfield off against each other over a pile of timber, then sells it to Frederick, who pays with forged banknotes.',
+        'Frederick and his men attack: the Battle of the Windmill. They blow up the newly finished windmill. The animals drive them off, but many are hurt or killed. Squealer calls it a victory.',
+        'The pigs find a case of whisky and get drunk. The next day Napoleon is ill. Soon after, Squealer is found at night beside a broken ladder and a pot of paint, and the Fifth Commandment now reads: “No animal shall drink alcohol to excess.”',
+        'Chapter 9: food is short for everyone except the pigs and dogs, but Squealer calls the cut a “readjustment”. Animal Farm becomes a Republic and Napoleon is elected President; he is the only candidate. Moses returns and the pigs let him stay.',
+        'Boxer, worn out, collapses. The pigs say he is going to a hospital, but Benjamin reads the side of the van: it belongs to a horse slaughterer. Boxer is sold to the knacker. Squealer claims Boxer died in hospital praising Napoleon. Soon after, the pigs buy another case of whisky.',
+        'Chapter 10: years pass. Most animals who remember the Rebellion have died. The farm is richer, but only the pigs and dogs enjoy the wealth. The windmill is used to grind corn for profit, not to give the animals electricity and comfort.',
+        'The pigs learn to walk on two legs and carry whips. The sheep bleat “Four legs good, two legs better!” and all the Commandments are replaced by one: “All animals are equal but some animals are more equal than others.” Then the pigs start wearing Jones’s clothes.',
+        'Napoleon hosts the neighbouring farmers and announces the farm will be called Manor Farm again. A card game ends in a furious quarrel, and the animals watching through the window can no longer tell the pigs from the men.',
+      ] },
+      { code: 'P6', name: 'Characters and the allegory', notes: [
+        'An allegory is a story with a second, hidden meaning. Animal Farm uses farm animals to retell the Russian Revolution of 1917 and Stalin’s rule of the Soviet Union. Orwell published it in 1945.',
+        ...CHARS.map(c => `${c[0]}: ${c[1]} Represents: ${c[2]}.`),
+        'Muriel: a white goat who can read a little better than the dogs. She reads the changed commandments to Clover, but does not question them.',
+        'Events in the allegory: the Rebellion is the 1917 Revolution; the Battle of the Cowshed is the Russian Civil War; the windmill is Stalin’s Five-Year Plans to modernise the country; the hens’ rebellion is the peasants who resisted Stalin taking their farms; the confessions and executions are Stalin’s purges and show trials in the 1930s; the Battle of the Windmill is Germany’s invasion of the Soviet Union in 1941; the final card game is the uneasy meetings between Stalin and Western leaders at the end of World War Two.',
+      ], ex: ['How to use the allegory in an answer', 'Make your point about the novel first: Napoleon uses his dogs to drive Snowball out and silence any protest.', 'Then add the link to history briefly: this mirrors how Stalin used the secret police to remove Trotsky and his rivals.', 'Finish with Orwell’s message: absolute power is kept through fear, not fairness, in any society.'] },
+    ],
+    cards: [
+      ['Where is the novel set?', 'Manor Farm (renamed Animal Farm), an English farm owned by Mr Jones.'],
+      ['How does the novel open?', 'Mr Jones is too drunk to remember to shut the popholes of the hen-houses, showing he is a neglectful master.'],
+      ['What does Old Major say about animals’ lives?', 'They are miserable, laborious and short: animals are worked until they are useless and then slaughtered.'],
+      ['Who does Old Major blame for the animals’ misery?', 'Man, who consumes without producing.'],
+      ['What song does Old Major teach the animals?', 'Beasts of England.'],
+      ['When does Old Major die?', 'Three nights after his speech, peacefully in his sleep.'],
+      ['What is Animalism?', 'The system of ideas the pigs build from Old Major’s teachings.'],
+      ['What is Sugarcandy Mountain?', 'The paradise Moses the raven says animals go to when they die.'],
+      ['What triggers the Rebellion?', 'Jones gets drunk and does not feed the animals; they break into the store-shed and fight back when he attacks them with whips.'],
+      ['When does the Rebellion happen?', 'On Midsummer’s Eve.'],
+      ['Who writes the Seven Commandments, and where?', 'Snowball paints them on the end wall of the big barn.'],
+      ['What happens to the milk at the end of Chapter 2?', 'It disappears while the animals are harvesting. Later we learn the pigs have been taking it.'],
+      ['Who works hardest on the farm?', 'Boxer, the huge carthorse.'],
+      ['What are Boxer’s two mottos?', '“I will work harder!” and “Napoleon is always right.”'],
+      ['Which maxim does Snowball give the less clever animals?', '“Four legs good, two legs bad.”'],
+      ['What does Napoleon do with the puppies?', 'Takes them from their mothers and raises them in secret. They become his guard dogs.'],
+      ['Who takes the milk and apples, and how is it justified?', 'The pigs. Squealer says they are brainworkers who need it, and that otherwise Jones would come back.'],
+      ['What do the green flag and the hoof and horn stand for?', 'Green for the fields of England; the hoof and horn for the future Republic of the Animals.'],
+      ['What is the Battle of the Cowshed?', 'Jones and other men try to retake the farm in Chapter 4. Snowball leads the defence and the humans are driven off.'],
+      ['Who receives “Animal Hero, First Class”?', 'Snowball and Boxer, after the Battle of the Cowshed.'],
+      ['Why does Mollie leave the farm?', 'She misses sugar, ribbons and being petted by humans.'],
+      ['What is the windmill argument?', 'Snowball wants to build a windmill to make electricity and shorten the working week; Napoleon opposes it.'],
+      ['How is Snowball removed from the farm?', 'Napoleon’s nine dogs chase him off at the meeting where the windmill is to be voted on.'],
+      ['What does Napoleon do to the Sunday meetings?', 'He abolishes them. A committee of pigs led by him will decide everything.'],
+      ['What does Squealer say about Napoleon and the windmill?', 'That Napoleon never really opposed it; it was just “tactics”.'],
+      ['Who is Mr Whymper?', 'A solicitor who acts as Napoleon’s go-between for trading with humans.'],
+      ['What does the Fourth Commandment say after the pigs move into the farmhouse?', '“No animal shall sleep in a bed with sheets.”'],
+      ['What destroys the first windmill?', 'A November storm. Napoleon blames Snowball.'],
+      ['How does Napoleon fool Mr Whymper about the food shortage?', 'He fills the empty bins with sand and covers it with grain.'],
+      ['Why do the hens rebel?', 'Napoleon orders them to give up their eggs to be sold. He stops their food and nine hens die.'],
+      ['What happens in the confessions and executions?', 'Animals confess to plotting with Snowball and are immediately killed by the dogs.'],
+      ['What replaces Beasts of England?', 'A new song by Minimus beginning “Animal Farm, Animal Farm”.'],
+      ['What does the Sixth Commandment become?', '“No animal shall kill any other animal without cause.”'],
+      ['How does Frederick cheat Napoleon?', 'He pays for the timber with forged banknotes.'],
+      ['What happens in the Battle of the Windmill?', 'Frederick’s men attack and blow up the windmill. The animals drive them off at a heavy cost.'],
+      ['What does the Fifth Commandment become?', '“No animal shall drink alcohol to excess.”'],
+      ['How does Squealer describe the cut in food in Chapter 9?', 'As a “readjustment”, never a “reduction”.'],
+      ['How does Napoleon become President?', 'Animal Farm becomes a Republic and he is elected unopposed: he is the only candidate.'],
+      ['What really happens to Boxer?', 'He is sold to a horse slaughterer (the knacker). Soon after, the pigs somehow have the money for another case of whisky.'],
+      ['Who realises Boxer is being taken to the knacker?', 'Benjamin, who reads the writing on the side of the van.'],
+      ['What story does Squealer tell about Boxer’s death?', 'That Boxer died in hospital, praising Napoleon and the Rebellion to the end.'],
+      ['What do the sheep bleat in Chapter 10?', '“Four legs good, two legs better!”'],
+      ['What single commandment replaces the Seven?', '“All animals are equal but some animals are more equal than others.”'],
+      ['What is the farm called at the end?', 'Manor Farm again.'],
+      ['What is the very last image of the novel?', 'The animals look from pig to man and from man to pig, and cannot tell which is which.'],
+      ['What does the windmill end up being used for?', 'Grinding corn for profit, not providing electricity for the animals.'],
+      ...CHARS.map(c => [`Who does ${c[0]} represent?`, c[2] + '.']),
+    ],
+    concepts: [
+      ['Who first inspires the animals to dream of rebellion?', ['Snowball', 'Old Major', 'Napoleon', 'Moses'], 1, 'Old Major’s speech and dream in Chapter 1 inspire the Rebellion.'],
+      ['Why do the animals finally rebel?', ['Old Major orders them to', 'Jones forgets to feed them and attacks them with whips', 'Snowball plans a surprise attack', 'Frederick invades the farm'], 1, 'The Rebellion is sudden, not planned: hunger and Jones’s whips spark it.'],
+      ['What is the first sign that the pigs are taking more for themselves?', ['The windmill collapsing', 'The milk disappearing at the end of Chapter 2', 'Mollie running away', 'The Battle of the Cowshed'], 1, 'The disappearing milk quietly foreshadows the pigs’ greed.'],
+      ['Why does Napoleon take the puppies?', ['To give them a better life', 'To train them as his private army', 'To sell them to Pilkington', 'To teach them to read'], 1, 'The puppies grow into the dogs that chase Snowball away and terrorise the farm.'],
+      ['Who leads the animals in the Battle of the Cowshed?', ['Napoleon', 'Boxer', 'Snowball', 'Squealer'], 2, 'Snowball plans and leads the defence, which is why later lies about his role matter.'],
+      ['What is the main disagreement between Snowball and Napoleon in Chapter 5?', ['Whether to build the windmill', 'Whether to keep Moses on the farm', 'Who should marry Mollie', 'Whether to sing Beasts of England'], 0, ''],
+      ['What happens straight after Snowball is chased away?', ['Napoleon abolishes the Sunday meetings', 'The windmill is finished', 'Boxer dies', 'The pigs walk on two legs'], 0, 'Napoleon immediately removes the animals’ say in decisions.'],
+      ['What reason does Squealer give for Napoleon suddenly supporting the windmill?', ['Snowball asked him to', 'It was “tactics”: he had never really opposed it', 'The sheep voted for it', 'Old Major appeared in a dream'], 1, 'Squealer rewrites the past to protect Napoleon.'],
+      ['Who is blamed for the destruction of the first windmill?', ['The storm', 'Snowball', 'Mr Frederick', 'Boxer'], 1, 'Napoleon uses Snowball as a scapegoat for everything that goes wrong.'],
+      ['Why do the hens rebel?', ['Their eggs are to be sold', 'They want to sleep in beds', 'They miss Mr Jones', 'They are not allowed to vote'], 0, ''],
+      ['What happens to the animals who confess in Chapter 7?', ['They are exiled', 'They are killed by the dogs', 'They are given extra rations', 'They are sent to Sugarcandy Mountain'], 1, 'The executions show Napoleon ruling by terror.'],
+      ['How does Frederick trick Napoleon?', ['He pays with forged banknotes', 'He steals the windmill plans', 'He bribes Squealer', 'He poisons the water'], 0, ''],
+      ['What really happens to Boxer?', ['He retires to a pasture', 'He dies in hospital', 'He is sold to a horse slaughterer', 'He runs away like Mollie'], 2, 'The pigs sell their most loyal worker to the knacker.'],
+      ['Who represents Stalin?', ['Snowball', 'Old Major', 'Napoleon', 'Squealer'], 2, ''],
+      ['Who represents Trotsky?', ['Snowball', 'Napoleon', 'Boxer', 'Benjamin'], 0, 'Like Trotsky, Snowball is driven out and then blamed for everything.'],
+      ['Squealer best represents…', ['The Church', 'Propaganda and state media', 'The secret police', 'The upper classes'], 1, ''],
+      ['What does Moses the raven represent?', ['Religion and the Church', 'The army', 'Western leaders', 'The working class'], 0, 'Sugarcandy Mountain is like the promise of heaven, which keeps animals patient with suffering.'],
+      ['Benjamin best represents people who…', ['Fled the revolution', 'Saw what was happening but did nothing', 'Led the revolution', 'Wrote propaganda'], 1, ''],
+      ['What happens in the final scene?', ['Snowball returns to the farm', 'The animals cannot tell the pigs from the men', 'The animals rebel against Napoleon', 'Old Major’s dream comes true'], 1, ''],
+      ['What is the farm called at the very end?', ['Animal Farm', 'Napoleon Farm', 'Manor Farm', 'Foxwood'], 2, 'Returning to the old name shows the revolution has gone full circle.'],
+    ],
+    short: [
+      { q: 'What does this opening sentence suggest about Mr Jones as a farmer?', passage: 'The opening sentence of the novel: Mr Jones “had locked the hen-houses for the night, but was too drunk to remember to shut the popholes.”', marks: 2, tags: ['P1'], criteria: ['States that Jones is careless or neglectful of the animals in his care', 'Supports this with the detail that he is “too drunk” to finish the job properly'], model: 'The sentence suggests Jones is a careless, neglectful farmer. He is “too drunk” to finish locking up, so the animals’ safety comes second to his drinking, which helps explain why they later want to get rid of him.' },
+      { q: 'How does Old Major persuade the animals that Man is their enemy?', passage: '“Man is the only creature that consumes without producing. He does not give milk, he does not lay eggs, he is too weak to pull the plough… Yet he is lord of all the animals.”', marks: 3, tags: ['P1'], criteria: ['Identifies a technique such as repetition of “he does not” or the list', 'Explains that the list shows Man is useless because he produces nothing', 'Explains how the final short sentence makes Man’s power seem unfair, stirring the animals to anger'], model: 'Old Major uses a list with repetition (“He does not give milk, he does not lay eggs”) to pile up all the things Man cannot do. This makes humans seem lazy and useless compared with the animals, who do all the producing. The short final sentence, “Yet he is lord of all the animals”, then shows how unfair it is that such a weak creature is in charge, which makes the animals angry enough to want to rebel.' },
+      { q: 'What does this line reveal about Benjamin’s attitude to the Rebellion?', passage: 'When asked whether he is happier now that Jones is gone, Benjamin says only: “Donkeys live a long time. None of you has ever seen a dead donkey”', marks: 2, tags: ['P6'], criteria: ['States that Benjamin is cynical or doubtful that anything will really change', 'Explains that the cryptic answer shows he avoids getting involved or taking a side'], model: 'The line reveals that Benjamin is cynical. He has lived a long time and seen that life stays hard whoever is in charge, so he does not believe the Rebellion will really change anything. His odd, cryptic answer also shows that he refuses to commit himself or get involved.' },
+      { q: 'How does Squealer change the animals’ memory of Snowball in this line?', passage: 'After Snowball is chased off, an animal points out that he fought bravely at the Battle of the Cowshed.\n“Bravery is not enough,” said Squealer. “Loyalty and obedience are more important.”', marks: 3, tags: ['P3'], criteria: ['Explains that Squealer is dismissing Snowball’s real bravery at the Battle of the Cowshed', 'Explains that he replaces bravery with loyalty and obedience to Napoleon as the most important values', 'Explains the effect: the animals are pushed to stop thinking for themselves and simply obey'], model: 'Squealer admits Snowball was brave but says “Bravery is not enough”, which quietly dismisses the courage the animals all saw at the Battle of the Cowshed. He then puts “Loyalty and obedience” above it, so the most important thing is now obeying Napoleon. This teaches the animals to distrust their own memories and simply follow orders, preparing the way for Snowball to be turned into a villain.' },
+      { q: 'Outline how Napoleon takes control of the farm in Chapter 5.', marks: 3, tags: ['P3'], criteria: ['Napoleon uses the nine dogs he secretly raised to chase Snowball off the farm', 'He abolishes the Sunday meetings so the animals no longer debate or vote', 'Squealer and the dogs (and the sheep) silence anyone who objects'], model: 'At the meeting about the windmill, Napoleon calls in the nine dogs he secretly raised from puppies, and they chase Snowball off the farm. He then abolishes the Sunday meetings, so a committee of pigs he leads makes all the decisions. When four young pigs protest, the dogs growl and the sheep bleat to drown them out, and Squealer explains the change away.' },
+      { q: 'Why is Boxer’s death one of the most powerful moments in the novel?', marks: 4, tags: ['P5'], criteria: ['Describes what happens: Boxer collapses and is sold to the horse slaughterer, not sent to hospital', 'Explains that Boxer was the most loyal and hard-working animal, so this is the ultimate betrayal', 'Explains Squealer’s lie about Boxer dying in hospital and the pigs buying whisky', 'Links to a message: the working class is used and thrown away by those in power'], model: 'When Boxer collapses, the pigs say he is going to hospital, but Benjamin reads the van and reveals that he is being taken to a horse slaughterer. This is shocking because Boxer was the most loyal animal on the farm, always saying “I will work harder” and “Napoleon is always right”. Squealer then lies that Boxer died in hospital, his last words praising Napoleon, and soon afterwards the pigs somehow find the money for another case of whisky. Orwell shows that leaders like Napoleon use loyal workers until they are worn out and then throw them away.' },
+    ],
+  });
+  afplot.bank = [
+    function whoRepresents(level) {
+      if (level === 'F') {
+        const c = pick(MAIN_CHARS);
+        return { level: 'F', tags: ['P6'], stem: 'Animal Farm is an allegory of the Russian Revolution.', parts: [CH('', `In the allegory, who or what does ${c[0]} represent?`, c[2], othersOf(CHARS.map(x => x[2]), c[2]), [`${c[0]}: ${c[1]}`])] };
+      }
+      if (level === 'S') {
+        const c = pick(CHARS);
+        return { level: 'S', tags: ['P6'], stem: 'Animal Farm is an allegory of the Russian Revolution.', parts: [CH('', `Which character represents ${c[2].charAt(0).toLowerCase() + c[2].slice(1)}?`, c[0], othersOf(CHARS.map(x => x[0]), c[0]), [`${c[0]}: ${c[1]}`])] };
+      }
+      const c = pick(CHARS);
+      return { level: 'C', tags: ['P6'], stem: c[1], parts: [CH('', 'Which character is described here?', c[0], othersOf(CHARS.map(x => x[0]), c[0]), [`${c[0]} represents ${c[2]}.`])] };
+    },
+    function eventOrder(level) {
+      const n = EVENTS.length;
+      if (level === 'F') {
+        const idx = shuffle([...Array(n).keys()]).slice(0, 3).sort((a, b) => a - b);
+        while (idx[1] - idx[0] < 4 || idx[2] - idx[1] < 4) { idx.splice(0, 3, ...shuffle([...Array(n).keys()]).slice(0, 3).sort((a, b) => a - b)); }
+        return { level: 'F', tags: ['P5'], stem: 'Think about the order of events in the novel.', parts: [CH('', 'Which of these happens first?', EVENTS[idx[0]], [EVENTS[idx[1]], EVENTS[idx[2]]], [`Order: ${idx.map(i => EVENTS[i]).join(' → ')}.`])] };
+      }
+      if (level === 'S') {
+        const idx = shuffle([...Array(n).keys()]).slice(0, 4).sort((a, b) => a - b);
+        return { level: 'S', tags: ['P5'], stem: 'Think about the order of events in the novel.', parts: [CH('', 'Which of these happens last?', EVENTS[idx[3]], idx.slice(0, 3).map(i => EVENTS[i]), [`Order: ${idx.map(i => EVENTS[i]).join(' → ')}.`])] };
+      }
+      const i = 1 + Math.floor(Math.random() * (n - 5));
+      const wrongs = [EVENTS[i - 1], EVENTS[i + 2], EVENTS[i + 4]];
+      return { level: 'C', tags: ['P5'], stem: `Event: ${EVENTS[i]}.`, parts: [CH('', 'Which of these happens next, straight after this event?', EVENTS[i + 1], wrongs, [`Order: ${EVENTS.slice(i - 1, i + 3).join(' → ')}.`])] };
+    },
+    function whoDidIt(level) {
+      const m = WHO_DID.filter(w => w[0] === level), [L, action, who, wrongs] = pick(m.length ? m : WHO_DID);
+      const c = CHARS.find(x => x[0] === who);
+      return { level: L, tags: ['P6'], stem: action, parts: [CH('', 'Which character does this?', who, wrongs, [c ? `${who}: ${c[1]}` : `${who} does this.`])] };
+    },
+  ];
+
+  /* ================= ANIMAL FARM: THEMES AND MESSAGES ================= */
+  const TH = {
+    H1: 'Power and corruption', H2: 'Propaganda and the power of language', H3: 'Equality and class',
+    H4: 'Education, ignorance and control', H5: 'The revolution betrayed', H6: 'Fear and violence', H7: 'Rewriting history and memory',
+  };
+  // [level, section, moment, three themes it fits less well, why]
+  const MOMENTS = [
+    ['F', 'H2', 'Squealer persuades the animals that the pigs need the milk and apples for their brains.', ['H6', 'H7', 'H5'], 'Squealer uses clever words, fake science and scare tactics to make an unfair decision sound reasonable.'],
+    ['F', 'H6', 'Napoleon’s dogs tear out the throats of animals who confess to plotting with Snowball.', ['H4', 'H2', 'H3'], 'The executions show Napoleon ruling through terror.'],
+    ['F', 'H3', 'The pigs do not do physical work, but direct and supervise the others.', ['H6', 'H7', 'H2'], 'A new ruling class appears straight after the Rebellion.'],
+    ['F', 'H5', 'At the end the animals cannot tell the pigs from the men.', ['H4', 'H6', 'H7'], 'The new rulers have become just like the old ones: the revolution has gone full circle.'],
+    ['F', 'H4', 'Boxer cannot learn the alphabet past the letter D.', ['H6', 'H1', 'H7'], 'Animals who cannot read cannot check the Commandments, so they are easy to control.'],
+    ['F', 'H7', 'Squealer claims Snowball was secretly working for Jones even at the Battle of the Cowshed.', ['H3', 'H4', 'H6'], 'The past is rewritten so Snowball becomes a villain.'],
+    ['S', 'H1', 'Napoleon gives himself titles such as “Father of All Animals” and “Terror of Mankind”.', ['H4', 'H7', 'H3'], 'Power has gone to Napoleon’s head; he is treated almost like a god.'],
+    ['S', 'H1', 'The pigs move into the farmhouse and sleep in Jones’s beds.', ['H6', 'H4', 'H7'], 'The pigs take the privileges they once condemned.'],
+    ['S', 'H2', 'Squealer calls a cut in rations a “readjustment”, never a “reduction”.', ['H6', 'H3', 'H5'], 'A gentle word hides a harsh reality.'],
+    ['S', 'H2', 'The sheep bleat “Four legs good, two legs bad” whenever anyone tries to argue.', ['H3', 'H7', 'H5'], 'A slogan drowns out real debate and thinking.'],
+    ['S', 'H4', 'Napoleon takes the puppies from their mothers, saying he will be responsible for their education.', ['H3', 'H7', 'H2'], 'Education is used to create obedient servants, not free thinkers.'],
+    ['S', 'H6', 'The dogs growl at the four young pigs who protest when the Sunday meetings are abolished.', ['H3', 'H4', 'H7'], 'The threat of violence silences protest.'],
+    ['S', 'H3', 'The pigs get the milk and apples while the other animals go without.', ['H6', 'H7', 'H4'], 'The animals are no longer equal: the pigs have special privileges.'],
+    ['S', 'H7', 'The animals are told there was never a resolution against trading with humans.', ['H3', 'H6', 'H1'], 'Because nothing was written down, the pigs can deny the past.'],
+    ['C', 'H5', 'The windmill, meant to give the animals electricity and a three-day week, ends up grinding corn for profit.', ['H6', 'H4', 'H2'], 'The revolution’s promise of a better life is broken; only the pigs benefit.'],
+    ['C', 'H5', 'Beasts of England is banned because “the Rebellion is now completed”.', ['H3', 'H4', 'H6'], 'The song of hope for a better future is silenced, showing the dream is dead.'],
+    ['C', 'H7', 'Clover is unsure whether the Sixth Commandment always ended with “without cause”, but Muriel reads it and she accepts it.', ['H3', 'H6', 'H1'], 'The animals’ memories are weak, so the written version replaces the truth.'],
+    ['C', 'H4', 'Benjamin can read as well as any pig but never uses his knowledge to challenge them.', ['H7', 'H6', 'H3'], 'Knowledge is useless against tyranny if people will not act on it.'],
+    ['C', 'H6', 'Nine hens die after Napoleon stops their food when they refuse to give up their eggs.', ['H4', 'H7', 'H2'], 'Napoleon crushes resistance with starvation and violence.'],
+    ['C', 'H1', 'Napoleon’s pigs begin carrying whips in their trotters.', ['H4', 'H7', 'H2'], 'The pigs now hold the same tool of control as Jones.'],
+  ];
+
+  // [number, original, changed version or what happened, chapter, event that came first]
+  const COMMANDMENTS = [
+    [1, 'Whatever goes upon two legs is an enemy.', 'Never reworded on the wall, but broken when the pigs trade with humans and finally walk on two legs themselves.', '10', 'the pigs learning to walk on two legs'],
+    [2, 'Whatever goes upon four legs, or has wings, is a friend.', 'Never reworded, but broken when animals are killed by the dogs in the purge.', '7', 'the executions'],
+    [3, 'No animal shall wear clothes.', 'Never reworded, but broken in Chapter 10 when the pigs wear Jones’s clothes, after all the Commandments have been replaced.', '10', 'all the Commandments being replaced'],
+    [4, 'No animal shall sleep in a bed.', 'No animal shall sleep in a bed with sheets.', '6', 'the pigs moving into the farmhouse'],
+    [5, 'No animal shall drink alcohol.', 'No animal shall drink alcohol to excess.', '8', 'the pigs getting drunk on whisky'],
+    [6, 'No animal shall kill any other animal.', 'No animal shall kill any other animal without cause.', '8', 'the confessions and executions'],
+    [7, 'All animals are equal.', 'All animals are equal but some animals are more equal than others.', '10', 'the pigs walking on two legs'],
+  ];
+  const ORDINAL = ['First', 'Second', 'Third', 'Fourth', 'Fifth', 'Sixth', 'Seventh'];
+
+  const afthemes = finish({
+    id: 'afthemes', subject: SUBJECT, title: 'Animal Farm: themes and messages', chapter: 'Animal Farm', hue: HUE,
+    blurb: 'The big ideas in Animal Farm: what Orwell is saying, the key moments that show it, and how to write about each one.',
+    sections: [
+      { code: 'H1', name: 'Power and corruption', notes: [
+        'What Orwell is saying: power corrupts. The more power a leader has, and the fewer limits on it, the more likely they are to abuse it for their own benefit.',
+        'Key moments: the pigs take the milk and apples (Chapter 3); Napoleon seizes control with his dogs (Chapter 5); the pigs move into the farmhouse (Chapter 6); Napoleon’s grand titles (Chapter 8); the pigs walk on two legs and carry whips (Chapter 10).',
+        'Napoleon starts as one of the rebels and ends up just like Jones, or worse: the animals work harder and eat less than they did before the Rebellion.',
+        'How to write about it: trace a change over time. “At first… but by the end…” shows how power gradually corrupts. Useful verbs: exploits, abuses, seizes, dominates.',
+      ] },
+      { code: 'H2', name: 'Propaganda and the power of language', notes: [
+        'What Orwell is saying: language can be used as a weapon. Leaders who control words, information and stories can control what people believe.',
+        'Squealer is the main tool of propaganda. He uses fake facts and figures, scare tactics (“Jones would come back!”), rhetorical questions, flattery and euphemism (calling a cut in rations a “readjustment”).',
+        'Slogans replace thinking: the sheep bleat “Four legs good, two legs bad” to drown out debate, and later “Four legs good, two legs better!”',
+        'Songs and poems also become propaganda: Beasts of England is banned and replaced by an anthem and poems praising Napoleon.',
+        'How to write about it: name the persuasive technique Squealer uses, then explain how it stops the animals from questioning the pigs. Useful verbs: manipulates, deceives, justifies, silences.',
+      ] },
+      { code: 'H3', name: 'Equality, class and the Seven Commandments', notes: [
+        'What Orwell is saying: a revolution that promises equality can simply create a new ruling class. The pigs replace the humans at the top.',
+        'The original Seven Commandments: 1. Whatever goes upon two legs is an enemy. 2. Whatever goes upon four legs, or has wings, is a friend. 3. No animal shall wear clothes. 4. No animal shall sleep in a bed. 5. No animal shall drink alcohol. 6. No animal shall kill any other animal. 7. All animals are equal.',
+        'Changed on the wall: the Fourth becomes “No animal shall sleep in a bed with sheets” (Chapter 6, after the pigs move into the farmhouse). The Sixth becomes “No animal shall kill any other animal without cause” (Chapter 8, after the executions). The Fifth becomes “No animal shall drink alcohol to excess” (Chapter 8, after the pigs get drunk).',
+        'In Chapter 10 all seven are replaced by a single commandment: “All animals are equal but some animals are more equal than others.” The pigs then wear Jones’s clothes and walk on two legs, breaking the First and Third Commandments.',
+        'Each change adds just a few words, so the pigs can claim the rule was always there. The changes always happen after the pigs have already broken the rule.',
+        'How to write about it: show the gap between the ideal (Old Major’s “All animals are equal”) and the reality (the pigs’ privileges). Useful words: hierarchy, privilege, hypocrisy, inequality.',
+      ], ex: ['How a commandment changes: the Fourth', 'Original: No animal shall sleep in a bed.', 'What the pigs do first: move into the farmhouse and sleep in Jones’s beds.', 'New version: No animal shall sleep in a bed with sheets.', 'What it shows: the pigs change the rules to fit what they have already done, and the animals cannot prove it was ever different.'] },
+      { code: 'H4', name: 'Education, ignorance and control', notes: [
+        'What Orwell is saying: people who cannot read, question or remember clearly are easy to control. Knowledge is power, and the pigs keep it for themselves.',
+        'The pigs learn to read and write well; most other animals barely learn the alphabet. Boxer cannot get past D, and the sheep only manage slogans.',
+        'Napoleon takes charge of the puppies’ “education”, turning them into his guards, and later teaches the young animals himself: education becomes training in obedience.',
+        'Benjamin can read but chooses to do nothing, showing that knowledge alone is not enough without the courage to act.',
+        'How to write about it: explain how the animals’ ignorance lets the pigs get away with lies, especially changing the Commandments. Useful verbs: exploits, keeps in the dark, manipulates.',
+      ] },
+      { code: 'H5', name: 'The revolution betrayed', notes: [
+        'What Orwell is saying: revolutions can be betrayed by their own leaders. The animals overthrow one tyrant only to end up under a worse one.',
+        'Old Major’s dream was a farm where animals were free, equal and well fed. By the end the animals are hungrier and work harder than under Jones, and the pigs live like humans.',
+        'The cyclical ending: the farm is renamed Manor Farm, the pigs walk on two legs, wear clothes and drink with farmers, and the animals cannot tell pig from man. The story has gone full circle.',
+        'Beasts of England, the song of hope, is banned because “the Rebellion is now completed”.',
+        'How to write about it: compare the beginning with the end. Explain that Orwell is warning his readers, not just telling a sad story. Useful phrases: Orwell warns, Orwell criticises, full circle.',
+      ] },
+      { code: 'H6', name: 'Fear and violence', notes: [
+        'What Orwell is saying: dictators keep power through fear. Terror stops people from speaking up, even when they know something is wrong.',
+        'Key moments: the dogs chase Snowball off the farm (Chapter 5); the dogs growl down protest; the hens are starved (Chapter 7); the confessions and executions (Chapter 7); Boxer is sold to the knacker (Chapter 9).',
+        'Squealer also uses fear of the past: the threat that Jones will come back stops the animals complaining.',
+        'After the executions, Clover reflects that these scenes of terror and slaughter were not what the animals had hoped for when Old Major spoke.',
+        'How to write about it: explain how fear changes what the animals do and say. Useful verbs: intimidates, terrorises, silences, crushes.',
+      ] },
+      { code: 'H7', name: 'Rewriting history and memory', notes: [
+        'What Orwell is saying: whoever controls the record of the past controls the present. If people’s memories are weak, leaders can rewrite history.',
+        'Snowball goes from hero of the Battle of the Cowshed to traitor: Squealer claims he was working for Jones all along, and later that his medal was a story he made up himself.',
+        'The animals are told there was never a resolution against trade or money, and the Commandments are quietly repainted.',
+        'Because most animals cannot read, and those who remember die off over the years, by Chapter 10 nobody can compare life now with life under Jones.',
+        'How to write about it: point out the difference between what really happened (what the reader saw) and what the animals are told. Useful verbs: distorts, rewrites, erases, falsifies.',
+      ] },
+    ],
+    cards: [
+      ['What is a theme?', 'A big idea or message the writer explores across the whole text, such as power or propaganda.'],
+      ['What is Orwell’s main message about power?', 'Power corrupts: leaders with unlimited power will abuse it, even if they started out with good ideals.'],
+      ['Best evidence that power corrupts Napoleon', 'He goes from rebel to dictator: dogs, titles, the farmhouse, whips, and finally walking on two legs.'],
+      ['What is propaganda?', 'Information, often biased or false, used to make people believe what those in power want.'],
+      ['Who is the main source of propaganda?', 'Squealer.'],
+      ['Name three of Squealer’s persuasive methods', 'Fake statistics, scare tactics (Jones will come back), rhetorical questions, euphemism, flattery.'],
+      ['How does the slogan “Four legs good, two legs bad” control the animals?', 'The sheep bleat it to drown out debate, so nobody can argue.'],
+      ['Original First Commandment', 'Whatever goes upon two legs is an enemy.'],
+      ['Original Second Commandment', 'Whatever goes upon four legs, or has wings, is a friend.'],
+      ['Original Third Commandment', 'No animal shall wear clothes.'],
+      ['Original Fourth Commandment, and its changed version', 'No animal shall sleep in a bed. Changed to: No animal shall sleep in a bed with sheets.'],
+      ['Original Fifth Commandment, and its changed version', 'No animal shall drink alcohol. Changed to: No animal shall drink alcohol to excess.'],
+      ['Original Sixth Commandment, and its changed version', 'No animal shall kill any other animal. Changed to: No animal shall kill any other animal without cause.'],
+      ['Original Seventh Commandment, and what replaces it', 'All animals are equal. Replaced by: All animals are equal but some animals are more equal than others.'],
+      ['Which change comes after the pigs move into the farmhouse?', 'The Fourth: “with sheets” is added.'],
+      ['Which change comes after the executions?', 'The Sixth: “without cause” is added.'],
+      ['Which change comes after the pigs get drunk?', 'The Fifth: “to excess” is added.'],
+      ['Why do the pigs only add a few words to each commandment?', 'So the change is hard to notice and they can claim the rule always said that.'],
+      ['How does ignorance help the pigs?', 'Animals who cannot read or remember clearly cannot prove the rules or history have been changed.'],
+      ['How is education used to control the animals?', 'Napoleon takes charge of the puppies’ “education”, turning them into his guards; the other animals are taught slogans, not how to think.'],
+      ['What does Benjamin show about knowledge?', 'Knowing the truth is not enough if you do nothing with it.'],
+      ['What does “the revolution betrayed” mean?', 'The leaders of the revolution turn against the ideals they fought for, and become like the tyrants they replaced.'],
+      ['How does the ending show the revolution has gone full circle?', 'The farm is Manor Farm again and the pigs look and act exactly like the humans.'],
+      ['Why is Beasts of England banned?', 'Squealer says the Rebellion is completed, but really the song’s dream of freedom is dangerous to Napoleon.'],
+      ['How does Napoleon use fear?', 'The dogs, the executions, starving the hens and the threat that Jones will return.'],
+      ['What does Clover realise after the executions?', 'That the terror and slaughter are not what Old Major’s dream promised.'],
+      ['How is Snowball’s history rewritten?', 'From hero of the Cowshed to secret traitor working for Jones all along.'],
+      ['Why can the pigs rewrite history?', 'There are no written records, the animals’ memories are weak, and those who remember die over time.'],
+      ['What warning is Orwell giving his readers?', 'Watch your leaders closely, question what you are told, and do not let anyone have unlimited power.'],
+      ['Is Animal Farm only about Russia?', 'No. Orwell uses Russia as an example, but the message about power and propaganda applies to any society.'],
+      ['How does inequality appear straight after the Rebellion?', 'The pigs supervise instead of working and take the milk and apples.'],
+      ['How does Orwell show the working class being exploited?', 'Boxer works himself to exhaustion and is then sold to the knacker.'],
+    ],
+    concepts: [
+      ['Which theme is best shown by the pigs taking the milk and apples?', ['Equality and class', 'Fear and violence', 'Education', 'Religion'], 0, 'The pigs give themselves privileges straight away.'],
+      ['“Power corrupts” means…', ['Leaders with power tend to abuse it', 'Only bad animals want power', 'Power is always shared fairly', 'Leaders should never be trusted to read'], 0, ''],
+      ['Which change was made to the Fourth Commandment?', ['“to excess” was added', '“with sheets” was added', '“without cause” was added', 'It was never changed'], 1, ''],
+      ['Which commandment became “No animal shall drink alcohol to excess”?', ['The Third', 'The Fourth', 'The Fifth', 'The Sixth'], 2, ''],
+      ['Which commandment had “without cause” added?', ['The Sixth', 'The Seventh', 'The Second', 'The Fourth'], 0, 'It comes just after the executions in Chapter 7.'],
+      ['What replaces all Seven Commandments in Chapter 10?', ['Four legs good, two legs better', 'Napoleon is always right', 'All animals are equal but some animals are more equal than others', 'No animal shall wear clothes'], 2, ''],
+      ['Why does the commandment about clothes matter at the end?', ['The pigs start wearing Jones’s clothes', 'The sheep start wearing ribbons', 'Boxer wears a straw hat', 'Mollie returns in a coat'], 0, 'The pigs now look like humans.'],
+      ['Why do the pigs change the Commandments at night?', ['So the animals will not see it happen', 'Because paint dries faster at night', 'Because Napoleon is asleep', 'To surprise the humans'], 0, 'Squealer is caught by the barn wall with a ladder and paint.'],
+      ['How does the animals’ lack of education help the pigs?', ['The animals cannot check what the rules really said', 'The animals work harder', 'The animals can build the windmill faster', 'It makes no difference'], 0, ''],
+      ['Which moment best shows fear being used to control the animals?', ['The confessions and executions', 'The first harvest', 'Snowball’s reading classes', 'Mollie leaving'], 0, ''],
+      ['Which moment best shows history being rewritten?', ['Snowball is said to have fought for Jones at the Cowshed', 'Boxer learns the letter D', 'The flag is raised', 'The animals win the first harvest'], 0, ''],
+      ['The ending, where pigs and men look the same, shows…', ['The revolution has gone full circle', 'The animals are finally free', 'Snowball has returned', 'The humans have become animals'], 0, ''],
+      ['Which of these is propaganda?', ['Squealer’s lists of figures showing production has risen', 'Boxer pulling stone', 'Clover protecting ducklings', 'The storm knocking down the windmill'], 0, 'False or one-sided information used to persuade.'],
+      ['What does Orwell suggest about people like Benjamin?', ['Doing nothing allows tyranny to grow', 'They are the true heroes', 'They should have joined the humans', 'They wrote the Commandments'], 0, ''],
+      ['What does Old Major’s dream represent in the theme of the revolution betrayed?', ['The ideals the pigs later abandon', 'Napoleon’s secret plan', 'Moses’ Sugarcandy Mountain', 'Frederick’s attack'], 0, ''],
+      ['When you write about a theme, you should…', ['Retell the whole plot', 'Explain what Orwell is saying about it, using a key moment and a technique', 'Just name the theme', 'Write about your own opinion only'], 1, ''],
+      ['Which theme does “readjustment” instead of “reduction” best show?', ['Propaganda and language', 'Fear and violence', 'Education', 'Class'], 0, 'A euphemism hides a harsh truth.'],
+    ],
+    short: [
+      { q: 'Explain the irony in the single commandment that replaces the Seven.', passage: 'The single Commandment painted on the barn wall in Chapter 10:\n“ALL ANIMALS ARE EQUAL BUT SOME ANIMALS ARE MORE EQUAL THAN OTHERS”', marks: 2, tags: ['H3'], criteria: ['Explains that the statement contradicts itself: equal cannot have degrees', 'Explains that it reveals the pigs now openly see themselves as superior, betraying the original idea of equality'], model: 'The statement contradicts itself, because if all animals are truly equal, none can be “more equal” than others. This irony exposes the truth of the farm: the pigs now openly see themselves as superior, so the revolution’s central promise of equality has been completely betrayed.' },
+      { q: 'How does Squealer persuade the animals to accept that the pigs should keep the milk and apples?', passage: 'Squealer: “Milk and apples (this has been proved by Science, comrades) contain substances absolutely necessary to the well-being of a pig… Do you know what would happen if we pigs failed in our duty? Jones would come back!”', marks: 3, tags: ['H2'], criteria: ['Identifies the appeal to authority or fake science (“proved by Science”)', 'Identifies the rhetorical question and scare tactic about Jones coming back', 'Explains the effect: the animals are confused or frightened into accepting the pigs’ privilege'], model: 'Squealer claims his argument has been “proved by Science”, an appeal to authority that the uneducated animals cannot check. He then asks a rhetorical question, “Do you know what would happen…?”, and answers it with the frightening idea that “Jones would come back!” By using fake science and fear together, he makes the pigs’ greed sound like a duty, so the animals accept it without complaint.' },
+      { q: 'What does this sentence reveal about how the animals feel after the executions?', passage: '“These scenes of terror and slaughter were not what they had looked forward to on that night when old Major first stirred them to rebellion.”', marks: 2, tags: ['H5'], criteria: ['Identifies the animals’ shock, sadness or disappointment', 'Explains the contrast between Old Major’s hopeful dream and the violent reality, showing the revolution has been betrayed'], model: 'The sentence shows the animals’ shock and deep disappointment. Orwell contrasts the hopeful night of Old Major’s speech with these “scenes of terror and slaughter”, highlighting how far the farm has fallen from its ideals and suggesting the revolution has been betrayed.' },
+      { q: 'What does this sentence suggest about the pigs straight after the Rebellion?', passage: '“The pigs did not actually work, but directed and supervised the others.”', marks: 2, tags: ['H3'], criteria: ['States that the pigs have made themselves a ruling or privileged class', 'Explains that this is an early sign of inequality, foreshadowing that they will become like the humans'], model: 'It suggests that the pigs have already made themselves a separate ruling class, giving orders instead of sharing the hard work. This early sign of inequality foreshadows how the pigs will eventually become just like the humans they overthrew.' },
+      { q: 'Explain how the changes to the Seven Commandments show the pigs’ growing power.', marks: 4, tags: ['H3'], criteria: ['Gives an accurate example of a changed commandment (original and new wording)', 'Explains that the change comes after the pigs have already broken the rule', 'Explains that the animals cannot read or remember well enough to challenge it', 'Links to the final commandment and the message that power corrupts'], model: 'The pigs change the Commandments to excuse their own behaviour. For example, after moving into the farmhouse, “No animal shall sleep in a bed” becomes “No animal shall sleep in a bed with sheets”. The pigs break the rule first and then change the wording, and because most animals cannot read or remember clearly, nobody can prove it. By Chapter 10 the rules are replaced by “All animals are equal but some animals are more equal than others”, showing the pigs now have so much power that they no longer even pretend to be equal.' },
+      { q: 'How does Orwell show that ignorance makes it easier for leaders to control people?', marks: 3, tags: ['H4'], criteria: ['Gives an example of the animals’ lack of education (Boxer and the letter D, the sheep and slogans)', 'Explains how this lets the pigs lie or change rules without being challenged', 'Explains Orwell’s message or warning about education and questioning leaders'], model: 'Most animals never learn to read properly: Boxer cannot get past the letter D and the sheep can only bleat slogans. Because of this, the pigs can quietly repaint the Commandments and tell lies about the past, and the animals have no way to check. Orwell warns that people who are not educated, or who do not question what they are told, are easy for leaders to control.' },
+    ],
+  });
+  afthemes.bank = [
+    function matchTheme(level) {
+      const m = MOMENTS.filter(x => x[0] === level), [L, code, moment, wrongs, why] = pick(m.length ? m : MOMENTS);
+      return { level: L, tags: [code], stem: `Moment: ${moment}`, parts: [CH('', 'Which theme does this moment show most clearly?', TH[code], wrongs.map(w => TH[w]), [why])] };
+    },
+    function commandmentChange(level) {
+      if (level === 'F') {
+        const c = pick(COMMANDMENTS.slice(3, 6));
+        const fakes = [`${c[1].slice(0, -1)} with sheets.`, `${c[1].slice(0, -1)} to excess.`, `${c[1].slice(0, -1)} without cause.`, `${c[1].slice(0, -1)} on Sundays.`];
+        return { level: 'F', tags: ['H3'], stem: `The ${ORDINAL[c[0] - 1]} Commandment originally said: “${c[1]}”`, parts: [CH('', 'What was it changed to?', c[2], fakes, [`Changed in Chapter ${c[3]}, after ${c[4]}.`])] };
+      }
+      if (level === 'S') {
+        const c = pick([...COMMANDMENTS.slice(3, 6), COMMANDMENTS[6]]);
+        return { level: 'S', tags: ['H3'], stem: `New wording: “${c[2]}”`, parts: [CH('', 'Which commandment was changed to say this?', `The ${ORDINAL[c[0] - 1]}`, ORDINAL.filter((_, i) => i !== c[0] - 1).map(o => `The ${o}`).slice(0, 6).sort(() => Math.random() - 0.5).slice(0, 3), [`Original: “${c[1]}” Changed in Chapter ${c[3]}, after ${c[4]}.`])] };
+      }
+      const items = [
+        ['Which commandment is changed straight after the pigs move into the farmhouse?', 'The Fourth', ['The Fifth', 'The Sixth', 'The Seventh'], 'Chapter 6: “with sheets” is added.'],
+        ['Which commandment is changed after the pigs get drunk on whisky?', 'The Fifth', ['The Fourth', 'The Sixth', 'The Third'], 'Chapter 8: “to excess” is added.'],
+        ['Which commandment is changed after the confessions and executions?', 'The Sixth', ['The Fifth', 'The Fourth', 'The Seventh'], 'Chapter 8: “without cause” is added.'],
+        ['Which commandment is never reworded but is broken when the pigs put on Jones’s clothes?', 'The Third', ['The Fourth', 'The Fifth', 'The Sixth'], 'The Third said “No animal shall wear clothes.”'],
+        ['Which commandment is broken when the pigs walk on two legs?', 'The First', ['The Fourth', 'The Fifth', 'The Sixth'], 'The First said “Whatever goes upon two legs is an enemy.”'],
+        ['Squealer is found at night beside a broken ladder and a pot of paint. Which commandment is soon found to be different?', 'The Fifth', ['The Fourth', 'The Sixth', 'The Third'], 'It now reads “No animal shall drink alcohol to excess.”'],
+        ['Why do the pigs only add a few words when they change a commandment?', 'So the animals think it always said that and cannot prove otherwise', ['Because they run out of paint', 'Because Old Major told them to', 'Because the humans demand it'], 'Small changes are hard to notice, and the animals’ memories are weak.'],
+      ];
+      const [q, right, wrongs, why] = pick(items);
+      return { level: 'C', tags: ['H3'], stem: 'The Seven Commandments.', parts: [CH('', q, right, wrongs, [why])] };
+    },
+  ];
+
+  /* ================= ANIMAL FARM: TECHNIQUES ================= */
+  // [section, term, definition, Animal Farm example, effect]
+  const AF_TECH = [
+    ['K1', 'Allegory', 'A story with a second, hidden meaning, where characters and events stand for real people and events.', 'The animals’ rebellion and Napoleon’s rule retell the Russian Revolution and Stalin’s dictatorship.', 'Lets Orwell criticise real dictators in a simple story that anyone can understand.'],
+    ['K1', 'Fable', 'A short story, often with animals, that teaches a moral lesson. Orwell subtitled the book “A Fairy Story”.', 'Talking farm animals in a simple story about rules and their consequences.', 'Makes the warning feel like a timeless lesson and easy to follow.'],
+    ['K1', 'Satire', 'Mocking people or institutions, often with humour or exaggeration, to criticise them.', 'Pigs greedily taking the milk and apples while claiming it is for everyone’s good.', 'Makes the reader laugh at, then judge, the hypocrisy of those in power.'],
+    ['K1', 'Anthropomorphism', 'Giving animals human qualities, such as speaking, reading and voting.', 'The pigs argue, write rules, trade and finally walk on two legs.', 'Lets Orwell show human politics clearly; the pigs becoming more human shows their corruption.'],
+    ['K1', 'Allusion', 'A reference to a well-known person, event or text.', 'Napoleon is named after the French emperor who seized power after a revolution.', 'Hints at the pig’s ambition before he does anything.'],
+    ['K2', 'Dramatic irony', 'When the reader understands something that the characters do not.', 'The reader knows the pigs are taking the milk and lying about Boxer, but most animals believe them.', 'Makes the reader frustrated and sympathetic, and sharpens Orwell’s criticism.'],
+    ['K2', 'Situational irony', 'When what happens is the opposite of what was expected.', 'The pigs, who led the Rebellion against humans, end up acting exactly like humans.', 'Shows how badly the revolution has failed.'],
+    ['K2', 'Verbal irony', 'When words mean the opposite of what they seem to say, or contradict the reality.', '“All animals are equal but some animals are more equal than others.”', 'Exposes the pigs’ hypocrisy in their own words.'],
+    ['K3', 'Symbolism', 'Using an object, place or action to stand for a bigger idea.', 'The windmill, the farmhouse, the whip, the flag, the songs and the barn wall all carry bigger meanings.', 'Adds layers of meaning and lets small details show big changes.'],
+    ['K4', 'Slogans', 'Short, catchy phrases repeated to spread an idea.', '“Four legs good, two legs bad.” “Napoleon is always right.”', 'Replace thinking with chanting and drown out debate.'],
+    ['K4', 'Repetition', 'Repeating words or ideas for emphasis.', '“Jones would come back! Yes, Jones would come back!”', 'Hammers a fear into the animals’ minds so they stop arguing.'],
+    ['K4', 'Rhetorical question', 'A question asked for effect, not to get an answer.', 'Squealer: “Do you know what would happen if we pigs failed in our duty?”', 'Makes the answer seem obvious and pushes listeners to agree.'],
+    ['K4', 'Emotive language', 'Words chosen to stir strong feelings.', 'Squealer’s warnings about Jones returning and his tearful story of Boxer’s death.', 'Uses fear or sadness to stop the animals thinking clearly.'],
+    ['K4', 'Euphemism', 'A mild word used to hide something harsh or unpleasant.', 'Squealer calls a cut in rations a “readjustment”, never a “reduction”.', 'Hides bad news so the animals do not complain.'],
+    ['K4', 'Statistics and false evidence', 'Using numbers or “facts” to make a claim seem true.', 'Squealer reads out long lists of figures showing that food production has gone up.', 'The animals cannot check, so the numbers silence their doubts even when they are hungry.'],
+    ['K4', 'Flattery and titles', 'Praising a leader in exaggerated ways.', 'Napoleon is called “Father of All Animals” and “Terror of Mankind”.', 'Builds a cult of personality around Napoleon.'],
+    ['K5', 'Foreshadowing', 'Hints early in a story about what will happen later.', 'The milk disappears at the end of Chapter 2; Napoleon takes the puppies in Chapter 3.', 'Builds unease and shows the pigs’ corruption began straight away.'],
+    ['K5', 'Cyclical structure', 'A story that ends where it began.', 'The novel opens at Manor Farm under a drunk master and ends at Manor Farm under pigs who drink and look like men.', 'Suggests the revolution has changed nothing: one tyrant has replaced another.'],
+    ['K5', 'Naive (limited) narration', 'A third-person narrator who mostly tells events as the ordinary animals see them, without explaining the truth.', 'Lies are reported plainly, for example that the animals were happy in their work, while we see they are starving.', 'The reader has to spot the lies, which makes us more alert and more critical.'],
+    ['K5', 'Juxtaposition', 'Placing two contrasting things side by side.', 'The pigs drink whisky in the farmhouse while the other animals go hungry.', 'Highlights the inequality and hypocrisy of the pigs.'],
+  ];
+  // [symbol, meaning]
+  const SYMBOLS = [
+    ['The windmill', 'The pigs’ broken promises: it is meant to make life easier but only makes the animals work harder, and finally makes profit for the pigs. It also stands for Stalin’s Five-Year Plans.'],
+    ['The farmhouse', 'Human power and privilege; when the pigs move in, they become the new masters.'],
+    ['The green flag with the hoof and horn', 'The hope of an animal republic; when Napoleon removes the hoof and horn at the end, that hope is gone.'],
+    ['Beasts of England', 'The dream of freedom and equality; banning it shows the dream is dead.'],
+    ['The new anthem by Minimus', 'Loyalty to the state and to Napoleon instead of to the animals’ freedom.'],
+    ['The whip', 'Cruel control by force; first Jones’s tool, later carried by the pigs.'],
+    ['The Seven Commandments on the barn wall', 'The ideals of the revolution, and how easily the powerful can rewrite them.'],
+    ['The name changes: Manor Farm to Animal Farm and back', 'The revolution’s hope and then its complete failure; the farm ends where it began.'],
+    ['Sugarcandy Mountain', 'The promise of a reward after death, which keeps animals patient with suffering now.'],
+    ['Walking on two legs', 'The pigs becoming the humans they overthrew.'],
+  ];
+  // [level, section, example, technique, wrongs]
+  const AF_SPOT = [
+    ['F', 'K4', '“Four legs good, two legs bad.”', 'Slogan', ['Simile', 'Flashback', 'Onomatopoeia']],
+    ['F', 'K4', 'Squealer calls a cut in rations a “readjustment”, never a “reduction”.', 'Euphemism', ['Hyperbole', 'Simile', 'Alliteration']],
+    ['F', 'K1', 'Pigs, horses and sheep talk, argue, vote and paint rules on a wall.', 'Anthropomorphism', ['Onomatopoeia', 'Euphemism', 'Flashback']],
+    ['F', 'K4', 'Squealer: “Do you know what would happen if we pigs failed in our duty?”', 'Rhetorical question', ['Euphemism', 'Simile', 'Foreshadowing']],
+    ['F', 'K5', 'At the end of Chapter 2, the cows’ milk disappears while the other animals are out harvesting.', 'Foreshadowing', ['Flashback', 'Euphemism', 'Simile']],
+    ['F', 'K3', 'The pigs move into the farmhouse and sleep in Jones’s beds.', 'Symbolism', ['Onomatopoeia', 'Simile', 'Rhetorical question']],
+    ['S', 'K4', '“Jones would come back! Yes, Jones would come back!”', 'Repetition', ['Euphemism', 'Simile', 'Allusion']],
+    ['S', 'K1', 'A story about farm animals that retells the Russian Revolution and Stalin’s rule.', 'Allegory', ['Simile', 'Flashback', 'Onomatopoeia']],
+    ['S', 'K1', 'The dictator pig is named Napoleon, after a French emperor who seized power after a revolution.', 'Allusion', ['Euphemism', 'Onomatopoeia', 'Simile']],
+    ['S', 'K5', 'The pigs drink whisky in the farmhouse while the other animals go hungry.', 'Juxtaposition', ['Foreshadowing', 'Euphemism', 'Onomatopoeia']],
+    ['S', 'K5', 'Napoleon takes nine puppies away from their mothers, saying he will educate them himself.', 'Foreshadowing', ['Flashback', 'Simile', 'Euphemism']],
+    ['S', 'K4', 'Squealer reads out long lists of figures proving that food production has gone up.', 'Statistics and false evidence', ['Euphemism', 'Simile', 'Foreshadowing']],
+    ['S', 'K3', 'Napoleon appears in the yard carrying a whip in his trotter.', 'Symbolism', ['Simile', 'Onomatopoeia', 'Euphemism']],
+    ['S', 'K4', 'Napoleon is called “Father of All Animals” and “Terror of Mankind”.', 'Flattery and titles', ['Euphemism', 'Onomatopoeia', 'Foreshadowing']],
+    ['C', 'K2', 'The single Commandment on the barn wall: “ALL ANIMALS ARE EQUAL BUT SOME ANIMALS ARE MORE EQUAL THAN OTHERS”', 'Verbal irony', ['Simile', 'Foreshadowing', 'Onomatopoeia']],
+    ['C', 'K2', 'Squealer tells the animals Boxer died in the hospital at Willingdon, but the reader has seen the slaughterer’s van take him away.', 'Dramatic irony', ['Simile', 'Foreshadowing', 'Onomatopoeia']],
+    ['C', 'K2', 'The pigs, who led a rebellion against humans, end up walking on two legs and playing cards with farmers.', 'Situational irony', ['Euphemism', 'Simile', 'Flashback']],
+    ['C', 'K5', 'The novel opens at Manor Farm under a drunken master and ends at Manor Farm under pigs who drink and look like men.', 'Cyclical structure', ['Flashback', 'Simile', 'Euphemism']],
+    ['C', 'K1', 'Orwell mocks a dictatorship by showing its leaders as greedy pigs who claim everything they take is for the good of all.', 'Satire', ['Flashback', 'Euphemism', 'Onomatopoeia']],
+    ['C', 'K5', 'The narrator plainly reports Squealer’s figures showing everything is improving, without saying that the animals are hungry and cold.', 'Naive (limited) narration', ['Foreshadowing', 'Simile', 'Onomatopoeia']],
+  ];
+  // [section, example, question, best effect, weaker readings]
+  const AF_EFFECTS = [
+    ['K4', 'Squealer calls a cut in rations a “readjustment”, never a “reduction”.', 'What is the effect of this euphemism?', 'It makes a harsh cut sound harmless, so the hungry animals do not complain.', ['It shows the animals will soon get more food.', 'It creates a cheerful, comic mood.', 'It shows Squealer is confused about the rations.']],
+    ['K4', '“Four legs good, two legs bad.”', 'What is the effect of this slogan when the sheep bleat it during meetings?', 'It drowns out debate, so the animals stop thinking for themselves.', ['It helps the animals discuss ideas fairly.', 'It teaches the sheep to read.', 'It makes the humans afraid of the farm.']],
+    ['K4', '“Jones would come back! Yes, Jones would come back!”', 'What is the effect of this repetition?', 'It hammers home the animals’ biggest fear, so they accept the pigs’ privileges rather than risk it.', ['It shows that Squealer misses Jones.', 'It makes the speech sound calm and relaxed.', 'It proves Jones is about to attack.']],
+    ['K5', 'The cows’ milk disappears at the end of Chapter 2.', 'What is the effect of this foreshadowing?', 'It hints early on that the pigs are already greedy and the revolution will be corrupted.', ['It shows the cows are unwell.', 'It proves Snowball is a thief.', 'It shows the harvest has failed.']],
+    ['K5', 'At the end, the animals look from pig to man and from man to pig and cannot tell which is which.', 'What is the effect of this ending?', 'It shows the pigs have become as bad as the humans, so the revolution has gone full circle.', ['It shows the pigs and humans are now true friends who will treat the animals well.', 'It suggests the animals need glasses.', 'It shows Snowball has returned in disguise.']],
+    ['K2', 'Squealer tells the animals Boxer died in the hospital at Willingdon, but the reader has seen the slaughterer’s van take him away.', 'What is the effect of this dramatic irony?', 'The reader feels angry and sad because we know the truth the animals are denied.', ['It makes the reader trust Squealer more.', 'It creates a light, comic tone.', 'It shows Boxer was not really loyal.']],
+    ['K3', 'The windmill is finally used to grind corn for profit, not to give the animals electricity.', 'What does this show about the windmill as a symbol?', 'It shows the revolution’s promises of an easier life were broken and only the pigs benefit.', ['It shows the animals finally have an easy life.', 'It shows Snowball’s plan has worked perfectly.', 'It shows the windmill was never built.']],
+    ['K1', 'Pigs, rather than another animal, become the ruling class.', 'What is the effect of Orwell making the rulers pigs?', 'Pigs are often linked to greed, so the reader is positioned to see the rulers as greedy and selfish.', ['Pigs are admired as brave, so the rulers seem heroic.', 'It shows the rulers are the hardest workers.', 'It has no effect on how we see them.']],
+    ['K5', 'The pigs drink whisky in the farmhouse while the other animals go hungry.', 'What is the effect of this juxtaposition?', 'It highlights the huge gap between the pigs and the other animals, showing the pigs’ hypocrisy.', ['It shows all the animals are now equal.', 'It shows the pigs are sharing their food.', 'It creates a peaceful, happy mood.']],
+    ['K4', 'Squealer: “Do you know what would happen if we pigs failed in our duty?”', 'What is the effect of this rhetorical question?', 'It makes the answer seem obvious and frightening, pushing the animals to agree without arguing.', ['It shows Squealer is genuinely unsure.', 'It invites the animals to vote on the question.', 'It makes the speech sound funny.']],
+  ];
+
+  const afTechNotes = (code) => AF_TECH.filter(t => t[0] === code).map(t => `${t[1]}: ${t[2]} Example: ${t[3]} Effect: ${t[4]}`);
+  const aftech = finish({
+    id: 'aftech', subject: SUBJECT, title: 'Animal Farm: techniques', chapter: 'Animal Farm', hue: HUE,
+    blurb: 'Allegory, satire, irony, symbols, Squealer’s persuasive language and the structure of the novel, with what each one does to Orwell’s message.',
+    sections: [
+      { code: 'K1', name: 'Allegory, fable and satire', notes: [...afTechNotes('K1'), 'Remember: a technique is only worth marks when you explain how it helps Orwell create meaning.'] },
+      { code: 'K2', name: 'Irony', notes: [...afTechNotes('K2'), 'Tip: irony is everywhere in Animal Farm because the animals believe the pigs while the reader can see the truth.'] },
+      { code: 'K3', name: 'Symbolism', notes: ['Symbolism: an object, place or action that stands for a bigger idea.', ...SYMBOLS.map(s => `${s[0]}: ${s[1]}`)], ex: ['Analysing a symbol: the windmill', 'Point: the windmill symbolises the pigs’ broken promises.', 'Evidence: Snowball promises it will cut the working week, but at the end it is used to grind corn for profit.', 'Analysis: the animals work themselves to exhaustion building it three times, yet never get its benefits.', 'Link: Orwell suggests that leaders often use grand projects to make people work harder for the leaders’ own gain.'] },
+      { code: 'K4', name: 'The language of power: Squealer, slogans and euphemism', notes: [...afTechNotes('K4'), 'Squealer usually combines several techniques at once: a rhetorical question, a scary warning and a fact the animals cannot check.'] },
+      { code: 'K5', name: 'Narration and structure', notes: [...afTechNotes('K5'), 'The narrator rarely tells us directly that the pigs are lying. Orwell trusts the reader to notice the gap between what the animals are told and what is really happening.'] },
+    ],
+    cards: [
+      ...AF_TECH.map(t => [t[1], `${t[2]} In Animal Farm: ${t[3]}`]),
+      ...SYMBOLS.map(s => [`What does ${s[0].charAt(0).toLowerCase() + s[0].slice(1)} symbolise?`, s[1]]),
+      ['Allegory or fable?', 'An allegory has a hidden second meaning (Russia). A fable is a simple animal story that teaches a lesson. Animal Farm is both.'],
+      ['Dramatic or situational irony?', 'Dramatic: the reader knows more than the characters. Situational: the outcome is the opposite of what was expected.'],
+      ['Why is the narration called naive?', 'It reports events as the ordinary animals understand them, without pointing out the lies, so the reader must spot them.'],
+      ['Why do the pigs becoming more human matter?', 'It shows step by step that they are turning into the masters they overthrew.'],
+      ['Technique, evidence, effect', 'Name the technique, give a short quote or describe the moment, then explain how it shapes Orwell’s message.'],
+    ],
+    concepts: [
+      ['Animal Farm is an allegory because…', ['It has talking animals', 'Its characters and events stand for real people and events', 'It is very short', 'It has a happy ending'], 1, 'The second meaning is the Russian Revolution.'],
+      ['Which is the best example of euphemism?', ['“Four legs good, two legs bad”', 'Calling a cut in rations a “readjustment”', 'The windmill falling down', 'Napoleon’s dogs'], 1, 'A mild word hides a harsh fact.'],
+      ['The reader knows the pigs sold Boxer, but the animals believe he died in hospital. This is…', ['Situational irony', 'Dramatic irony', 'Foreshadowing', 'Allusion'], 1, ''],
+      ['The pigs end up just like the humans they rebelled against. This is…', ['Situational irony', 'Euphemism', 'A slogan', 'Anthropomorphism'], 0, 'The outcome is the opposite of what the Rebellion intended.'],
+      ['The farm’s name going from Manor Farm to Animal Farm and back is an example of…', ['Cyclical structure', 'Onomatopoeia', 'Simile', 'Euphemism'], 0, ''],
+      ['What does the windmill symbolise by the end?', ['The animals’ easy life', 'The pigs’ broken promises and the animals’ exploitation', 'Snowball’s victory', 'The humans’ defeat'], 1, ''],
+      ['Why does Napoleon remove the hoof and horn from the flag?', ['It shows the hope of an animal republic is gone', 'The paint ran out', 'Snowball designed it', 'The humans asked him to'], 0, ''],
+      ['What does the whip in the pigs’ trotters symbolise?', ['Control through cruelty, like Jones', 'Farming skill', 'Equality', 'Celebration'], 0, ''],
+      ['“Four legs good, two legs bad” is mainly an example of…', ['A slogan', 'A simile', 'Dramatic irony', 'Flashback'], 0, ''],
+      ['Why does Squealer use rhetorical questions?', ['To make the answer seem obvious and push the animals to agree', 'Because he does not know the answer', 'To start a debate', 'To make the animals laugh'], 0, ''],
+      ['The disappearing milk in Chapter 2 is an example of…', ['Foreshadowing', 'Cyclical structure', 'Euphemism', 'Allusion'], 0, ''],
+      ['Giving animals the ability to talk, read and vote is…', ['Anthropomorphism', 'Onomatopoeia', 'Euphemism', 'Juxtaposition'], 0, ''],
+      ['Orwell’s use of satire in the novel is meant to…', ['Mock and criticise dictators and their hypocrisy', 'Praise Napoleon', 'Teach farming', 'Make the animals look heroic'], 0, ''],
+      ['What is the effect of the naive narration?', ['The reader must work out the truth behind the lies', 'The narrator explains every lie', 'The story is told by Napoleon', 'It makes the story confusing on purpose'], 0, ''],
+      ['Which sentence best explains the effect of a technique?', ['Orwell uses a slogan.', 'The slogan “Four legs good, two legs bad” is repeated by the sheep to drown out debate, showing how slogans stop people thinking.', 'There are slogans in Animal Farm.', 'The sheep say a slogan.'], 1, 'It names the technique, gives evidence and explains the effect.'],
+      ['Banning Beasts of England and replacing it with a new anthem symbolises…', ['The death of the revolution’s dream', 'A happier farm', 'Snowball’s return', 'A better harvest'], 0, ''],
+      ['“All animals are equal but some animals are more equal than others” is ironic because…', ['It contradicts itself', 'It rhymes', 'It is a question', 'It is said by a human'], 0, 'Equal cannot come in degrees.'],
+    ],
+    short: [
+      { q: 'Identify one technique in the novel’s final sentence and explain its effect.', passage: '“The creatures outside looked from pig to man, and from man to pig, and from pig to man again; but already it was impossible to say which was which.”', marks: 3, tags: ['K5'], criteria: ['Identifies a technique: repetition, cyclical structure or situational irony', 'Supports it with words from the sentence (“from pig to man, and from man to pig”)', 'Explains that the pigs have become as bad as the humans, so the revolution has gone full circle'], model: 'Orwell uses repetition in “from pig to man, and from man to pig, and from pig to man again”, so the animals’ eyes move back and forth just like the reader’s. This shows their confusion and creates situational irony: the pigs who led the fight against humans are now impossible to tell apart from them. It completes the cyclical structure, showing the revolution has gone full circle and the animals are no better off than under Jones.' },
+      { q: 'Identify two persuasive techniques Squealer uses here and explain how they control the animals.', passage: 'Squealer: “Do not imagine, comrades, that leadership is a pleasure! On the contrary, it is a deep and heavy responsibility… But sometimes you might make the wrong decisions, comrades, and then where should we be?”', marks: 4, tags: ['K4'], criteria: ['Identifies one technique, such as the rhetorical question “where should we be?”', 'Identifies a second technique, such as inclusive address “comrades” or emotive language “deep and heavy responsibility”', 'Explains how Squealer presents Napoleon as self-sacrificing rather than power-hungry', 'Explains how the animals are made to doubt themselves and give up their right to decide'], model: 'Squealer repeats “comrades”, an inclusive form of address that makes the animals feel he is on their side. He uses emotive language, calling leadership “a deep and heavy responsibility”, so Napoleon’s grab for power sounds like a sacrifice. He ends with a rhetorical question, “then where should we be?”, which hints at disaster without saying it and makes the animals doubt their own judgement. Together these techniques persuade the animals to hand all decisions to Napoleon.' },
+      { q: 'What is the technique here, and why does Squealer use it?', passage: 'When food rations are cut in Chapter 9, Squealer always speaks of a “readjustment”, never a “reduction”.', marks: 2, tags: ['K4'], criteria: ['Identifies euphemism', 'Explains that the gentle word hides the harsh truth that the animals are getting less food, so they do not complain'], model: 'This is euphemism, using a mild word to hide something unpleasant. By saying “readjustment” instead of “reduction”, Squealer makes a cut in food sound harmless and technical, so the hungry animals do not realise how bad things are and do not complain.' },
+      { q: 'How does Orwell use these two slogans to show the pigs’ corruption?', passage: 'Chapter 3: the sheep learn the slogan “Four legs good, two legs bad.”\nChapter 10: after the pigs begin walking on two legs, the sheep bleat “Four legs good, two legs better!”', marks: 3, tags: ['K4'], criteria: ['Identifies the slogan or repetition and its role in drowning out thought', 'Explains the change of a single word, from “bad” to “better”', 'Explains that this shows the pigs have betrayed the revolution and can make the sheep say anything'], model: 'The first slogan sums up the revolution’s belief that humans are the enemy, and the sheep repeat it so often that it replaces real thinking. In Chapter 10 Orwell changes one word, “bad” to “better”, at the exact moment the pigs start walking like humans. The sheep chant the opposite of the original idea just as happily, which shows the pigs have completely betrayed the revolution and can control what the animals believe.' },
+      { q: 'Explain how Orwell uses the windmill as a symbol.', marks: 3, tags: ['K3'], criteria: ['States what the windmill was promised to do (electricity, shorter working week, easier lives)', 'Describes what really happens (rebuilt with huge effort, finally used to grind corn for profit)', 'Explains what it symbolises: broken promises and the exploitation of the workers'], model: 'Snowball promises the windmill will give the animals electricity and a much shorter working week. Instead, the animals work themselves to exhaustion building it again and again, and at the end it is used to grind corn for profit, which only benefits the pigs. The windmill therefore symbolises the pigs’ broken promises and the way the workers are exploited for their leaders’ gain.' },
+    ],
+  });
+  aftech.bank = [
+    function spotTechnique(level) {
+      const m = AF_SPOT.filter(s => s[0] === level), [L, code, line, techName, wrongs] = pick(m.length ? m : AF_SPOT);
+      const t = AF_TECH.find(x => x[1] === techName);
+      return { level: L, tags: [code], stem: 'Read the moment from Animal Farm, then identify the main technique.', passage: line, parts: [CH('', 'Which technique is used most clearly here?', techName, wrongs, [t ? `${techName}: ${t[2]} Effect: ${t[4]}` : `${techName}: an object, place or action that stands for a bigger idea.`])] };
+    },
+    function techniqueEffect(level) {
+      const [code, line, q, right, wrongs] = pick(AF_EFFECTS);
+      return { level: level === 'F' ? 'S' : 'C', tags: [code], stem: 'Read the moment, then choose the best explanation of its effect.', passage: line, parts: [CH('', q, right, wrongs, ['The best answer explains how the technique shapes Orwell’s message, not just what happens.'])] };
+    },
+    function symbolMeaning(level) {
+      const s = pick(SYMBOLS);
+      if (level === 'F') return { level: 'F', tags: ['K3'], stem: 'Symbols in Animal Farm.', parts: [CH('', `What does ${s[0].charAt(0).toLowerCase() + s[0].slice(1)} symbolise?`, s[1], othersOf(SYMBOLS.map(x => x[1]), s[1]), [`${s[0]}: ${s[1]}`])] };
+      return { level: 'S', tags: ['K3'], stem: `Symbol meaning: ${s[1]}`, parts: [CH('', 'Which symbol is this?', s[0], othersOf(SYMBOLS.map(x => x[0]), s[0]), [`${s[0]}: ${s[1]}`])] };
+    },
+  ];
+
+  /* ================= SHORT ANSWERS AND PETAL PARAGRAPHS ================= */
+  // [level, section, question, best answer, weaker answers, why]
+  const WRITE_Q = [
+    Q('F', 'W2', 'Question: How does Orwell present Napoleon as a dictator? Which sentence is the best Point?', 'Orwell presents Napoleon as a ruthless dictator who uses fear and violence to gain and keep power.', ['Napoleon is a pig on Animal Farm.', 'In Chapter 5, the dogs chase Snowball off the farm.', 'I think Napoleon is a really mean character.'], 'A good Point answers the question directly and names the idea you will prove.'),
+    Q('F', 'W2', 'Question: How does Orwell show the power of propaganda? Which sentence is the best Point?', 'Orwell shows that propaganda allows leaders to control what people believe, mainly through the character of Squealer.', ['Squealer is a small, fat pig.', 'Propaganda is a type of language.', 'There is a lot of propaganda in the book and it is bad.'], 'It answers the question and sets up the paragraph’s argument.'),
+    Q('S', 'W2', 'Which sentence is the best Analysis of “readjustment” instead of “reduction”?', 'The gentle word “readjustment” disguises the harsh reality of starvation, revealing how Squealer manipulates language so the animals do not complain.', ['This is a euphemism.', 'Squealer says “readjustment” in Chapter 9.', 'This shows that Squealer is a pig who talks a lot.'], 'Analysis explains how the words work and what they reveal.'),
+    Q('S', 'W2', 'Which sentence is the best Analysis of the slogan “Four legs good, two legs bad”?', 'Because the sheep bleat the slogan whenever there is debate, it drowns out thinking, highlighting how simple slogans can replace real discussion.', ['The slogan has six words.', 'The sheep say this slogan.', 'This slogan is repetitive.'], 'It explains the effect of the slogan, not just what it is.'),
+    Q('S', 'W2', 'Which sentence is the best Link for a paragraph about Napoleon’s use of fear?', 'Therefore, Orwell warns that leaders who rule through fear will crush any resistance to keep their power.', ['That is all about Napoleon.', 'In conclusion, the dogs are scary.', 'Next I will talk about Squealer.'], 'A Link ties the paragraph back to the question and Orwell’s message.'),
+    Q('S', 'W2', 'Which sentence is the best Link for a paragraph about the changing Commandments?', 'In this way, Orwell reveals how those in power rewrite the rules to protect themselves, showing that power corrupts.', ['The Commandments are on the barn wall.', 'This was the Fourth Commandment.', 'Squealer had a ladder.'], 'It links the evidence back to the big idea.'),
+    Q('C', 'W3', 'Which verb makes this sentence the most analytical? “Orwell ___ how ignorance allows the pigs to control the animals.”', 'exposes', ['shows', 'says', 'writes'], '“Exposes” suggests Orwell is revealing something hidden and critical.'),
+    Q('C', 'W2', 'Which sentence is the best Technique sentence?', 'Orwell uses dramatic irony, as the reader knows Boxer has been sold to the knacker while the animals believe Squealer’s lie.', ['There is a technique in this part.', 'Boxer dies in Chapter 9.', 'Orwell uses lots of techniques in Animal Farm.'], 'It names the technique and shows exactly where it is used.'),
+    Q('C', 'W2', 'Which sentence is the best Evidence sentence for a paragraph about inequality?', 'After the Rebellion, the narrator explains that the pigs “did not actually work, but directed and supervised the others”.', ['The pigs are unfair.', 'Inequality is a big theme.', 'There are lots of examples of inequality in the book.'], 'Evidence gives a short quote or a specific moment.'),
+  ];
+  // Paragraphs with one PETAL step missing: [level, paragraph, missing step, why]
+  const MISSING = [
+    ['F', 'Orwell shows that power corrupts. Napoleon moves into the farmhouse and sleeps in Jones’s bed. This symbolism shows that he is becoming like the humans he overthrew. Orwell warns that leaders with unlimited power will take privileges for themselves.', 'Nothing is missing: it has P, E, T, A and L', 'P: “Orwell shows…”; E: the farmhouse and bed; T: symbolism; A: becoming like the humans; L: Orwell warns…'],
+    ['F', 'Orwell shows how propaganda controls people. Squealer uses a rhetorical question, which makes the animals feel they have no choice but to agree. Orwell warns that leaders who control language can control their people.', 'Evidence: there is no quote or specific moment', 'The paragraph never says which question Squealer asks or when.'],
+    ['S', 'Squealer says the pigs need the milk and apples because they are “brainworkers”, using a scare tactic that “Jones would come back!” This makes the animals too frightened to complain. Therefore, Orwell suggests that fear is used to justify inequality.', 'Point: there is no opening sentence that answers the question', 'It jumps straight to evidence without stating the argument first.'],
+    ['S', 'Orwell shows that the revolution is betrayed. At the end the animals look “from pig to man, and from man to pig” and cannot tell them apart. This shows the pigs have become the humans. Orwell warns that revolutions can end in new tyranny.', 'Technique: no technique is named', 'It could name repetition, cyclical structure or situational irony.'],
+    ['S', 'Orwell shows that ignorance allows leaders to control people. Boxer cannot learn past the letter D, and Orwell uses characterisation to present him as loyal but easily led. Therefore, Orwell warns that people who do not question their leaders are easily exploited.', 'Analysis: the effect is not explained', 'It needs to explain how Boxer’s ignorance lets the pigs lie to him, for example with “Napoleon is always right”.'],
+    ['C', 'Orwell presents Napoleon as a ruthless dictator. When the four young pigs protest, the dogs let out “deep, menacing growls” and the pigs fall silent, and Orwell uses this moment to symbolise the threat of violence. Fear stops the animals from speaking, so Napoleon can rule without any opposition.', 'Link: it does not return to the question or Orwell’s message', 'It needs a final sentence such as “Orwell warns that dictators use terror to silence opposition.”'],
+    ['C', 'Orwell shows the power of propaganda. Squealer calls a cut in rations a “readjustment”. This euphemism hides the truth, so the animals do not realise they are starving. Through Squealer, Orwell criticises leaders who twist words to avoid blame.', 'Nothing is missing: it has P, E, T, A and L', 'P: power of propaganda; E: “readjustment”; T: euphemism; A: hides the truth; L: Orwell criticises…'],
+  ];
+
+  const afwrite = finish({
+    id: 'afwrite', subject: SUBJECT, title: 'Short answers and PETAL paragraphs', chapter: 'Animal Farm', hue: HUE,
+    blurb: 'How to read exam questions, how many marks need what, and how to write strong PETAL paragraphs about Animal Farm.',
     sections: [
       { code: 'W1', name: 'Reading the question', notes: [
-        'Read the question three times: once for the gist, once to underline the key terms, and once to find the directive verb that tells you what to do.',
-        'Analyse: break the text into parts and show how they work together to create meaning. Explain: make clear how and why. Discuss: weigh up ideas, often from more than one side.',
-        'Evaluate and assess: make a judgement about value, quality or effectiveness, and justify it. “To what extent”: take a position on a scale (completely, largely, partly, barely) and defend it.',
-        'Key terms are the concept words in the question, such as resilience or the conversation between texts. Use them, or close synonyms, in your thesis, every topic sentence and your conclusion.',
-        'If the question contains a statement or quotation, respond to it directly: agree, disagree or qualify it. Never swap it for a memorised essay.',
-        'Module descriptions give you useful vocabulary, but you are marked on answering the actual question. Adapt prepared material to fit it.',
-      ], ex: ['Question: To what extent does your prescribed text suggest that hope is more powerful than fear?', 'Directive: “to what extent” means you must take a position on a scale, not just say yes or no.', 'Key terms: hope, fear, and “more powerful than”, which is a comparison, so both ideas belong in every paragraph.', 'Position: “largely, but hope only wins when it is shared”, a qualified answer that sets up a sophisticated thesis.'] },
-      { code: 'W2', name: 'Thesis statements', notes: [
-        'A thesis is your answer to the question in one or two sentences. It makes an arguable claim, uses the key terms, and hints at how the text achieves it.',
-        'Weak theses restate the question, list techniques, or say the text “shows” a theme. Strong theses argue what the composer suggests about the concept and why it matters.',
-        'A starting formula: composer + analytical verb + your idea about the concept + how the text does it. Then rewrite it so it sounds natural.',
-        'Build nuance with words such as while, although, ultimately, paradoxically and not simply… but.',
-        'The thesis is the spine of the essay: each body paragraph proves one part of it.',
-      ], ex: ['Weak: “In my text, there are lots of examples of resilience.”', 'Problem: it describes instead of arguing, and says nothing about what resilience means.', 'Better: “The novel shows that resilience is important for the characters.” Still vague: “shows” and “important” say very little.', 'Strong: “The novel suggests that resilience is not solitary endurance but something forged through community, as its isolated protagonist only recovers once she accepts help.”'] },
-      { code: 'W3', name: 'Topic sentences', notes: [
-        'A topic sentence opens a body paragraph by stating its argument, linked to both the thesis and the question.',
-        'It should be an idea, not a technique or a plot event. Avoid openings like “In chapter three…” or “The composer uses a metaphor…”.',
-        'Strong topic sentences use the question’s key terms and a precise analytical verb, and often name the composer.',
-        'Read your topic sentences in a row: they should form a mini-argument that summarises the whole essay.',
-        'Later topic sentences can develop or complicate earlier ones with connectives such as however, yet and furthermore.',
-      ], ex: ['Weak: “In the first scene, Jack yells at his brother.”', 'Problem: it retells plot; there is no idea for the paragraph to prove.', 'Better: “The first scene shows that Jack is angry.” An idea, but a shallow one.', 'Strong: “The composer first presents anger as a mask for grief, suggesting that Jack’s hostility is a defence against the vulnerability of loss.”'] },
-      { code: 'W4', name: 'Analytical paragraphs', notes: [
-        'TEEL: Topic sentence, Evidence, Explanation (technique and effect), Link back to the question and thesis. PETAL (Point, Example, Technique, Analysis, Link) is the same idea with different labels.',
-        'Each piece of evidence needs three things: the technique, the quote or detail, and its effect on meaning, tied to the concept in the question.',
-        'Embed quotations in your own sentence so the grammar flows, rather than dropping a quote in on its own.',
-        'Use short, precise quotations of a few words. Square brackets can change a word so it fits your grammar, as long as the meaning stays the same.',
-        'Avoid retelling. A quick test: if a sentence could appear in a plot summary, it is not analysis.',
-        'Two to four well-analysed pieces of evidence per paragraph beats a long list of half-explained ones.',
-      ], ex: ['Retelling: “Then Mia leaves her home town and moves to the city.”', 'Add evidence: as she leaves, the town is described as “a mouth closing behind her”.', 'Add technique and effect: this metaphor presents the town as devouring, suggesting her departure is an escape.', 'Link: in this way, the composer frames belonging as something that can confine as much as it comforts.'] },
-      { code: 'W5', name: 'Introductions, conclusions and timing', notes: [
-        'Introduction: a framing sentence or straight into your thesis, then name the text, composer and form, then outline your arguments. Three to five sentences is plenty in an exam.',
-        'Conclusion: restate the thesis in fresh words, draw the arguments together and end with a wider insight. No new evidence.',
-        'Paper 1 has two sections worth 20 marks each: give each about 45 minutes. Paper 2 has three sections worth 20 marks each across two hours: about 40 minutes each.',
-        'Spend three to five minutes planning each essay: thesis, one line per topic sentence, and the evidence for each paragraph.',
-        'Keep to time. A brief final paragraph and a two-sentence conclusion earn more than a perfect essay that stops halfway.',
-        'Use reading time to read every question carefully and decide what each one is really asking.',
+        'Underline the key words in the question: the instruction word (identify, explain, how does), the theme or character, and any technique named.',
+        'Identify means name it: a short answer is fine. Explain means say how or why, with a reason. How does Orwell… means you must name a technique and explain its effect.',
+        'Look at the marks: they tell you how much to write.',
+        '1 mark: one clear point, often one sentence (for example, naming a technique or a character).',
+        '2–3 marks: a technique plus a short quote or a specific moment plus its effect. Think of it as a mini-PETAL in two to four sentences.',
+        '4 marks: two techniques or two points, each with evidence and effect.',
+        '8 marks: a full extended response, written as one or two PETAL paragraphs.',
+        'If the question gives you an extract, your evidence must come from that extract.',
+      ], ex: ['Unpacking a question: “How does Orwell use Squealer to show the power of language? (3 marks)”', 'How does Orwell use: I must name a technique and explain its effect.', 'Squealer: my evidence must be something Squealer says or does.', 'Power of language: my explanation must show how words control the animals.', '3 marks: technique, evidence and effect, in about three or four sentences.'] },
+      { code: 'W2', name: 'PETAL explained', notes: [
+        'P is for Point: one sentence that answers the question directly. Starter: “Orwell presents… as…” or “Orwell shows that…”',
+        'E is for Evidence: a short quotation or a specific moment from the novel or extract. Starter: “For example, when…” or “This is shown when Squealer says…”',
+        'T is for Technique: name the technique the writer uses. Starter: “Orwell uses [technique] to…” or “Through the symbol of…”',
+        'A is for Analysis: explain how the technique and evidence create meaning. This is the most important part. Starter: “This reveals…”, “This suggests…”, “The word … highlights…”',
+        'L is for Link: tie back to the question and Orwell’s message. Starter: “Therefore, Orwell warns…”, “In this way, Orwell criticises…”',
+        'You can combine E and T in one sentence: “Orwell uses euphemism when Squealer calls a cut in rations a “readjustment”.”',
+        'For an 8-mark answer, write one PETAL paragraph with two pieces of evidence, or two PETAL paragraphs with one main example each.',
       ] },
-      { code: 'W6', name: 'Language of analysis', notes: [
-        'Swap “shows” and “uses” for verbs that say what the composer is doing: conveys, foregrounds, underscores, interrogates, illuminates, subverts, critiques, challenges, evokes, exposes, reinforces, laments, celebrates.',
-        'Match the verb to the meaning: subverts only when an expectation is overturned; critiques when the composer judges something; interrogates when the text questions an idea.',
-        'Write about texts in the present tense: the poet suggests, not the poet suggested.',
-        'Keep a formal register: no “I think”, contractions or slang. Refer to composers by surname.',
-        'Make the composer the subject of your sentences to show deliberate choices: “Hartley positions the reader to…”.',
-        'Use tentative language for interpretations: arguably, perhaps, may suggest.',
+      { code: 'W3', name: 'Strong analysis vocabulary', notes: [
+        'Avoid repeating “shows”. Use precise verbs: reveals, highlights, emphasises, suggests, conveys, exposes, criticises, warns, mocks, symbolises, foreshadows.',
+        'Talk about Orwell as a writer making choices: “Orwell suggests…”, “Orwell positions the reader to…”, “Orwell uses Squealer to…”',
+        'Name the reader’s response: “The reader feels angry/sympathetic/uneasy because…”',
+        'Words for power: manipulates, exploits, dominates, controls, silences, corrupts.',
+        'Words for the animals: naive, loyal, exploited, oppressed, powerless, ignorant, obedient.',
+        'Words for the pigs: hypocritical, greedy, ruthless, cunning, tyrannical, privileged.',
+        'Zoom in on a single word: “The word ‘readjustment’ sounds calm and technical, which hides…”',
+        'Do not retell the plot. Every sentence should either prove your point or explain why it matters.',
+      ] },
+      { code: 'W4', name: 'Model PETAL paragraph: power and corruption', notes: ['Question: How does Orwell show that power corrupts?', 'Each step is labelled so you can see the PETAL structure. In the exam you would write it as one paragraph.'], ex: ['Model 1: How does Orwell show that power corrupts?', 'P: Orwell shows that power corrupts by tracing how Napoleon gradually becomes the very tyrant the animals rebelled against.', 'E: After the pigs move into the farmhouse, the Fourth Commandment is found to read “No animal shall sleep in a bed with sheets.”', 'T: The farmhouse and its beds are symbols of human privilege, and the small change to the commandment is an example of how rules are quietly rewritten.', 'A: By adding just three words, the pigs make their new luxury seem legal, revealing that once Napoleon has power, he bends the rules to serve himself rather than the other animals.', 'L: Therefore, Orwell warns that leaders with unchecked power will always take privileges for themselves, betraying the people they claim to serve.'] },
+      { code: 'W5', name: 'Model PETAL paragraph: propaganda', notes: ['Question: How does Orwell use Squealer to show the power of language to control others?'], ex: ['Model 2: How does Orwell use Squealer to show the power of language?', 'P: Orwell uses Squealer to reveal how leaders can twist language to make injustice seem reasonable.', 'E: When the pigs take the milk and apples, Squealer claims they have been “proved by Science” to be necessary for pigs, and asks what would happen if the pigs failed in their duty: “Jones would come back!”', 'T: Squealer combines a false appeal to authority with a rhetorical question and a scare tactic.', 'A: Because the animals cannot check the “Science”, and because their greatest fear is Jones returning, they are confused and frightened into silence, so the pigs’ greed is disguised as a duty.', 'L: In this way, Orwell criticises the use of propaganda and warns readers to question leaders who use clever words to justify their privileges.'] },
+      { code: 'W6', name: 'Model PETAL paragraph: the revolution betrayed', notes: ['Question: How does Orwell show that the revolution has been betrayed by the end of the novel?'], ex: ['Model 3: How does Orwell show that the revolution has been betrayed?', 'P: Orwell shows that the revolution has been completely betrayed, as the pigs end up indistinguishable from the humans they overthrew.', 'E: In the final scene, the animals look “from pig to man, and from man to pig, and from pig to man again” and find it “impossible to say which was which”.', 'T: Orwell uses repetition and a cyclical structure, ending the novel at Manor Farm just as it began.', 'A: The repetition imitates the animals’ eyes darting back and forth in confusion, emphasising that the pigs have become exactly like their former masters, so the animals’ suffering has been for nothing.', 'L: Therefore, Orwell warns that revolutions can be corrupted by their leaders until they simply replace one tyranny with another.'] },
+      { code: 'W7', name: 'Exam tips', notes: [
+        'The exam is 60 minutes for 20 marks: roughly three minutes per mark.',
+        'Suggested timing: spend about 5 minutes reading the whole paper, about 30 minutes on Section 1 (multiple choice and short answers), and about 20–25 minutes on the Section 2 extended response, leaving a few minutes to check.',
+        'Unseen extracts: read the extract twice. First for what is happening, second with a pen, underlining strong words, repeated ideas and anything Squealer-like.',
+        'Pick one technique you are confident about and explain it well, rather than listing many techniques with no explanation.',
+        'Use short quotes from the extract: three to eight words is usually enough. You do not need to memorise quotes; for the extended response you can describe a moment in your own words.',
+        'For the extended response, spend two or three minutes planning: write P, E, T, A, L down the margin and jot a word or two next to each.',
+        'Multiple choice: cross out answers you know are wrong, and be careful with “not” and “best”.',
+        'Always link back to Orwell’s message: what is he warning us about?',
       ] },
     ],
     cards: [
-      ['Analyse', 'Break a text into parts and show how they work together to create meaning.'],
-      ['Evaluate', 'Judge value or effectiveness, with reasons.'],
-      ['Assess', 'Judge the quality, extent or significance of something.'],
-      ['Explain', 'Make clear how and why, with cause and effect.'],
-      ['Discuss', 'Weigh up ideas, often for and against.'],
-      ['To what extent', 'Take a position on a scale (completely, largely, partly) and justify it.'],
-      ['Key terms', 'The concept words in the question; use them in your thesis, topic sentences and conclusion.'],
-      ['Thesis', 'Your arguable answer to the question in one or two sentences.'],
-      ['Weak thesis signs', 'Restates the question, lists techniques, or says the text “shows” a theme.'],
-      ['Nuance words', 'While, although, ultimately, paradoxically, not simply… but.'],
-      ['Topic sentence', 'States the paragraph’s argument, linked to the thesis and the question.'],
-      ['Topic sentence test', 'Read them in a row: they should summarise your whole argument.'],
-      ['TEEL', 'Topic sentence, Evidence, Explanation, Link.'],
-      ['PETAL', 'Point, Example, Technique, Analysis, Link.'],
-      ['Evidence triple', 'Technique + quote or detail + effect on meaning.'],
-      ['Embedding a quote', 'Weave a short quote into your own sentence so the grammar flows.'],
-      ['Square brackets in quotes', 'Change a word to fit your grammar without changing the meaning.'],
-      ['Retelling test', 'If the sentence could appear in a plot summary, it is not analysis.'],
-      ['Introduction', 'Thesis, text and composer, form, outline of arguments. Three to five sentences.'],
-      ['Conclusion', 'Restate the thesis freshly, draw arguments together, wider insight. No new evidence.'],
-      ['Paper 1 timing', 'About 45 minutes for each of the two sections.'],
-      ['Paper 2 timing', 'About 40 minutes for each of the three sections.'],
-      ['Planning time', 'Three to five minutes per essay: thesis, topic sentences, evidence.'],
-      ['Instead of “shows”', 'Conveys, foregrounds, underscores, illuminates, reveals, suggests.'],
-      ['Subverts', 'Overturns or undermines an expectation or convention.'],
-      ['Interrogates', 'Questions an idea closely without necessarily settling it.'],
-      ['Foregrounds', 'Brings something to the front of the audience’s attention.'],
-      ['Tense for analysis', 'Present tense: the composer suggests.'],
-      ['Register', 'Formal: no “I think”, contractions or slang; composers by surname.'],
-      ['Tentative language', 'Arguably, perhaps, may suggest: signals a considered interpretation.'],
+      ['What does PETAL stand for?', 'Point, Evidence, Technique, Analysis, Link.'],
+      ['What makes a good Point?', 'One sentence that directly answers the question and states the idea you will prove.'],
+      ['What counts as Evidence?', 'A short quotation, or a specific moment from the novel or extract described clearly.'],
+      ['What goes in the Technique step?', 'The name of the technique Orwell uses, such as symbolism, euphemism or irony.'],
+      ['What is Analysis?', 'Explaining how the technique and evidence create meaning and affect the reader. It is the most important step.'],
+      ['What is the Link?', 'A sentence that ties the paragraph back to the question and Orwell’s message.'],
+      ['Point sentence starter', '“Orwell presents… as…” or “Orwell shows that…”'],
+      ['Analysis sentence starters', '“This reveals…”, “This suggests…”, “The word … highlights…”'],
+      ['Link sentence starters', '“Therefore, Orwell warns…”, “In this way, Orwell criticises…”'],
+      ['What does a 1-mark question need?', 'One clear, correct point, often a single sentence.'],
+      ['What does a 2–3 mark question need?', 'A technique, a short quote or specific moment, and its effect.'],
+      ['What does an 8-mark question need?', 'One or two full PETAL paragraphs.'],
+      ['What does “identify” mean?', 'Name it. A short answer is fine.'],
+      ['What does “explain” mean?', 'Say how or why, giving reasons.'],
+      ['What does “How does Orwell…” want?', 'A technique and how it creates meaning, not just what happens.'],
+      ['Better verbs than “shows”', 'Reveals, highlights, emphasises, suggests, conveys, exposes, criticises, warns.'],
+      ['How long should a quote be?', 'Short: usually three to eight words.'],
+      ['Do I need to memorise quotes?', 'No. Use quotes from the extract, and describe moments in your own words for the extended response.'],
+      ['How long is the exam?', '60 minutes for 20 marks: about three minutes per mark.'],
+      ['How should you read an unseen extract?', 'Twice: first for meaning, then with a pen, underlining strong words and techniques.'],
+      ['Biggest mistake in analysis', 'Retelling the plot or just naming a technique without explaining its effect.'],
+      ['Feature-spotting', 'Listing techniques with no explanation. It earns very few marks.'],
+      ['How do you plan an extended response quickly?', 'Write P, E, T, A, L down the margin and jot a few words next to each.'],
     ],
     concepts: [
-      ['Which directive verb asks for a judgement with reasons?', ['Describe', 'Identify', 'Evaluate', 'Recount'], 2, ''],
-      ['A strong thesis…', ['Restates the question', 'Makes an arguable claim using the key terms', 'Lists the techniques you will discuss', 'Summarises the plot'], 1, ''],
-      ['Which is the best opening for a body paragraph?', ['In chapter two, the family moves house.', 'The composer uses a simile.', 'The composer suggests that home is defined by people rather than place.', 'This paragraph is about home.'], 2, 'It states an idea.'],
-      ['In TEEL, the final L stands for…', ['Language', 'Link', 'List', 'Literature'], 1, ''],
-      ['Which quotation is best embedded?', ['“The walls breathed.” This is personification.', 'The quote “the walls breathed” is personification.', 'The house seems alive as “the walls breathed” around her, suggesting she is never truly alone.', 'Personification: “the walls breathed”.'], 2, ''],
-      ['Which sentence is retelling, not analysis?', ['The storm mirrors the characters’ inner turmoil.', 'After the funeral, Ana drives to the coast.', 'The fractured syntax conveys her panic.', 'The motif of water suggests renewal.'], 1, ''],
-      ['What belongs in a conclusion?', ['New evidence', 'A restated thesis and wider insight', 'A plot summary', 'A list of techniques'], 1, ''],
-      ['Roughly how long should each Paper 2 section take?', ['20 minutes', '30 minutes', '40 minutes', '60 minutes'], 2, 'Two hours, three sections.'],
-      ['Which verb is more precise than “shows”?', ['Has', 'Underscores', 'Does', 'Gets'], 1, ''],
-      ['Literary analysis should be written in…', ['Past tense', 'Present tense', 'Future tense', 'Any tense'], 1, ''],
-      ['“To what extent” questions want…', ['A yes or no', 'A qualified position on a scale', 'A definition', 'A retelling'], 1, ''],
-      ['If a question includes a quotation, you should…', ['Ignore it', 'Engage with it directly', 'Only quote it in the conclusion', 'Rewrite it'], 1, ''],
-      ['Square brackets in a quotation are used to…', ['Add your opinion', 'Adjust a word so the grammar fits', 'Show the quote is long', 'Mark a spelling mistake'], 1, ''],
-      ['“Subverts” is the right verb when the composer…', ['Repeats an idea', 'Overturns an expectation', 'Describes a setting', 'Agrees with a value'], 1, ''],
+      ['In PETAL, what does the A stand for?', ['Answer', 'Analysis', 'Argument', 'Audience'], 1, ''],
+      ['Which part of PETAL is most important for high marks?', ['Point', 'Evidence', 'Analysis', 'Link'], 2, 'Analysis is where you explain how meaning is created.'],
+      ['A 1-mark question usually needs…', ['A full PETAL paragraph', 'One clear point', 'Three quotes', 'An essay'], 1, ''],
+      ['An 8-mark question needs…', ['One word', 'One or two PETAL paragraphs', 'Only a quote', 'A list of techniques'], 1, ''],
+      ['Which is the strongest verb for analysis?', ['shows', 'says', 'highlights', 'has'], 2, ''],
+      ['Which is the best Point for “How does Orwell present Squealer?”', ['Squealer is a pig.', 'Orwell presents Squealer as a cunning manipulator who uses language to control the animals.', 'Squealer talks a lot in the book.', 'I like Squealer.'], 1, ''],
+      ['What should a Link do?', ['Introduce a new quote', 'Tie back to the question and Orwell’s message', 'Retell the plot', 'List more techniques'], 1, ''],
+      ['Which is feature-spotting?', ['“Orwell uses euphemism, repetition and symbolism.”', '“The euphemism ‘readjustment’ hides the cut in food, so the animals do not complain.”', '“The windmill symbolises broken promises because it ends up making profit for the pigs.”', '“The slogan drowns out debate, stopping the animals thinking.”'], 0, 'It names techniques without explaining any effect.'],
+      ['How should you read an unseen extract?', ['Once, quickly', 'Twice, underlining key words the second time', 'Only the first line', 'Skip it and answer from memory'], 1, ''],
+      ['The exam is 60 minutes for 20 marks. About how long per mark?', ['30 seconds', '3 minutes', '10 minutes', '1 minute'], 1, ''],
+      ['“Explain” in a question means…', ['Name it', 'Say how or why, with reasons', 'Copy the extract', 'Draw a diagram'], 1, ''],
+      ['Which is the best Evidence?', ['The pigs are bad.', 'Squealer calls the cut a “readjustment”.', 'There is lots of evidence in the novel.', 'Orwell is a good writer.'], 1, 'Evidence is a specific quote or moment.'],
+      ['Where should your evidence come from when a question gives an extract?', ['Anywhere in the novel', 'The extract', 'The film version', 'Your own life'], 1, ''],
+      ['Which sentence talks about Orwell as a writer making choices?', ['Napoleon chased Snowball.', 'Orwell uses the dogs to symbolise the terror of a police state.', 'The dogs are big.', 'Snowball ran away.'], 1, ''],
     ],
     short: [
-      { q: 'Rewrite this weak topic sentence so that it answers the question “How does your text represent the desire for freedom?”, then explain two improvements you made.', passage: 'In the novel, there is a metaphor in chapter two when the narrator calls the city a cage.', marks: 3, tags: ['W3'], criteria: ['Rewritten sentence states an argument about freedom, not a technique or plot point', 'Uses the question’s key terms and a precise analytical verb', 'Explains at least two improvements (idea-led, linked to the question or thesis, technique moved to evidence)'], model: 'Rewritten: “The composer suggests that the desire for freedom grows out of confinement, presenting the city as a space that both shelters and imprisons the narrator.” This is stronger because it makes a claim about the concept of freedom rather than naming a technique, so the paragraph has an argument to prove. It also uses the question’s key term and the verb “suggests”, so it clearly answers the question. The cage metaphor now becomes evidence inside the paragraph instead of its focus.' },
-      { q: 'Question: “To what extent does your text suggest that ambition is destructive?” A student wrote the thesis below. Write an improved thesis and explain why it is stronger.', passage: 'The text shows ambition is bad.', marks: 3, tags: ['W2'], criteria: ['Improved thesis takes a clear position on the extent', 'Makes a nuanced, arguable claim using the key term ambition', 'Explains why it is stronger (answers the directive, avoids vague words like shows and bad)'], model: 'Improved: “The play largely presents ambition as destructive, yet it suggests that ambition itself is not the problem; rather, it becomes ruinous when it cuts characters off from the people who once grounded them.” This answers “to what extent” by taking a qualified position (“largely”), replaces the vague “shows” and “bad” with a precise argument about how ambition causes harm, and gives the essay a direction for each body paragraph.' },
-      { q: 'Improve this body paragraph. Identify its weaknesses and rewrite it as an analytical paragraph. (The text is a hypothetical play, The Long Field.)', passage: 'In The Long Field, the farmer Tom loses his farm. Then his son leaves for the city. Tom is very sad and he says “the paddocks have forgotten my name”. This is personification. At the end Tom sells the tractor. This shows loss.', marks: 5, tags: ['W4'], criteria: ['Identifies weaknesses: no argument in the topic sentence, retells plot, names a technique without effect', 'New topic sentence states an idea about loss', 'Embeds the quotation smoothly', 'Explains the effect of the personification on meaning', 'Links back to the concept or question'], model: 'Weaknesses: the paragraph opens with plot rather than an argument, retells events in order, and labels the personification without explaining what it does. Rewritten: “The composer represents loss as a gradual erasure of identity, suggesting that when Tom loses his land he also loses his sense of self. His lament that “the paddocks have forgotten my name” personifies the land as a witness that has withdrawn its recognition, conveying that his identity was built on his relationship with the farm. The quiet sale of the tractor in the final scene becomes a symbolic surrender of that identity. In this way, the play suggests that loss is not a single event but a slow unravelling of who we believe ourselves to be.”' },
-      { q: 'Embed this quotation into an analytical sentence about isolation.', passage: 'Quotation from a hypothetical poem: “the phone lies face down like a closed door”', marks: 2, tags: ['W4'], criteria: ['Quotation is woven grammatically into the student’s own sentence', 'Sentence explains the effect (the simile suggests deliberate shutting out of others or isolation)'], model: 'By describing how “the phone lies face down like a closed door”, the poet uses a simile to suggest that the speaker has deliberately shut others out, presenting isolation as a choice as well as a wound.' },
-      { q: 'Unpack this question: identify the directive, the key terms and a possible position you could take.', passage: 'Evaluate the view that a text’s ending determines its meaning.', marks: 3, tags: ['W1'], criteria: ['Identifies the directive evaluate as requiring a judgement with reasons', 'Identifies the key terms: ending, determines, meaning (and that “the view” must be engaged with)', 'Offers a qualified, arguable position'], model: 'The directive “evaluate” asks me to judge how valid the view is and justify my judgement. The key terms are “ending”, “determines” (a strong word suggesting total control) and “meaning”. A possible position: the ending crystallises meaning but does not solely determine it, because the meanings it confirms are built through patterns, such as motifs and shifts in perspective, across the whole text.' },
+      { q: 'Identify the technique in this quotation: “Four legs good, two legs bad.”', marks: 1, tags: ['W1'], criteria: ['Identifies a slogan (or repetition)'], model: 'It is a slogan: a short, catchy phrase repeated to spread an idea.' },
+      { q: 'Name the character who represents propaganda in the allegory.', marks: 1, tags: ['W1'], criteria: ['Squealer'], model: 'Squealer.' },
+      { q: 'Explain what the farmhouse symbolises when the pigs move into it.', marks: 2, tags: ['W2'], criteria: ['States that the farmhouse symbolises human power or privilege', 'Explains that the pigs moving in shows they are becoming the new masters, like Jones'], model: 'The farmhouse symbolises the power and comfort of the humans. When the pigs move in and sleep in the beds, it shows they are taking the humans’ privileges and becoming the new masters.' },
+      { q: 'Rewrite this weak analysis to make it stronger: “This shows that Squealer is bad.”', marks: 3, tags: ['W3'], criteria: ['Uses a stronger verb than “shows” (reveals, highlights, exposes)', 'Uses a precise adjective or idea instead of “bad” (manipulative, deceitful)', 'Explains the effect on the animals or Orwell’s message'], model: 'This reveals that Squealer is deeply manipulative, twisting the truth so the animals accept the pigs’ privileges without question, and highlights Orwell’s warning about the power of propaganda.' },
+      { q: 'How does Orwell use Squealer to show the power of language to control others?', marks: 8, tags: ['W5'], criteria: ['Point: a clear opening sentence that directly answers the question', 'Evidence: a relevant, accurate quote or specific moment involving Squealer', 'Evidence: a second relevant example (another speech, euphemism or the story of Boxer’s death)', 'Technique: accurately names at least one language technique (rhetorical question, euphemism, repetition, fake statistics, scare tactics)', 'Analysis: explains how the technique affects the animals (confuses, frightens or silences them)', 'Analysis: uses precise analytical verbs and zooms in on specific words', 'Link: ties the paragraph back to the question and Orwell’s warning about propaganda', 'Expression: clear, well-structured PETAL paragraph(s) with accurate spelling and no plot retelling'], model: 'Orwell uses Squealer to reveal how language can be twisted into a weapon that controls what people think. When the pigs take the milk and apples, Squealer claims this has been “proved by Science” and asks the animals what would happen if the pigs failed in their duty, answering that “Jones would come back!” This rhetorical question and scare tactic play on the animals’ greatest fear, while the false appeal to “Science” cannot be checked by animals who can barely read, so their objections are silenced. Later, Squealer calls a cut in rations a “readjustment”, never a “reduction”. This euphemism sounds calm and technical, disguising the reality that the animals are starving and preventing them from complaining. Through Squealer, Orwell exposes how leaders manipulate words to justify injustice, warning readers that whoever controls language can control a whole society.' },
+      { q: 'How does Orwell show that fear is used to keep Napoleon in power?', marks: 8, tags: ['W4'], criteria: ['Point: a clear opening sentence that directly answers the question', 'Evidence: a relevant moment, such as the dogs chasing Snowball off the farm', 'Evidence: a second relevant moment, such as the confessions and executions or the dogs silencing the protesting pigs', 'Technique: names a technique, such as symbolism (the dogs), juxtaposition or Squealer’s scare tactics', 'Analysis: explains how fear changes what the animals say and do', 'Analysis: uses precise analytical verbs (intimidates, silences, crushes) and considers the reader’s response', 'Link: ties back to the question and Orwell’s warning about dictatorships', 'Expression: clear, well-structured PETAL paragraph(s) without plot retelling'], model: 'Orwell shows that Napoleon keeps his power through terror rather than the animals’ support. When the dogs he secretly raised chase Snowball off the farm, “Silent and terrified, the animals crept back into the barn”, and when four young pigs protest the end of the Sunday meetings, the dogs’ growling silences them. The dogs symbolise the secret police of a dictatorship: they make it clear that any opposition will be met with violence. This fear reaches its peak in the confessions and executions, when animals are killed on the spot in front of everyone. Orwell positions the reader to feel horror at how quickly the animals learn to stay silent, and Clover’s sad reflection that this was not what Old Major had dreamed of highlights the gap between the revolution’s hopes and its reality. Therefore, Orwell warns that dictators keep control by making people too afraid to speak the truth.' },
+      { q: 'How does Orwell show that the revolution has been betrayed by the end of the novel?', marks: 8, tags: ['W6'], criteria: ['Point: a clear opening sentence that directly answers the question', 'Evidence: the final scene where pigs and men cannot be told apart', 'Evidence: a second example, such as the single commandment, the name Manor Farm, or the windmill grinding corn for profit', 'Technique: names a technique, such as cyclical structure, situational irony, repetition or symbolism', 'Analysis: explains how the evidence shows the pigs have become like the humans', 'Analysis: compares the ending with Old Major’s dream or the original Commandments', 'Link: ties back to Orwell’s warning about revolutions and power', 'Expression: clear, well-structured PETAL paragraph(s) without plot retelling'], model: 'Orwell shows that by the end, the revolution has been completely betrayed, as the pigs become the masters they once overthrew. The Seven Commandments are replaced by a single rule, “All animals are equal but some animals are more equal than others”, a piece of verbal irony that openly contradicts Old Major’s dream of equality. In the final scene, the animals look “from pig to man, and from man to pig” and cannot tell which is which. Orwell uses a cyclical structure: the farm is renamed Manor Farm, and the pigs walk on two legs and carry whips, just as Jones once did. This situational irony emphasises that the animals’ suffering and sacrifice have changed nothing. Therefore, Orwell warns that revolutions can be corrupted by their leaders until one tyranny is simply replaced by another.' },
     ],
   });
-  essay.bank = [
-    function strongestThesis(level) { return ask(essayPool('W2'), level); },
-    function strongestTopicSentence(level) { return ask(essayPool('W3'), level); },
-    function bestAnalysis(level) { return ask(essayPool('W4'), level); },
-    function readTheQuestion(level) { return ask([...essayPool('W1'), ...essayPool('W5')], level); },
-  ];
-
-  /* ================= COMMON MODULE ================= */
-  const COMMON_Q = [
-    Q('F', 'C2', 'A character keeps training after every injury, refusing to give up on the final race. Which concept fits best?', 'Resilience', ['Alienation', 'Guilt', 'Apathy'], 'Resilience is enduring and recovering from hardship.'),
-    Q('F', 'C2', 'A new student eats alone every day and feels that no one notices whether she is there. Which concept fits best?', 'Alienation', ['Ambition', 'Hope', 'Resilience'], 'Alienation is feeling cut off from others.'),
-    Q('F', 'C2', 'A character sets aside his own anger to understand why his friend lied, imagining how frightened she must have been. Which concept fits best?', 'Empathy', ['Ambition', 'Alienation', 'Pride'], 'Empathy is feeling into another person’s experience.'),
-    Q('F', 'C2', 'A woman keeps her late husband’s coat on its hook for years and cannot bring herself to move it. Which experience is most clearly represented?', 'Grief', ['Ambition', 'Hope', 'Rebellion'], ''),
-    Q('F', 'C2', 'A teenager joins a local choir and, for the first time, feels part of something larger than herself. Which concept fits best?', 'Belonging', ['Alienation', 'Guilt', 'Ambition'], ''),
-    Q('S', 'C5', 'A man who preaches honesty to his children secretly lies on his tax return. This is best described as…', 'An inconsistency between stated values and behaviour', ['An example of collective experience', 'An example of resilience', 'A flashback'], 'His actions contradict his stated values.'),
-    Q('S', 'C5', 'A woman pushes away the friends who care for her most, precisely because she is afraid of losing them. This is best described as…', 'A paradox of human behaviour', ['Simple cruelty', 'Collective experience', 'Dramatic irony'], 'Fear of loss produces the very loss she fears.'),
-    Q('S', 'C5', 'A famously timid clerk suddenly stands up at a town meeting and speaks out against the mayor. This is best described as…', 'An anomaly: behaviour that departs from what is expected of him', ['A consistency in his character', 'Alienation', 'A cyclical structure'], 'Anomalies break a pattern.'),
-    Q('S', 'C1', 'A whole town gathers each year to remember those lost in a flood. This is best described as…', 'A collective human experience', ['An individual human experience', 'An anomaly', 'An unreliable narrator'], 'Collective experiences are shared by a group or community.'),
-    Q('S', 'C1', 'An elderly woman tells her granddaughter the stories of her escape from war so that they will not be forgotten. Which idea does this most clearly illustrate?', 'The role of storytelling in preserving and sharing experience', ['The power of ambition', 'Situational irony', 'Alienation from family'], ''),
-    Q('C', 'C5', 'A soldier who survived a battle feels guilty for being alive while his friends died. Which description is most precise?', 'A paradox: survival, usually a relief, becomes a source of anguish', ['Simple happiness at survival', 'An inconsistency in his values', 'Collective celebration'], 'The paradox is that the good outcome causes pain.'),
-    Q('C', 'C2', 'A character achieves the promotion she worked years for, then realises she has no one to share it with. What does this most strongly suggest about human experience?', 'Ambition can isolate people from the relationships that give success meaning', ['Ambition always leads to happiness', 'Success is impossible without luck', 'People are naturally lazy'], ''),
-    Q('C', 'C4', 'Question: “How does your prescribed text represent the complexity of human motivation?” Which topic sentence best addresses it?', 'The composer reveals that characters act from tangled motives, as Elena’s apparent generosity is shaped as much by guilt as by love.', ['Elena gives her sister money in chapter four.', 'The composer uses dialogue and imagery.', 'Human motivation is complicated in real life.'], 'It addresses the complexity of motivation directly.'),
-    Q('C', 'C3', 'A 6-mark Section I question asks how two texts represent fear. Which plan is best?', 'Two or three techniques with quotes from each text, explaining how each shapes the representation of fear, with a brief comparison', ['One technique from one text', 'A summary of what happens in both texts', 'A list of every technique you can find, without explanation'], 'More marks means more depth and both texts.'),
-    Q('F', 'C3', 'In Section I, a question worth 2 marks usually needs…', 'One clear point with a technique, quote and effect', ['A full essay', 'Three paragraphs', 'Only a quotation'], ''),
-    Q('S', 'C4', 'Which sentence uses the language of human experience most naturally?', 'Through Rosa’s reluctant forgiveness, the composer illuminates how individuals reconcile private grief with the expectations of their community.', ['This text is about the human experience of human experiences.', 'This text explores individual and collective human experiences, qualities, emotions, paradoxes and anomalies.', 'Human experience is shown in many ways.'], 'It applies the ideas rather than listing module words.'),
-  ];
-
-  const common = finish({
-    id: 'engcommon', subject: SUBJECT, title: 'Common Module: Texts and Human Experiences', chapter: 'English · Paper 1', hue: HUE,
-    blurb: 'What the module asks, the big human-experience concepts, and how to approach both sections of Paper 1.',
-    sections: [
-      { code: 'C1', name: 'What the module asks', notes: [
-        'The Common Module is studied by Advanced and Standard students alike and is examined in Paper 1.',
-        'At its heart is one question: how do texts represent what it means to be human?',
-        'Individual experiences belong to one person (a private loss, a personal choice). Collective experiences are shared by a group, community or generation (a war, a migration, a disaster).',
-        'The module asks you to think about human qualities and emotions, such as courage, jealousy or compassion, and how people respond to what happens to them.',
-        'It also draws attention to the strange and contradictory sides of behaviour: when people act against their own values, interests or expectations.',
-        'Finally, it asks why storytelling matters: how texts help us understand ourselves and others, build empathy, and connect experiences across time and place.',
-        'Your own response matters: consider how a text has changed or challenged your understanding of people.',
-      ] },
-      { code: 'C2', name: 'Key concepts vocabulary', notes: [
-        'Resilience: enduring and recovering from hardship. Discuss what makes it possible (hope, community, purpose) and what it costs.',
-        'Alienation: feeling cut off from others, a place or oneself. Discuss its causes (difference, trauma, power) and whether it is overcome.',
-        'Belonging: acceptance and connection to people or place. Discuss what belonging demands, and when it confines.',
-        'Hope: imagining a better future. Discuss whether a text shows it as naive, courageous or necessary for survival.',
-        'Grief: the response to loss. Discuss how it changes people, isolates them or draws them together.',
-        'Identity: our sense of who we are. Discuss how it is shaped by culture, family, place and experience, and how it shifts.',
-        'Morality: our sense of right and wrong. Discuss moral dilemmas and characters who compromise their values.',
-        'Empathy: understanding another’s feelings from the inside. Discuss how texts invite readers to empathise with people unlike them.',
-        'Ambition: a strong drive to achieve. Discuss what it gives people and what it takes from them.',
-        'Fear, guilt, love and memory are also common: always ask what the text suggests about the emotion, not just where it appears.',
-      ] },
-      { code: 'C3', name: 'Paper 1 Section I: unseen short answers', notes: [
-        'Section I gives you several unseen texts in different forms (often including a visual text) and a set of short-answer questions worth 20 marks in total.',
-        'Allow about 45 minutes for the section, which works out at roughly two minutes per mark once you have read the texts.',
-        'Marks signal depth. Two marks: one well-explained point with a quote. Three to four marks: two techniques with quotes and effects. Five to seven marks: several techniques, a sustained argument, and often a comparison of two texts.',
-        'Each point needs a concept (from the question), a technique, evidence and its effect on meaning.',
-        'Use the question’s words in your first sentence so the marker sees you are answering it.',
-        'Write in sentences, not dot points, and do not spend so long on early questions that the last, highest-value question gets rushed.',
-      ], ex: ['A 4-mark question: How does the poem represent the experience of waiting?', 'Plan: two techniques, each with a short quote and its effect on the idea of waiting.', 'Point 1: repeated “still” slows the rhythm, so waiting feels endless.', 'Point 2: the closing image of an empty chair suggests the wait may never end, creating quiet despair.'] },
-      { code: 'C4', name: 'Paper 1 Section II: extended response', notes: [
-        'Section II is an essay on your prescribed text, worth 20 marks. Allow about 45 minutes.',
-        'The question may include a quotation, a statement or a stimulus. Answer its specific focus rather than writing a generic module essay.',
-        'Prepare flexible arguments about several concepts and a bank of well-analysed evidence, not one memorised essay.',
-        'In every paragraph, move from what happens in the text to what it suggests about people: that is what linking to human experience means.',
-        'Use module language naturally where it fits (individual, collective, paradox, storytelling), but never paste in strings of module words.',
-        'Show how the text’s form, whether poetry, drama, film, novel or nonfiction, shapes its representation of experience.',
-        'Bring in context only when it sharpens your point about meaning.',
-      ] },
-      { code: 'C5', name: 'Paradoxes, inconsistencies and anomalies', notes: [
-        'Paradox: something that seems contradictory but reveals a truth. Example: a girl so afraid of being left that she leaves everyone first, causing the loneliness she fears.',
-        'Inconsistency: when actions do not match stated values. Example: a coach who preaches fair play but hides a star player’s injury to win the final.',
-        'Anomaly: behaviour that breaks a pattern or expectation. Example: a quiet, rule-following clerk who suddenly defies his boss in front of the whole office.',
-        'These matter because they show people as complex: texts that include them resist simple heroes and villains.',
-        'In an essay, name the contradiction, then explain what it reveals (fear, self-deception, love, pressure from a group).',
-        'Storytelling inside texts, such as letters, memories and myths, often shows characters trying to make sense of these contradictions.',
-      ], ex: ['Hypothetical novel: a doctor who saves strangers every day but cannot speak to his own estranged son.', 'Identify: an inconsistency between his public compassion and private coldness.', 'Interpret: it suggests that caring for strangers can be easier than facing personal failure.', 'Link: the novel represents compassion as complicated by fear and pride, not a simple virtue.'] },
-    ],
-    cards: [
-      ['Individual human experience', 'An experience that belongs to one person, such as a private loss or a personal choice.'],
-      ['Collective human experience', 'An experience shared by a group, community or generation, such as a war, migration or disaster.'],
-      ['Paradox (in behaviour)', 'Behaviour that seems contradictory but reveals a truth about people.'],
-      ['Inconsistency', 'When someone’s actions do not match their stated values.'],
-      ['Anomaly', 'Behaviour that breaks a pattern or departs from what is expected.'],
-      ['Role of storytelling', 'Texts help us make sense of experience, build empathy and connect people across time and place.'],
-      ['Resilience', 'Enduring and recovering from hardship; ask what makes it possible and what it costs.'],
-      ['Alienation', 'Feeling cut off from others, a place or oneself.'],
-      ['Belonging', 'Acceptance and connection; it can comfort and confine.'],
-      ['Hope', 'Imagining a better future; naive, courageous or necessary?'],
-      ['Grief', 'The response to loss; it can isolate or connect.'],
-      ['Identity', 'Our sense of self, shaped by culture, family, place and experience.'],
-      ['Morality', 'Our sense of right and wrong; look for dilemmas and compromises.'],
-      ['Empathy', 'Understanding another person’s feelings from the inside.'],
-      ['Ambition', 'A strong drive to achieve; what does it give and take?'],
-      ['Paper 1 structure', 'Section I: unseen short answers (20 marks). Section II: extended response on the prescribed text (20 marks).'],
-      ['Paper 1 timing', 'About 45 minutes per section.'],
-      ['Section I pace', 'Roughly two minutes per mark after reading.'],
-      ['2-mark answer', 'One clear point: technique, quote, effect.'],
-      ['5 to 7-mark answer', 'Several techniques, a sustained argument, often comparing two texts.'],
-      ['Every Section I point needs', 'Concept from the question, technique, evidence, effect.'],
-      ['Section II approach', 'Answer the specific question; prepare flexible arguments, not a memorised essay.'],
-      ['Linking to human experience', 'Move from what happens to what it suggests about people.'],
-      ['Module language', 'Use it naturally where it fits; never paste strings of module words.'],
-      ['Form in the Common Module', 'Explain how poetry, drama, film, prose or nonfiction shapes the representation of experience.'],
-      ['Your personal response', 'Consider how the text changed or challenged your understanding of people.'],
-    ],
-    concepts: [
-      ['A drought that affects an entire farming district is best described as…', ['An individual experience', 'A collective experience', 'An anomaly', 'An inconsistency'], 1, ''],
-      ['A man who campaigns against gambling while secretly betting online shows…', ['Resilience', 'An inconsistency', 'Belonging', 'Collective experience'], 1, ''],
-      ['Which is a paradox?', ['A brave man acts bravely', 'A lonely woman, desperate for company, refuses every invitation', 'A student studies for an exam', 'A town celebrates a festival'], 1, ''],
-      ['In Section I, how many minutes per mark is a sensible guide?', ['About 30 seconds', 'About 2 minutes', 'About 5 minutes', 'About 10 minutes'], 1, ''],
-      ['Section II of Paper 1 is…', ['Unseen short answers', 'An extended response on your prescribed text', 'A creative writing task', 'Multiple choice'], 1, ''],
-      ['Which best links analysis to human experience?', ['The novel has 300 pages.', 'The repeated image of locked doors suggests that people protect themselves by shutting others out.', 'The composer uses a lot of imagery.', 'The character goes to the door.'], 1, ''],
-      ['What does “anomaly” mean in this module?', ['Any emotion', 'Behaviour that departs from what is expected', 'A type of rhyme', 'A shared experience'], 1, ''],
-      ['A 2-mark question needs…', ['A full essay', 'One clear point with a technique, quote and effect', 'Only a quote', 'A summary of the text'], 1, ''],
-      ['Using module language well means…', ['Listing as many module words as possible', 'Using key ideas naturally where they fit your argument', 'Avoiding the question’s words', 'Quoting the syllabus'], 1, ''],
-      ['Storytelling within a text (letters, memories, myths) often shows…', ['Characters trying to make sense of experience', 'That the composer ran out of ideas', 'A cyclical structure', 'Non-diegetic sound'], 0, ''],
-      ['Which question focus requires you to consider both individual and group experience?', ['How does the text represent shared and personal experiences?', 'What colour is the protagonist’s car?', 'List three techniques.', 'Who wrote the text?'], 0, ''],
-      ['For Section II, it is best to prepare…', ['One memorised essay', 'Flexible arguments and well-analysed evidence', 'Only quotes', 'Only context'], 1, ''],
-      ['Empathy is best defined as…', ['Feeling sorry for someone', 'Understanding another’s feelings from the inside', 'Agreeing with everyone', 'Ignoring your own feelings'], 1, 'Sympathy is feeling for someone; empathy is feeling with them.'],
-    ],
-    short: [
-      { q: 'Explain the difference between individual and collective human experiences, using an example from your prescribed text or a hypothetical text.', marks: 3, tags: ['C1'], criteria: ['Defines an individual experience as personal to one person', 'Defines a collective experience as shared by a group or community', 'Gives an example that clearly shows both, ideally how they interact'], model: 'An individual experience belongs to one person, such as a private grief or a personal decision, while a collective experience is shared by a group, community or generation. For example, in a hypothetical novel about a coastal town after a cyclone, the whole community’s loss of homes is a collective experience, but one fisherman’s guilt at having ignored the warnings is individual. The text suggests the two interact: his private guilt is intensified by living among the people who suffered alongside him.' },
-      { q: 'What is meant by an anomaly or inconsistency in human behaviour? Illustrate your answer with an example from a text.', marks: 3, tags: ['C5'], criteria: ['Defines anomaly or inconsistency accurately', 'Gives a specific example from a text (real or clearly hypothetical)', 'Explains what the behaviour reveals about people'], model: 'An inconsistency is when a person’s actions contradict their stated values, and an anomaly is behaviour that breaks a pattern or expectation. In a hypothetical play, a respected judge who lectures others about honesty hides evidence to protect his son. This inconsistency reveals that love and fear can override even deeply held principles, presenting people as more complex than their public selves.' },
-      { q: 'Write a thesis and two topic sentences for this question: “Texts reveal that people are most human when they are most vulnerable.” To what extent is this true of your prescribed text?', marks: 4, tags: ['C4'], criteria: ['Thesis takes a clear, qualified position on the extent', 'Thesis uses the key ideas of vulnerability and being human', 'Topic sentences each state an argument that proves part of the thesis', 'Language is analytical, not plot-based'], model: 'Thesis (using a hypothetical memoir about a father’s illness): “The memoir largely affirms that vulnerability reveals our humanity, as illness strips away pride and allows father and son to finally speak honestly; yet it also suggests that vulnerability is only humanising when it is met with compassion.” Topic sentence 1: “The composer presents illness as a force that dismantles the father’s guarded masculinity, exposing the tenderness it had concealed.” Topic sentence 2: “However, the hospital scenes suggest vulnerability can also dehumanise, as the father becomes a case number rather than a person until his son insists on telling his story.”' },
-      { q: 'Explain how storytelling within a text can shape characters’ understanding of their experiences. Refer to a text you have studied or a hypothetical example.', marks: 4, tags: ['C1', 'C5'], criteria: ['Explains that characters use stories (memories, letters, myths, retellings) to make sense of experience', 'Provides a specific example', 'Explains how the storytelling changes understanding (healing, connection, self-deception)', 'Links to a broader idea about human experience'], model: 'Characters often tell stories to turn confusing experiences into something they can understand. In a hypothetical novel, a grandmother repeatedly tells her grandchildren how she crossed the border as a girl, and each retelling grows braver and funnier. For her, storytelling turns trauma into survival, giving her control over a past that once controlled her. For the grandchildren, the story builds a sense of identity and belonging. The novel suggests that storytelling is how people, individually and collectively, make meaning from suffering, even if the stories bend the truth.' },
-      { q: 'A Section I question asks: “How does the speaker represent the experience of regret?” (5 marks). Explain how you would plan and structure your answer.', marks: 3, tags: ['C3'], criteria: ['Recognises 5 marks needs several techniques with quotes and effects (about 10 minutes)', 'Plans to open with a direct answer using the word regret', 'Plans to explain how each technique shapes the representation of regret, in paragraphs'], model: 'Because it is worth 5 marks, I would spend about ten minutes and plan three techniques. I would open with a sentence answering the question directly, for example that the speaker represents regret as a weight that grows heavier over time. Then for each technique I would quote a short piece of evidence and explain how it builds that idea of regret, such as how repeated past-tense conditionals (“if I had…”) trap the speaker in the past. I would write in full sentences and finish with a line linking back to the question.' },
-    ],
-  });
-  common.bank = [
-    function humanExperience(level) { return ask(COMMON_Q.filter(i => ['C1', 'C2', 'C5'].includes(i.tag)), level); },
-    function paperOneStrategy(level) { return ask(COMMON_Q.filter(i => ['C3', 'C4'].includes(i.tag)), level); },
-  ];
-
-  /* ================= MODULES A, B AND C ================= */
-  const MODS_Q = [
-    Q('F', 'MA', 'A novel retells a well-known older play from the point of view of a minor female character. In Module A, this later text is best described as…', 'A response that reshapes the earlier text', ['An unrelated text', 'A critical perspective', 'A discursive essay'], 'Module A studies how a later text talks back to an earlier one.'),
-    Q('S', 'MA', 'A modern film relocates an old story of forbidden love to a present-day city and gives the lovers mobile phones. What is the most important question to ask?', 'How the change in context changes the values and ideas the story explores', ['Which phones the characters use', 'Whether the film is longer than the play', 'Who the actors are'], 'Context, values and form are the core of the comparison.'),
-    Q('C', 'MA', 'Which sentence best shows a two-way conversation between texts?', 'The later poem’s angry speaker forces us to reread the earlier poem’s gentle pastoral as a voice that silenced the workers who tended the land.', ['The later poem is newer than the earlier poem.', 'Both poems are about land.', 'The later poem uses more modern words.'], 'The later text changes how we read the earlier one.'),
-    Q('F', 'MA', 'In a Module A essay, integrated comparison means…', 'Discussing both texts in each paragraph around a shared idea', ['Writing all about text one, then all about text two', 'Only discussing the later text', 'Comparing the composers’ lives'], ''),
-    Q('F', 'MB', 'Textual integrity is best described as…', 'The way a text’s form, language and ideas work together as a unified whole with lasting value', ['Whether the author was honest', 'The number of awards a text has won', 'How many techniques the text uses'], ''),
-    Q('S', 'MB', 'How should critical perspectives be used in a Module B essay?', 'To test and deepen your own informed reading of the text', ['As a replacement for your own argument', 'By quoting as many critics as possible', 'Only in the conclusion'], 'Your informed personal response stays at the centre.'),
-    Q('C', 'MB', 'Which sentence best shows a personal, informed response supported by a critical perspective?', 'While a feminist reading frames the heroine’s silence as oppression, I would argue the novel also presents it as resistance, since she withholds the one confession everyone demands.', ['A critic said the novel is about oppression, so it is.', 'I liked the novel because the heroine was interesting.', 'Many critics have written about the novel.'], 'It engages with a perspective and argues its own reading.'),
-    Q('S', 'MB', 'Close reading in Module B means…', 'Analysing key passages in detail to show how language and structure create meaning', ['Reading the text quickly several times', 'Summarising each chapter', 'Reading reviews of the text'], ''),
-    Q('F', 'MC', 'A piece of writing explores an idea from several angles in a reflective, conversational voice without pushing one position. It is…', 'Discursive', ['Persuasive', 'Informative', 'Imaginative'], ''),
-    Q('F', 'MC', 'A piece argues strongly for one position and tries to change the reader’s mind. It is…', 'Persuasive', ['Discursive', 'Imaginative', 'Informative'], ''),
-    Q('S', 'MC', 'Which reflection sentence is strongest?', 'I used a cyclical structure, ending with the same image of the jetty, to suggest that my narrator has changed while the town has not.', ['I wrote a story and it was good.', 'My story has lots of techniques in it.', 'I liked writing this because it was fun.'], 'It names a deliberate choice and its intended effect.'),
-    Q('C', 'MC', 'A stimulus says “Use the image of a key as the central motif.” Which response approach is best?', 'Make the key carry meaning through the piece (access, secrets, belonging), returning to it at key moments', ['Mention a key once in the last line', 'Write a story about something else and add a key at the start', 'Define what a key is'], 'Stimulus material should be integral, not tacked on.'),
-    Q('S', 'MC', '“Show, don’t tell” means…', 'Reveal emotion through action, detail and dialogue instead of stating it', ['Use only dialogue', 'Avoid all description', 'Explain every feeling directly'], ''),
-    Q('F', 'P2', 'Paper 2 (Advanced and Standard) asks you to write…', 'Three responses, one for each of Modules A, B and C', ['One long essay', 'Only short answers on unseen texts', 'Two essays on the Common Module'], ''),
-    Q('S', 'P2', 'During reading time for Paper 2, the most useful thing to do is…', 'Read all three questions closely and start planning how your material fits each one', ['Read only the first question', 'Rest your eyes', 'Memorise the instructions'], ''),
-    Q('C', 'P2', 'Your prepared Module B essay is on power, but the question asks about the text’s representation of truth. What should you do?', 'Reshape your arguments and evidence around truth, keeping only what genuinely answers the question', ['Write the power essay anyway', 'Write about power and mention truth once', 'Skip the question'], 'Answering the question is non-negotiable.'),
-  ];
-
-  const mods = finish({
-    id: 'engmods', subject: SUBJECT, title: 'Modules A, B and C', chapter: 'English · Paper 2', hue: HUE,
-    blurb: 'Textual conversations, critical study, the craft of writing, and how to handle Paper 2.',
-    sections: [
-      { code: 'MA', name: 'Module A: Textual Conversations', notes: [
-        'In Advanced Module A you study a pair of texts: an earlier text and a later one that responds to it, for example by retelling, reimagining or challenging it.',
-        'The key question is how the later text reshapes the earlier one: what it keeps, changes, adds or rejects, and why.',
-        'Changes in context (time, place, culture, politics) often lead to changes in values, such as attitudes to gender, power, race or faith.',
-        'Form matters too: a novel reworked as a film or a play reworked as poetry makes different meanings possible.',
-        'The conversation goes both ways: the later text can change how we read the earlier one.',
-        'Write integrated comparisons: discuss both texts in each paragraph around a shared idea, using verbs such as reimagines, reframes, echoes, challenges and subverts.',
-        'Standard students study Module A: Language, Identity and Culture instead, which explores how language shapes and expresses personal and cultural identity.',
-      ], ex: ['Hypothetical pair: an old tale of a heroic sea captain, and a modern novel told by his ship’s cook.', 'Context shift: the later text is written in an age more attentive to class and labour.', 'Value shift: heroism is reframed, so the cook’s quiet endurance becomes the real courage.', 'Conversation: we now reread the original captain as someone whose glory depended on unseen workers.'] },
-      { code: 'MB', name: 'Module B: Critical Study of Literature', notes: [
-        'Advanced Module B is a deep study of one substantial literary text.',
-        'Textual integrity is the way a text’s form, language, structure and ideas work together as a unified whole, which is part of why it continues to be valued.',
-        'Close reading is essential: analyse key passages in fine detail and show how specific language choices build meaning.',
-        'Consider how structure, such as the order of chapters, acts or poems, shapes meaning across the whole text.',
-        'Critical perspectives (for example historical, feminist, postcolonial or psychoanalytic readings) can sharpen your argument, but they should support your own informed personal response, not replace it.',
-        'Discuss why the text still matters: its enduring questions about people and the world.',
-        'Standard students study Module B: Close Study of Literature, focusing on detailed analysis of one text and a personal response to it.',
-      ] },
-      { code: 'MC', name: 'Module C: The Craft of Writing', notes: [
-        'Module C develops your own writing. You study short model texts to learn techniques, then write your own pieces.',
-        'Imaginative writing: stories, poems or scripts that create characters and worlds.',
-        'Discursive writing: explores an idea from several angles in a reflective, often personal voice, without pushing a single argument.',
-        'Persuasive writing: argues a position to change the reader’s mind. Informative writing explains or reports clearly.',
-        'Every choice should serve purpose, audience and context: who you are writing for and why shapes voice, register and structure.',
-        'Craft tips: show, don’t tell; start late and leave early; use one strong central image or motif; end with resonance, not a neat moral.',
-        'Reflections explain your deliberate choices using metalanguage, such as “I used a fragmented structure to mirror…”, and link each choice to its intended effect.',
-        'If the exam gives a stimulus, make it integral to your piece, not a mention tacked on at the end.',
-      ], ex: ['Weak reflection: “I used imagery to make my story interesting.”', 'Name the specific choice: the recurring image of a rusted gate.', 'Explain its purpose: to symbolise the narrator’s reluctance to leave her past.', 'Strong: “I returned to the rusted gate three times, each time a little more open, so the reader traces the narrator’s slow acceptance without being told it.”'] },
-      { code: 'P2', name: 'Paper 2 strategy', notes: [
-        'Paper 2 has three sections, one each for Modules A, B and C, each worth 20 marks.',
-        'With two hours of writing time, spend about 40 minutes per section, and keep to it.',
-        'Use reading time to read all three questions and decide how your material fits each.',
-        'Plan every response for three to five minutes: thesis or concept, paragraph points, key evidence, and for Module C your form, voice and structure.',
-        'Match the question exactly: if it asks about truth, do not write your prepared essay on power.',
-        'Many students do Module C first while their mind is fresh, or start with their strongest module. Choose an order in practice exams and stick to it.',
-      ] },
-    ],
-    cards: [
-      ['Module A (Advanced)', 'Textual Conversations: how a later text reshapes an earlier one.'],
-      ['Module A (Standard)', 'Language, Identity and Culture.'],
-      ['Textual conversation', 'The dialogue between an earlier text and a later text that responds to it.'],
-      ['Context in Module A', 'Changes in time, place and culture lead to changes in values.'],
-      ['Values', 'Beliefs about what matters, such as attitudes to power, gender, faith or family.'],
-      ['Two-way conversation', 'The later text changes how we read the earlier one.'],
-      ['Integrated comparison', 'Discuss both texts in each paragraph around a shared idea.'],
-      ['Comparison verbs', 'Reimagines, reframes, echoes, challenges, subverts, reaffirms.'],
-      ['Module B (Advanced)', 'Critical Study of Literature: deep study of one literary text.'],
-      ['Module B (Standard)', 'Close Study of Literature.'],
-      ['Textual integrity', 'How form, language, structure and ideas work together as a unified whole.'],
-      ['Close reading', 'Detailed analysis of key passages and specific language choices.'],
-      ['Critical perspectives', 'Other readings (feminist, historical, postcolonial…) used to sharpen your own informed response.'],
-      ['Personal informed response', 'Your own argued reading, supported by evidence.'],
-      ['Enduring value', 'Why the text still matters to readers now.'],
-      ['Module C', 'The Craft of Writing: studying model texts and crafting your own.'],
-      ['Imaginative writing', 'Stories, poems or scripts that create characters and worlds.'],
-      ['Discursive writing', 'Explores an idea from several angles in a reflective voice.'],
-      ['Persuasive writing', 'Argues a position to change the reader’s mind.'],
-      ['Informative writing', 'Explains or reports clearly for a reader.'],
-      ['Purpose, audience, context', 'Why, for whom and where: they shape voice and form.'],
-      ['Show, don’t tell', 'Reveal emotion through action, detail and dialogue.'],
-      ['Reflection', 'Explain your deliberate writing choices and their intended effects.'],
-      ['Using a stimulus', 'Make it integral to the piece, not a passing mention.'],
-      ['Paper 2 timing', 'Three sections, about 40 minutes each.'],
-      ['Paper 2 planning', 'Three to five minutes per response.'],
-      ['Matching the question', 'Reshape prepared material to fit; never ignore the question.'],
-    ],
-    concepts: [
-      ['Which module studies a later text in conversation with an earlier one (Advanced)?', ['Module A', 'Module B', 'Module C', 'Common Module'], 0, ''],
-      ['Textual integrity refers to…', ['Whether the author was honest', 'The unity of a text’s form, language and ideas', 'The text’s length', 'The text’s popularity'], 1, ''],
-      ['Discursive writing…', ['Argues one side', 'Explores an idea from several angles', 'Must be a poem', 'Lists facts only'], 1, ''],
-      ['In Module A, a change in context often leads to…', ['A change in values', 'Identical meanings', 'A shorter text', 'No connection'], 0, ''],
-      ['Critical perspectives should…', ['Replace your argument', 'Support and sharpen your own reading', 'Only be named in the introduction', 'Be avoided entirely'], 1, ''],
-      ['About how long should each Paper 2 section take?', ['20 minutes', '40 minutes', '60 minutes', '90 minutes'], 1, ''],
-      ['A Module C reflection should…', ['Retell your story', 'Explain your writing choices and their effects', 'List every technique', 'Criticise the model texts'], 1, ''],
-      ['Integrated comparison means…', ['Discussing both texts in each paragraph', 'One text per half of the essay', 'Only the later text', 'Comparing the authors’ lives'], 0, ''],
-      ['“Show, don’t tell” is a craft principle for…', ['Module A', 'Module B', 'Module C', 'Paper 1 Section I'], 2, ''],
-      ['The Standard course’s Module B is…', ['Textual Conversations', 'Close Study of Literature', 'Critical Study of Literature', 'Language, Identity and Culture'], 1, ''],
-      ['A stimulus in Module C should be…', ['Ignored', 'Mentioned in the last line', 'Integral to the piece', 'Quoted as the title only'], 2, ''],
-      ['In Module A, the later text can…', ['Change how we read the earlier text', 'Only copy the earlier text', 'Never challenge the earlier text', 'Only be a film'], 0, ''],
-      ['Close reading involves…', ['Skimming for plot', 'Detailed analysis of specific passages', 'Reading reviews', 'Memorising the blurb'], 1, ''],
-    ],
-    short: [
-      { q: 'Explain how a change in context between two texts can lead to a change in values. Use your Module A texts or a hypothetical pair.', marks: 4, tags: ['MA'], criteria: ['Explains what context and values mean', 'Gives a specific (real or clearly hypothetical) pair of texts', 'Identifies a specific value that shifts between them', 'Explains how the change in context drives the shift'], model: 'Context is the time, place and culture in which a text is composed, and values are beliefs about what matters. Imagine an old fable that praises a daughter for obeying her father and marrying the man he chooses, and a modern novel retelling the same story. Written in a society that prizes personal freedom and gender equality, the novel turns the daughter’s obedience into a tragedy and makes her refusal the moral centre. The change in context shifts the value of obedience from virtue to loss, and the conversation between the texts invites us to see the original as a product of its own time.' },
-      { q: 'What is textual integrity, and how can you demonstrate it in a Module B essay?', marks: 3, tags: ['MB'], criteria: ['Defines textual integrity as the unity of form, language, structure and ideas', 'Explains a way to demonstrate it (tracking a motif or idea across the whole text, linking parts to whole)', 'Connects it to the text’s enduring value'], model: 'Textual integrity is the way a text’s form, language, structure and ideas work together as a coherent whole. In an essay I can show it by tracing how an idea or motif develops from the opening through the climax to the ending, and by explaining how small details connect to the text’s larger concerns. This shows that the text’s meaning comes from its whole design, which helps explain why it continues to be valued.' },
-      { q: 'How should critical perspectives be used in a Module B essay? Give an example of a sentence that uses one well.', marks: 3, tags: ['MB'], criteria: ['States that perspectives support the student’s own informed reading rather than replacing it', 'Notes they should be engaged with (tested, extended or challenged), not just name-dropped', 'Provides a sentence that integrates a perspective with personal argument'], model: 'Critical perspectives should deepen my own informed reading rather than stand in for it, so I should engage with them by testing, extending or challenging them. For example: “While a historical reading sees the narrator’s silence as a product of wartime censorship, I would argue the novel also frames it as a private act of mourning, since she keeps silent even when no one is listening.”' },
-      { q: 'Write a short reflection (about 120 to 150 words) explaining two deliberate choices you made in a piece of imaginative writing. You may describe a hypothetical piece.', marks: 4, tags: ['MC'], criteria: ['Identifies two specific, deliberate choices', 'Uses accurate metalanguage', 'Explains the intended effect of each choice on the reader', 'Links the choices to purpose and audience'], model: 'My short story follows a teenager on her last night in her family’s soon-to-be-sold house. I wanted readers to feel her grief without her ever naming it, so I chose a close third-person narration that stays with her senses, such as the creak of the third stair and the smell of eucalyptus soap, letting small details carry emotion. I also used a cyclical structure: the story opens and closes with her tracing the height marks on the laundry door, but in the final scene she adds one last line for her younger brother. This repetition with a difference shows that she has moved from clinging to the past to passing it on. My audience is young adults who know what it is to outgrow a place, so I kept the language simple and the ending open rather than resolving her feelings neatly.' },
-      { q: 'Explain the difference between discursive and persuasive writing, giving a brief example of an opening line for each.', marks: 3, tags: ['MC'], criteria: ['Discursive: explores an idea from several angles in a reflective voice', 'Persuasive: argues one position to change the reader’s mind', 'Provides an appropriate opening line for each'], model: 'Discursive writing explores an idea from several angles, often in a reflective, personal voice, without insisting on one conclusion. Persuasive writing argues a clear position and uses rhetoric to change the reader’s mind. A discursive opening might be: “I have never been sure whether my phone keeps me company or keeps me lonely.” A persuasive opening might be: “It is time we admitted that our phones are making us lonelier, and did something about it.”' },
-      { q: 'Explain how you would manage your time in Paper 2, and what you would do if a question did not suit your prepared material.', marks: 2, tags: ['P2'], criteria: ['Describes about 40 minutes per section, with planning time and reading-time strategy', 'Explains reshaping prepared material to answer the question rather than ignoring it'], model: 'Paper 2 has three sections worth 20 marks each, so I would spend about 40 minutes on each, including three to five minutes planning, and use reading time to read all three questions. If a question did not suit my prepared essay, I would reshape my arguments around its key terms, keep only the evidence that genuinely answers it, and write a new thesis, rather than reproducing my prepared essay.' },
-    ],
-  });
-  mods.bank = [
-    function whichModule(level) { return ask(MODS_Q.filter(i => i.tag !== 'P2'), level); },
-    function paperTwoStrategy(level) { return ask(MODS_Q.filter(i => i.tag === 'P2' || i.tag === 'MC'), level); },
-  ];
-
-  /* ================= UNSEEN TEXTS ================= */
-  // Original passages. Each has a section tag, a short-answer question and bank items about specific lines.
-  const PASSAGES = [
-    {
-      tag: 'U2', title: 'Night Shift (poem)',
-      text: 'Night Shift\n\nShe comes home as the street wakes up,\nshoes in her hand, the sky still grey,\nand the kettle is the only voice\nthat asks her how the night went.\nTwelve hours of other people’s fear\nare folded in her chest like linen.\nShe does not tell us about the boy in bed four,\nor the old man who called her by his daughter’s name.\nShe tells us there is bread, and that the cat\nhas been fed, and that the sun is coming.\nThen she sleeps, the curtains drawn against the day,\nand the house moves around her on its toes.',
-      short: { q: 'How does the poet represent the personal cost of caring for others?', marks: 4, criteria: ['Identifies the emotional burden the nurse carries (fear folded in her chest)', 'Analyses a technique such as the simile or personification with a quote', 'Explains her silence and protectiveness towards her family', 'Links to the cost of care: exhaustion, isolation or emotional weight'], model: 'The poet represents caring as an exhausting, often invisible burden. The simile “Twelve hours of other people’s fear / are folded in her chest like linen” suggests she carefully stores the emotional weight of her work inside herself, neat and out of sight. Personifying the kettle as “the only voice / that asks her how the night went” highlights her isolation, as no person checks on her. Her choice to tell her family only that “there is bread” shows she protects them from what she has seen, so the cost of caring is carried alone.' },
-      items: [
-        Q('F', 'U2', 'Which technique is used in “the kettle is the only voice / that asks her how the night went”?', 'Personification', ['Onomatopoeia', 'Oxymoron', 'Rhetorical question'], 'The kettle is given a human voice.'),
-        Q('S', 'U2', 'What does “Twelve hours of other people’s fear / are folded in her chest like linen” most strongly suggest?', 'She neatly stores away the emotional weight of her work, keeping it hidden', ['She enjoys folding laundry after work', 'She has forgotten everything that happened', 'She is afraid of going to work'], 'The simile makes the burden orderly and concealed.'),
-        Q('C', 'U2', 'What does the final line, “the house moves around her on its toes”, suggest about her family?', 'They quietly protect her rest, showing unspoken care and respect', ['They are afraid of her anger', 'They are ignoring her completely', 'They are dancing to celebrate'], 'Moving on tiptoe shows care.'),
-        Q('S', 'U2', 'Which word best describes the tone of “She tells us there is bread, and that the cat / has been fed”?', 'Quietly protective', ['Furious', 'Comic', 'Boastful'], 'She shields her family with ordinary details.'),
-      ],
+  afwrite.bank = [
+    function bestSentence(level) { return ask(WRITE_Q, level); },
+    function whatsMissing(level) {
+      const m = MISSING.filter(x => x[0] === level), [L, para, right, why] = pick(m.length ? m : MISSING);
+      const opts = ['Point: there is no opening sentence that answers the question', 'Evidence: there is no quote or specific moment', 'Technique: no technique is named', 'Analysis: the effect is not explained', 'Link: it does not return to the question or Orwell’s message', 'Nothing is missing: it has P, E, T, A and L'];
+      return { level: L, tags: ['W2'], stem: 'Read this PETAL paragraph.', passage: para, parts: [CH('', 'What, if anything, is missing?', right, shuffle(opts.filter(o => o !== right)).slice(0, 3), [why])] };
     },
-    {
-      tag: 'U2', title: 'Inheritance (poem)',
-      text: 'Inheritance\n\nMy grandmother measures nothing.\nA palm of salt, a fist of flour,\nwater until the dough stops arguing.\nShe learned this in a village\nI have only seen in photographs,\nin a language I can order food in\nbut cannot dream in.\nWhen I ask her for the recipe\nshe laughs and pushes the bowl towards me:\nwatch, she says, your hands will remember.\nAnd they do. Flour on my wrists,\nher rings clicking against the bench,\ntwo kitchens folding into one.',
-      short: { q: 'Explain how the poem represents the connection between generations.', marks: 3, criteria: ['Identifies the gap between speaker and grandmother (language, place)', 'Analyses a technique with a quote, such as the contrast of order food in but cannot dream in, or the final metaphor', 'Explains how connection is achieved through shared, embodied practice'], model: 'The poem first shows a gap between generations: the speaker knows the grandmother’s village only “in photographs” and speaks her language well enough to “order food in / but cannot dream in”, a contrast that shows a partial, practical connection without deep belonging. Yet the grandmother insists “your hands will remember”, and the final metaphor of “two kitchens folding into one” suggests the generations and cultures merge through shared, physical practice rather than words or written recipes.' },
-      items: [
-        Q('F', 'U2', 'Which technique is used in “water until the dough stops arguing”?', 'Personification', ['Simile', 'Alliteration', 'Flashback'], 'The dough is given the human action of arguing.'),
-        Q('S', 'U2', 'What does “a language I can order food in / but cannot dream in” suggest?', 'The speaker has a practical but incomplete connection to her heritage', ['The speaker is fluent and fully at home in the language', 'The speaker never eats her grandmother’s food', 'The speaker has trouble sleeping'], 'The contrast separates surface use from deep belonging.'),
-        Q('C', 'U2', 'What does the final image, “two kitchens folding into one”, most strongly suggest?', 'Two generations and cultures merging through a shared practice', ['The family is renovating the house', 'The grandmother is moving out', 'The speaker rejects her heritage'], ''),
-        Q('S', 'U2', 'What is the effect of the short opening line, “My grandmother measures nothing.”?', 'It establishes her knowledge as intuitive and lived rather than written down', ['It suggests she is careless and a poor cook', 'It creates a threatening tone', 'It signals that the poem is a flashback'], ''),
-      ],
-    },
-    {
-      tag: 'U2', title: 'Year Twelve (poem)',
-      text: 'Year Twelve\n\nThe alarm goes off like an accusation.\nSix subjects stacked on the desk,\na tower I am meant to climb\nbefore it falls on me.\nMy friends post photos of the beach.\nI post nothing. I highlight.\nMum leaves toast outside my door\nthe way you’d feed something wild.\nSome nights I forget why I started.\nSome nights I remember, and keep going.',
-      short: { q: 'How does the poet represent the experience of pressure?', marks: 3, criteria: ['Analyses imagery of pressure (alarm like an accusation, tower that may fall)', 'Analyses the contrast with friends or the short sentences showing isolation', 'Explains the ending as resilience or determination despite pressure'], model: 'The poet presents pressure as constant and threatening. The simile “The alarm goes off like an accusation” makes each day begin with guilt, and the metaphor of a “tower I am meant to climb / before it falls on me” shows the workload as both a challenge and a danger. The short sentences “I post nothing. I highlight.” contrast the speaker with friends at the beach, conveying isolation. The anaphora in the last lines (“Some nights…”) ends on quiet resilience: the pressure remains, but so does the will to “keep going”.' },
-      items: [
-        Q('F', 'U2', 'Which technique is used in “The alarm goes off like an accusation”?', 'Simile', ['Metaphor', 'Onomatopoeia', 'Anaphora'], 'It compares using like.'),
-        Q('S', 'U2', 'What does “a tower I am meant to climb / before it falls on me” suggest?', 'The workload feels like both a challenge and a threat', ['The speaker enjoys rock climbing', 'The speaker has finished all her study', 'The desk is badly built'], ''),
-        Q('S', 'U2', 'Which technique is most clearly used in “My friends post photos of the beach. / I post nothing. I highlight.”?', 'Juxtaposition', ['Onomatopoeia', 'Hyperbole', 'Allusion'], 'The speaker’s study is set beside the friends’ freedom.'),
-        Q('C', 'U2', 'Which word best describes the tone of the final two lines?', 'Quietly determined', ['Triumphant', 'Bitter and hopeless', 'Playful'], 'Forgetting is acknowledged, but she keeps going.'),
-        Q('C', 'U2', 'What does “Mum leaves toast outside my door / the way you’d feed something wild” suggest about the speaker?', 'Pressure has made her withdrawn and hard to approach, though her mother still cares', ['She keeps a pet in her room', 'Her mother is angry with her', 'She refuses to eat'], ''),
-      ],
-    },
-    {
-      tag: 'U2', title: 'The Drought Year (poem)',
-      text: 'The Drought Year\n\nThe dam is a cracked plate now,\nand Dad stands at its edge each evening\nas if staring could fill it.\nThe cattle have gone to a man from town\nwho paid in cash and did not look at us.\nMum still sets the table for four\nthough my brother’s chair has been empty since March,\nhis ute somewhere in the city, his voice\na phone call every second Sunday.\nAt night the iron roof ticks and cools.\nWe listen for rain the way you listen\nfor the footsteps of someone who promised to come home.',
-      short: { q: 'Analyse how the poet connects the drought to the family’s experience of loss.', marks: 5, criteria: ['Analyses the drought imagery (cracked plate, staring at the dam)', 'Analyses the brother’s absence (empty chair, table set for four)', 'Analyses the final simile linking rain and the brother’s return', 'Explains how the drought parallels emotional loss and longing', 'Uses accurate quotations to support the analysis'], model: 'The poet makes the drought a mirror for the family’s emotional loss. The metaphor “The dam is a cracked plate now” presents the land as broken domestic crockery, linking the farm’s ruin to the home, and Dad standing “as if staring could fill it” conveys helpless longing. The absence of rain is paralleled by the absence of the brother: Mum “still sets the table for four”, a detail that shows hope refusing to accept the loss. The closing simile, “We listen for rain the way you listen / for the footsteps of someone who promised to come home”, fuses the two losses, suggesting the family is waiting for both rain and reunion, with no certainty either will come.' },
-      items: [
-        Q('F', 'U2', 'Which technique is used in “The dam is a cracked plate now”?', 'Metaphor', ['Simile', 'Onomatopoeia', 'Rhetorical question'], 'The dam is said to be a plate.'),
-        Q('S', 'U2', 'What does “as if staring could fill it” suggest about Dad?', 'He feels helpless, clinging to hope he cannot act on', ['He is calmly measuring the water level', 'He is angry with the neighbours', 'He has given up farming happily'], ''),
-        Q('C', 'U2', 'What is the main effect of the final simile comparing listening for rain to listening for footsteps?', 'It links the drought to the brother’s absence, showing both as painful, uncertain waiting', ['It suggests the brother is about to arrive', 'It shows the family is afraid of storms', 'It creates a comic ending'], ''),
-        Q('S', 'U2', 'What does “Mum still sets the table for four” suggest?', 'She has not accepted her son’s absence', ['She is expecting a guest from town', 'She is a careless cook', 'The family is celebrating'], ''),
-      ],
-    },
-    {
-      tag: 'U3', title: 'New school (prose)',
-      text: 'On his first day, Danny learned that there were rules nobody wrote down. You did not sit on the bench near the canteen. You did not say “reckon” the way his old mates did. You did not, under any circumstances, bring a lunch that smelled of anything. He ate his sandwich in the library, where the air was cool and nobody looked up, and he studied the other boys the way you might study a foreign map: the careless lean against the lockers, the nods that meant hello, the nods that meant go away. By Friday he could do the lean. He still couldn’t do the nod. At home, his mother asked if he’d made friends, and he said yes, because it was easier than explaining that he had become very good at being invisible.',
-      short: { q: 'How does the extract represent the challenge of belonging?', marks: 4, criteria: ['Identifies the unwritten rules and exclusion', 'Analyses the anaphora of You did not, or the foreign map simile', 'Analyses the ending (irony of being good at invisibility, the lie to his mother)', 'Explains belonging as requiring painful self-erasure or conformity'], model: 'The extract presents belonging as a code that outsiders must decode and obey. The anaphora of “You did not…” lists unwritten rules, conveying how restrictive and exclusive the group is, and the rule against a lunch that “smelled of anything” hints that difference itself must be hidden. The simile of studying the boys “the way you might study a foreign map” positions Danny as a stranger in his own school. The ironic final line, that he has “become very good at being invisible”, reveals that his only success is self-erasure, and his lie to his mother shows the loneliness of trying to belong.' },
-      items: [
-        Q('F', 'U3', 'Which technique is used in the repeated “You did not…” sentences?', 'Anaphora', ['Onomatopoeia', 'Oxymoron', 'Flashback'], 'Repetition at the start of successive sentences.'),
-        Q('S', 'U3', 'What does the simile “the way you might study a foreign map” suggest?', 'Danny feels like an outsider trying to decode an unfamiliar world', ['Danny is studying geography', 'Danny is planning a holiday', 'Danny already feels completely at home'], ''),
-        Q('C', 'U3', 'Which word best describes the tone of the final sentence?', 'Wry but sad', ['Triumphant', 'Furious', 'Carefree'], 'He frames invisibility as a skill, which is both dry and painful.'),
-        Q('S', 'U3', 'What does “By Friday he could do the lean. He still couldn’t do the nod.” suggest?', 'He can copy the outward look of belonging but not the real social connection', ['He has injured his neck', 'He has made many close friends', 'He does not care about fitting in'], ''),
-      ],
-    },
-    {
-      tag: 'U3', title: 'The shed (prose)',
-      text: 'The shed smelled of oil and pine and something else she could only call him. Her father had labelled everything: jars of screws sorted by size, a coffee tin marked BITS (USEFUL), another marked BITS (UNSURE). She laughed out loud at that, and the laugh echoed off the corrugated iron and came back sounding like someone else’s. On the bench lay a half-finished birdhouse, the roof not yet nailed down, a pencil line showing where the next cut should go. She picked up the saw. She put it down. Outside, her brother was loading the trailer for the tip, calling out to ask if she was nearly done. “Nearly,” she said, and sat on the upturned crate, and did not move for a long time.',
-      short: { q: 'Explain how the writer conveys the character’s grief.', marks: 4, criteria: ['Analyses sensory imagery that evokes the father’s presence', 'Analyses the half-finished birdhouse as a symbol', 'Analyses the short sentences or the ending showing paralysis', 'Explains the mix of love, humour and loss in her grief'], model: 'The writer conveys grief through the father’s lingering presence. The olfactory imagery of “oil and pine and something else she could only call him” shows he still fills the space even in his absence. The humour of the tin marked “BITS (UNSURE)” makes her laugh, but the laugh comes back “sounding like someone else’s”, suggesting grief has made her a stranger to herself. The half-finished birdhouse symbolises a life cut short, and the short sentences “She picked up the saw. She put it down.” show she cannot continue his work. Her final stillness, despite saying “Nearly”, conveys how unready she is to let go.' },
-      items: [
-        Q('F', 'U3', 'What does the half-finished birdhouse most likely symbolise?', 'A life cut short, with work left undone', ['The father’s love of birdwatching', 'The family’s plan to sell the house', 'The daughter’s skill at woodwork'], ''),
-        Q('S', 'U3', 'Which technique is used in “something else she could only call him”?', 'Sensory (olfactory) imagery', ['Rhetorical question', 'Onomatopoeia', 'Hyperbole'], 'The smell of the shed evokes her father.'),
-        Q('S', 'U3', 'What is the effect of the short sentences “She picked up the saw. She put it down.”?', 'They show hesitation and her inability to continue her father’s work', ['They speed the story towards a happy ending', 'They show she is skilled and confident', 'They create a comic tone'], ''),
-        Q('C', 'U3', 'What does the laugh coming back “sounding like someone else’s” suggest?', 'Grief has made her feel unfamiliar to herself', ['Someone else is hiding in the shed', 'The shed has unusual acoustics only', 'She is happy and relaxed'], ''),
-      ],
-    },
-    {
-      tag: 'U3', title: 'Blackout (prose)',
-      text: 'When the power failed on the fourth night of the heatwave, the whole block of flats seemed to exhale at once. Doors opened. People who had shared a lift for years without speaking came out onto the landings with torches and folding chairs. Mrs Okafor from 2B brought out a tray of melting ice blocks and handed them to whoever was nearest. The teenagers from upstairs set up a speaker running off a phone. Someone’s grandfather told a story about a cyclone when he was a boy, and even the toddlers went quiet to listen. By midnight the street lights were still dark, and nobody had gone inside. When the electricity came back at two in the morning, a cheer went up, and then, strangely, a sigh, as the doors began to close again one by one.',
-      short: { q: 'How does the extract represent a collective human experience?', marks: 5, criteria: ['Identifies the blackout as a shared experience that brings strangers together', 'Analyses personification of the building exhaling', 'Analyses the contrast between years of silence and the gathering', 'Analyses storytelling (the grandfather) as uniting generations', 'Analyses the paradox of the cheer and sigh at the end'], model: 'The extract represents a shared crisis as an unexpected source of community. Personifying the block of flats, which seemed “to exhale at once”, shows the residents acting as one body. The contrast with neighbours who “had shared a lift for years without speaking” exposes how isolated everyday city life is. Small acts of generosity, such as Mrs Okafor’s ice blocks, and the grandfather’s story, which silences even the toddlers, show storytelling binding generations together. The ending is paradoxical: the cheer at the power’s return is followed by “a sigh” as doors close, suggesting the residents mourn the loss of the connection that only the blackout made possible.' },
-      items: [
-        Q('F', 'U3', 'Which technique is used in “the whole block of flats seemed to exhale at once”?', 'Personification', ['Simile', 'Rhyme', 'Allusion'], 'The building breathes.'),
-        Q('S', 'U3', 'What does “People who had shared a lift for years without speaking” suggest?', 'Everyday city life keeps neighbours isolated from one another', ['The lift was broken for years', 'The neighbours are close friends', 'The building is new'], ''),
-        Q('C', 'U3', 'What does the ending, “a cheer went up, and then, strangely, a sigh”, suggest?', 'Relief at the power returning is mixed with regret that the shared moment is ending', ['The residents are disappointed the power came back at all', 'The residents are exhausted from the heat only', 'Everyone is angry with the electricity company'], 'The juxtaposition reveals mixed feelings.'),
-        Q('S', 'U3', 'What role does the grandfather’s story play in the extract?', 'It shows storytelling bringing different generations together', ['It shows the grandfather is unreliable', 'It foreshadows a cyclone the next day', 'It interrupts the community and annoys people'], ''),
-      ],
-    },
-    {
-      tag: 'U4', title: 'Recovery speech (speech extract)',
-      text: 'Three summers ago, I stood on my uncle’s verandah and watched the ridge turn orange. I was fifteen. I thought the worst thing that could happen was losing the house. I was wrong. The worst thing was the silence afterwards: the paddocks with no birds, the neighbours who stopped answering their phones. So tonight I am not going to ask you for pity. Pity is cheap. I am going to ask you for something harder. Turn up. Turn up in a year, when the cameras have gone. Turn up when the fences are still down and the paperwork is still lost. Because recovery is not a headline. It is a hundred ordinary Tuesdays, and we need you for every one of them.',
-      short: { q: 'How does the speaker persuade the audience to support long-term recovery?', marks: 5, criteria: ['Analyses the personal anecdote and its effect on credibility and emotion', 'Analyses the rejection of pity (short, blunt sentences)', 'Analyses the anaphora and imperatives of Turn up', 'Analyses the closing metaphor or contrast of headline and ordinary Tuesdays', 'Explains how techniques position the audience to commit to sustained action'], model: 'The speaker opens with a personal anecdote, “I stood on my uncle’s verandah and watched the ridge turn orange”, giving her authority and drawing the audience into her experience. The blunt short sentence “Pity is cheap.” rejects passive sympathy and raises the stakes. The anaphora and imperatives of “Turn up. Turn up in a year… Turn up when…” build insistent momentum and directly command the audience to act. Finally, the contrast “recovery is not a headline. It is a hundred ordinary Tuesdays” reframes recovery as slow, unglamorous work, positioning the audience to commit to long-term support rather than a one-off gesture.' },
-      short2: { q: 'Describe the tone of this speech and explain how it is created.', marks: 2, criteria: ['Identifies an appropriate tone (urgent, determined, challenging)', 'Supports it with a specific technique and quotation'], model: 'The tone is urgent and challenging. The blunt sentence “Pity is cheap.” and the repeated imperative “Turn up” confront the audience directly, demanding action rather than sympathy.' },
-      items: [
-        Q('F', 'U4', 'Which techniques are combined in “Turn up. Turn up in a year… Turn up when…”?', 'Anaphora and imperatives', ['Simile and onomatopoeia', 'Flashback and foreshadowing', 'Oxymoron and allusion'], 'Repeated commands at the start of sentences.'),
-        Q('S', 'U4', 'Which word best describes the tone of “Pity is cheap.”?', 'Blunt and challenging', ['Gentle and apologetic', 'Comic', 'Uncertain'], ''),
-        Q('C', 'U4', 'What does “recovery is not a headline. It is a hundred ordinary Tuesdays” suggest?', 'Recovery is slow, unglamorous work that needs sustained support long after the news moves on', ['Recovery only happens on Tuesdays', 'The media should publish more headlines', 'Recovery is quick once the cameras arrive'], ''),
-        Q('S', 'U4', 'Why does the speaker open with a personal anecdote?', 'To establish credibility and emotionally involve the audience', ['To show she was not affected by the fire', 'To list statistics about fires', 'To make the audience laugh'], ''),
-      ],
-    },
-    {
-      tag: 'U4', title: 'Group chats (feature article)',
-      text: 'The Quiet Epidemic in Our Group Chats\n\nIt is 11.40 on a school night and Priya, seventeen, has 412 unread messages. She is in three group chats, has two streaks to keep alive and, by her own count, has “basically no one” she could call if something went wrong. She laughs when she says it, then stops laughing. Priya is not unusual. In conversations with teenagers across the city for this story, the same paradox surfaced again and again: never have young people been so constantly connected, and rarely have so many described feeling so alone. They are not asking for sympathy. Mostly, they are asking a question the adults around them have not thought to answer: how do you make a real friend when everyone is always online?',
-      short: { q: 'Explain how the writer engages the reader in the opening of this article.', marks: 3, criteria: ['Analyses the anecdotal opening with specific detail (time, unread messages)', 'Analyses the paradox of connection and loneliness', 'Analyses the closing rhetorical question and its effect on the reader'], model: 'The writer opens with a specific anecdote, “It is 11.40 on a school night and Priya, seventeen, has 412 unread messages”, which makes the issue concrete and relatable. The paradox “never have young people been so constantly connected, and rarely have so many described feeling so alone” hooks the reader by presenting a puzzling contradiction. The closing rhetorical question, “how do you make a real friend when everyone is always online?”, invites adult readers to consider an issue they may have overlooked, encouraging them to keep reading.' },
-      items: [
-        Q('F', 'U4', 'How does the article open?', 'With a specific anecdote about one teenager', ['With a dictionary definition', 'With a list of statistics', 'With a quotation from a politician'], ''),
-        Q('S', 'U4', 'What does “She laughs when she says it, then stops laughing” suggest?', 'Her humour hides genuine pain about her loneliness', ['She finds the situation entirely funny', 'She is annoyed with the journalist', 'She has many close friends'], ''),
-        Q('S', 'U4', 'Which technique is used in “never have young people been so constantly connected, and rarely have so many described feeling so alone”?', 'Paradox', ['Onomatopoeia', 'Simile', 'Flashback'], 'Connection and loneliness seem contradictory.'),
-        Q('C', 'U4', 'What is the effect of ending the paragraph with a question?', 'It challenges adult readers to consider a problem they may have ignored, drawing them further in', ['It shows the writer does not understand the topic', 'It closes the discussion completely', 'It shifts the article into fiction'], ''),
-      ],
-    },
-    {
-      tag: 'U5', title: 'The bench (photograph)',
-      text: 'The image is a black-and-white photograph. An elderly man sits alone at the far end of a long bus-stop bench, in the lower right of the frame. He holds a bunch of bright yellow flowers, the only colour in the image. The rest of the bench is empty, and a long shadow stretches from him across the footpath to the left. Behind him, a wall is covered in faded posters advertising events that have already happened. He is not looking at the camera; his gaze is fixed down the empty road, as if waiting for a bus, or a person, who may not come.',
-      short: { q: 'How does the composer use visual techniques to represent loneliness and hope?', marks: 4, criteria: ['Analyses the salience of the yellow flowers as hope or love', 'Analyses the empty bench, placement or shadow as loneliness', 'Analyses his gaze (offer) down the road as waiting or longing', 'Analyses the faded posters as time passing or the past'], model: 'The composer makes the yellow flowers the most salient element, as “the only colour in the image”, so they become a symbol of hope or love in an otherwise grey world. In contrast, the man’s placement at the far end of an empty bench and the long shadow stretching away from him emphasise his isolation. His gaze is an offer, fixed “down the empty road”, which creates a vector the viewer follows into emptiness, suggesting he waits for someone “who may not come”. The “faded posters advertising events that have already happened” reinforce a sense of time passing him by, so the image balances loneliness against a fragile hope.' },
-      items: [
-        Q('F', 'U5', 'Which technique makes the yellow flowers stand out?', 'Salience created through colour', ['Diegetic sound', 'Rhyme', 'A low camera angle'], 'They are the only colour in a black-and-white image.'),
-        Q('S', 'U5', 'What does the man’s gaze “fixed down the empty road” suggest?', 'Longing and uncertain waiting for someone or something', ['He is about to fall asleep', 'He is confronting the viewer', 'He is reading the posters'], 'An offer gaze invites us to observe his waiting.'),
-        Q('C', 'U5', 'What do the “faded posters advertising events that have already happened” most likely symbolise?', 'Time passing, and a life whose events may lie in the past', ['A busy social calendar', 'Advertising in modern cities', 'The photographer’s mistake'], ''),
-        Q('S', 'U5', 'What is the effect of placing the man at the far end of an empty bench?', 'The empty space emphasises his isolation', ['It shows the bench is broken', 'It makes him appear powerful', 'It suggests a crowd is nearby'], ''),
-      ],
-    },
-    {
-      tag: 'U5', title: 'I’m fine (poster)',
-      text: 'The image is a public awareness poster with a deep navy background. In the centre, a teenage girl is shown in close-up, looking directly at the viewer with a small, uncertain smile. Half her face is lit warmly from the right; the other half falls into shadow. Above her, in large white capitals, are the words I’M FINE. Beneath, in much smaller type, is a second line: Ask twice. A helpline number and a website sit in the bottom corner.',
-      short: { q: 'Explain how the poster communicates its message about hidden struggles.', marks: 3, criteria: ['Analyses the lighting split between warmth and shadow', 'Analyses the direct gaze or close-up connecting the viewer to the girl', 'Analyses the contrast between the large I’M FINE and the small imperative Ask twice'], model: 'The lighting splits the girl’s face, with “half her face lit warmly” and “the other half” in shadow, suggesting a hidden struggle behind her outward smile. The close-up and her direct gaze create a personal demand, as if she is speaking to the viewer. The contrast between the large words “I’M FINE” and the small imperative “Ask twice” mirrors the message: people loudly claim to be fine while the quieter truth needs to be drawn out, so the poster urges viewers to look past the first answer.' },
-      items: [
-        Q('F', 'U5', 'The girl is “looking directly at the viewer”. What is this called?', 'A demand gaze', ['An offer gaze', 'A long shot', 'Non-diegetic sound'], 'A direct look at the viewer is a demand.'),
-        Q('S', 'U5', 'What does the lighting, with half her face warm and half in shadow, suggest?', 'A hidden struggle beneath her outward appearance', ['That the photo was badly lit', 'That she is evil', 'That it is sunset'], ''),
-        Q('C', 'U5', 'What is the effect of printing “I’M FINE” large and “Ask twice” small?', 'It mirrors how a loud reassurance can hide a quieter truth that must be drawn out', ['It shows the designer ran out of space', 'It suggests the girl really is fine', 'It makes the helpline the main focus'], ''),
-        Q('S', 'U5', 'What type of sentence is “Ask twice”?', 'An imperative', ['A rhetorical question', 'An exclamation', 'A simile'], 'It is a command directed at the viewer.'),
-      ],
+    function marksMeaning(level) {
+      const items = [
+        ['F', 'A question is worth 1 mark. What should your answer include?', 'One clear, correct point', ['Two full PETAL paragraphs', 'A plot summary', 'Three quotes and three techniques']],
+        ['F', 'What does PETAL stand for?', 'Point, Evidence, Technique, Analysis, Link', ['Plot, Example, Theme, Answer, List', 'Point, Explain, Tell, Argue, Learn', 'Paragraph, Evidence, Text, Author, Language']],
+        ['S', 'A question is worth 3 marks and asks “How does Orwell…?” What should your answer include?', 'A technique, a short quote or moment, and its effect', ['Just the name of a technique', 'A retelling of the chapter', 'Your personal opinion of the characters']],
+        ['S', 'The question includes an extract. Where should your evidence come from?', 'The extract', ['Any other chapter', 'The film version', 'Your own experience']],
+        ['C', 'A question is worth 8 marks. What should your answer be?', 'One or two well-developed PETAL paragraphs', ['One sentence', 'A list of techniques', 'A summary of the whole novel']],
+        ['C', 'You have 60 minutes for 20 marks. About how long should you spend on a 4-mark question?', 'About 12 minutes', ['About 1 minute', 'About 30 minutes', 'About 45 minutes']],
+      ];
+      const m = items.filter(x => x[0] === level), [L, q, right, wrongs] = pick(m.length ? m : items);
+      return { level: L, tags: ['W1'], stem: 'Reading the question.', parts: [CH('', q, right, wrongs, ['Let the marks guide how much you write.'])] };
     },
   ];
-  const UNSEEN_ITEMS = PASSAGES.flatMap(p => p.items.map(it => ({ ...it, passage: p.text, stem: `Read the text (${p.title}), then answer.` })));
-  const unseenShort = PASSAGES.flatMap(p => [p.short, p.short2].filter(Boolean).map(s => ({ ...s, tags: [p.tag], passage: p.text })));
 
-  const unseen = finish({
-    id: 'engunseen', subject: SUBJECT, title: 'Unseen texts', chapter: 'English · Paper 1', hue: HUE,
-    blurb: 'How to read a text you have never seen, with original poems, prose, speeches, articles and images to practise on.',
-    sections: [
-      { code: 'U1', name: 'How to read an unseen text', notes: [
-        'Read the questions first, so you know what to look for, then read each text twice.',
-        'Annotate four things: who is speaking or composing, what is happening or being said, how it is said (techniques), and why (purpose and meaning).',
-        'Check the title, the form (poem, extract, speech, article, image) and any provided context such as a date or source.',
-        'Identify the tone and look for shifts: a change in tense, voice, mood or a word such as but or yet often marks the key moment.',
-        'Underline two or three short quotations per question. Short, precise quotes are easier to analyse.',
-        'Connect what you notice to the question’s concept, such as hope, isolation or belonging.',
-      ], ex: ['Unseen poem titled “Waiting Room”', 'Who: a first-person speaker beside a sick relative. What: hours of waiting.', 'How: repeated clock imagery and short lines that slow the pace.', 'Why: to represent anxiety and helplessness when we cannot control what happens to people we love.'] },
-      { code: 'U2', name: 'Poetry', notes: [
-        'Look at form first: line length, stanza breaks, rhyme or free verse. Ask what the shape does.',
-        'Find the volta or shift: where does the poem change direction?',
-        'Track imagery patterns: are images of light and dark, open and closed, growth and decay?',
-        'Notice sound: alliteration, sibilance, harsh or soft sounds, and rhythm.',
-        'Consider the final line carefully; poems often end on their key insight or an open question.',
-      ] },
-      { code: 'U3', name: 'Prose fiction', notes: [
-        'Identify narrative perspective: first person, third person limited or omniscient, and how close we are to a character’s thoughts.',
-        'Look at characterisation through actions, dialogue and small details.',
-        'Notice setting and how it reflects mood or a character’s situation.',
-        'Pay attention to sentence length: short sentences create tension or emphasis, long ones can show flowing thought or overwhelm.',
-        'Consider what is left unsaid: subtext, irony and gaps often carry the emotion.',
-      ] },
-      { code: 'U4', name: 'Non-fiction and speeches', notes: [
-        'Identify purpose (to persuade, inform, reflect) and audience.',
-        'Speeches: look for inclusive language (we, our), anaphora, tricolon, imperatives, anecdote and rhetorical questions.',
-        'Feature articles: look at the headline, the hook (often an anecdote), expert voices, tone and the closing line.',
-        'Memoir and personal essays: notice the reflective voice, the gap between the older narrator and their younger self, and key images.',
-        'Ask how the composer positions the reader to think or feel.',
-      ] },
-      { code: 'U5', name: 'Visual texts', notes: [
-        'In the exam, images are printed; here they are described in words. Read the description as if you were looking at the image.',
-        'Start with salience: what draws your eye first, and why (colour, size, light, position)?',
-        'Look at gaze: does a figure look at the viewer (demand) or away (offer)?',
-        'Check composition: placement, framing, empty space, vectors and the relationship between figures.',
-        'Consider colour, lighting and any written text (font size, placement, wording).',
-        'Then ask what the composer wants the viewer to feel or understand.',
-      ] },
-    ],
-    cards: [
-      ['Who, what, how, why', 'Speaker or composer, content, techniques, purpose and meaning.'],
-      ['Read the questions first', 'So you know what to look for in each text.'],
-      ['Tone', 'The attitude or feeling conveyed, such as wistful, bitter or hopeful.'],
-      ['Shift', 'A change in tone, tense, voice or mood that often marks a key moment.'],
-      ['Volta (in unseen poems)', 'The turn in a poem’s thought; find it and explain it.'],
-      ['Imagery patterns', 'Recurring images (light, dark, open, closed) that build meaning.'],
-      ['Final lines', 'Often hold a poem’s key insight.'],
-      ['Narrative perspective', 'Who tells the story and how close we are to their thoughts.'],
-      ['Subtext', 'Meaning implied but not stated.'],
-      ['Short sentences in prose', 'Create tension, emphasis or shock.'],
-      ['Inclusive language', 'We, us, our: unites speaker and audience.'],
-      ['Feature article hook', 'Often a specific anecdote or striking detail.'],
-      ['Anecdote', 'A short personal story that builds connection and credibility.'],
-      ['Salience', 'What draws the eye first in an image.'],
-      ['Demand gaze', 'A figure looks at the viewer, creating connection or confrontation.'],
-      ['Offer gaze', 'A figure looks away, inviting the viewer to observe.'],
-      ['Negative space', 'Empty areas in an image, often emphasising isolation.'],
-      ['Vectors', 'Lines or gazes that lead the eye.'],
-    ],
-    concepts: [
-      ['What should you do first in Section I?', ['Read the questions', 'Start writing', 'Count the lines', 'Skip to the visual text'], 0, ''],
-      ['A change of tense from past to present in a poem is an example of a…', ['Shift', 'Rhyme', 'Motif', 'Caesura'], 0, ''],
-      ['In a speech, “we” and “our” are…', ['Inclusive language', 'Imperatives', 'Onomatopoeia', 'Formal register'], 0, ''],
-      ['A figure in an image looking away from the viewer creates…', ['A demand', 'An offer', 'Salience', 'A vector only'], 1, ''],
-      ['Feature articles often open with…', ['A specific anecdote', 'A bibliography', 'A table of contents', 'A list of sources'], 0, ''],
-      ['Empty space around a figure in an image often suggests…', ['Isolation', 'Crowding', 'Celebration', 'Speed'], 0, ''],
-      ['The best quotations for analysis are usually…', ['Long paragraphs', 'Short and precise', 'The title only', 'Paraphrased'], 1, ''],
-      ['Subtext is…', ['Meaning implied but not stated', 'A subtitle', 'A footnote', 'The plot summary'], 0, ''],
-    ],
-    short: unseenShort,
-  });
-  unseen.bank = [
-    function readTheLine(level) { return ask(UNSEEN_ITEMS, level); },
-  ];
-
-  return { DECKS: [tech, essay, common, mods, unseen] };
+  return { DECKS: [afplot, afthemes, aftech, afwrite, tech] };
 })();
 if (typeof module !== 'undefined') module.exports = EN;

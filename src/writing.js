@@ -12,7 +12,7 @@ const WR = (() => {
   const overlap = (a, b) => { const B = new Set(b.map(stem)); return a.filter(w => B.has(stem(w))).length; };
 
   /* ---------- vocabulary ---------- */
-  const TECH = ['extended metaphor', 'metaphors?', 'similes?', 'personification', 'personified', 'imagery', 'images?', 'symbolism', 'symbol(?:s|ic|ises|izes)?', 'motifs?', 'juxtapos(?:ition|es|ed|ing)', 'alliteration', 'alliterative', 'sibilance', 'assonance', 'consonance', 'onomatopoeia', 'hyperbole', 'hyperbolic', '(?:dramatic |situational |verbal )?irony', 'ironic(?:ally)?', 'paradox(?:es|ical)?', 'oxymor(?:on|ons|onic)', 'allusions?', 'rhetorical questions?', 'repetition', 'repeated', 'anaphora', 'tricolon', '(?:cumulative )?listing', 'enjambment', 'caesura', 'foreshadow(?:ing|s|ed)?', 'flashbacks?', 'characteri[sz]ation', 'dialogue', 'first[- ]person', 'second[- ]person', 'third[- ]person', 'narrative voice', 'narrator', 'tone', 'emotive language', 'high modality', 'modality', 'imperatives?', 'colloquial(?:ism|isms)?', 'pathetic fallacy', 'synecdoche', 'metonymy', 'structure', 'cyclical', 'fragment(?:ed|ation|s)', 'contrast(?:s|ing)?', 'camera angles?', '(?:low|high)[- ]angle(?: shot)?', 'close[- ]ups?', '(?:long|wide|medium) shots?', 'lighting', 'colour palette', 'diegetic', 'non[- ]diegetic', 'salience', 'vectors?', 'framing', 'montage', 'voice[- ]?over', 'polysyndeton', 'asyndeton', 'apostrophe', 'epistolary', 'intertextual(?:ity)?', 'satir(?:e|ical)', 'parody', 'allegor(?:y|ical)', 'archetyp(?:e|al)', 'stream of consciousness', 'free indirect discourse', 'rhyme', 'rhythm', 'meter', 'volta', 'sonnet', 'refrain', 'free verse', 'ellipsis', 'hypophora', 'anecdotes?', 'statistics', 'inclusive language', 'direct address', 'sensory language', 'visual imagery', 'auditory imagery', 'connotations?', 'diction', 'register', 'syntax', 'truncated sentences?', 'minor sentences?', 'binary opposition', 'setting', 'climax', 'in medias res', 'unreliable narrator', 'pun', 'euphemism', 'understatement', 'litotes', 'chiasmus', 'antithesis'];
+  const TECH = ['extended metaphor', 'metaphors?', 'similes?', 'personification', 'personified', 'imagery', 'images?', 'symbolism', 'symbol(?:s|ic|ises|izes)?', 'motifs?', 'juxtapos(?:ition|es|ed|ing)', 'alliteration', 'alliterative', 'sibilance', 'assonance', 'consonance', 'onomatopoeia', 'hyperbole', 'hyperbolic', '(?:dramatic |situational |verbal )?irony', 'ironic(?:ally)?', 'paradox(?:es|ical)?', 'oxymor(?:on|ons|onic)', 'allusions?', 'rhetorical questions?', 'repetition', 'repeated', 'anaphora', 'tricolon', '(?:cumulative )?listing', 'enjambment', 'caesura', 'foreshadow(?:ing|s|ed)?', 'flashbacks?', 'characteri[sz]ation', 'dialogue', 'first[- ]person', 'second[- ]person', 'third[- ]person', 'narrative voice', 'narrator', 'tone', 'emotive language', 'high modality', 'modality', 'imperatives?', 'colloquial(?:ism|isms)?', 'pathetic fallacy', 'synecdoche', 'metonymy', 'structure', 'cyclical', 'fragment(?:ed|ation|s)', 'contrast(?:s|ing)?', 'camera angles?', '(?:low|high)[- ]angle(?: shot)?', 'close[- ]ups?', '(?:long|wide|medium) shots?', 'lighting', 'colour palette', 'diegetic', 'non[- ]diegetic', 'salience', 'vectors?', 'framing', 'montage', 'voice[- ]?over', 'polysyndeton', 'asyndeton', 'apostrophe', 'epistolary', 'intertextual(?:ity)?', 'satir(?:e|ical)', 'parody', 'allegor(?:y|ical)', 'fable', 'anthropomorphi(?:sm|c)', 'slogans?', 'archetyp(?:e|al)', 'stream of consciousness', 'free indirect discourse', 'rhyme', 'rhythm', 'meter', 'volta', 'sonnet', 'refrain', 'free verse', 'ellipsis', 'hypophora', 'anecdotes?', 'statistics', 'inclusive language', 'direct address', 'sensory language', 'visual imagery', 'auditory imagery', 'connotations?', 'diction', 'register', 'syntax', 'truncated sentences?', 'minor sentences?', 'binary opposition', 'setting', 'climax', 'in medias res', 'unreliable narrator', 'pun', 'euphemism', 'understatement', 'litotes', 'chiasmus', 'antithesis'];
   const TECH_RE = new RegExp(`\\b(?:${TECH.join('|')})\\b`, 'gi');
   const VERBS = ['convey', 'highlight', 'emphasi[sz]e', 'underscore', 'foreground', 'illuminate', 'reveal', 'suggest', 'evoke', 'position', 'invite', 'challenge', 'critique', 'interrogate', 'subvert', 'reinforce', 'accentuate', 'epitomi[sz]e', 'encapsulate', 'exemplif(?:y|ies|ied|ying)', 'capture', 'explore', 'represent', 'depict', 'portray', 'symboli[sz]e', 'signif(?:y|ies|ied|ying)', 'reflect', 'elucidate', 'establish', 'expose', 'condemn', 'celebrate', 'lament', 'satiri[sz]e', 'amplif(?:y|ies|ied|ying)', 'heighten', 'intensif(?:y|ies|ied|ying)', 'dramati[sz]e', 'mirror', 'embod(?:y|ies|ied|ying)', 'compel', 'prompt', 'elicit', 'implicate', 'undermine', 'construct', 'distil', 'evince', 'denote', 'connote', 'imply', 'implies', 'implied', 'characteri[sz]e', 'allude', 'demonstrate', 'illustrate', 'contrast', 'juxtapose', 'cultivate', 'galvani[sz]e', 'humani[sz]e', 'vilif(?:y|ies|ied|ying)', 'valori[sz]e', 'problemati[sz]e', 'expose', 'unveil'];
   // convey -> conveys/conveyed/conveying; emphasise -> emphasises/emphasised/emphasising
@@ -82,6 +82,7 @@ const WR = (() => {
   const KINDS = {
     essay: { label: 'Essay', words: [650, 1200], paras: [4, 7] },
     paragraph: { label: 'Body paragraph', words: [150, 320], paras: [1, 1] },
+    petal: { label: 'PETAL paragraphs', words: [120, 380], paras: [1, 2] },
     short: { label: 'Short answer', words: null, paras: [1, 3] },
     creative: { label: 'Creative writing', words: [550, 1100], paras: [5, 30] },
   };
@@ -108,7 +109,7 @@ const WR = (() => {
 
     const inQuote = (pos) => quotes.some(q => pos >= q.start && pos < q.end);
     const weakHits = [];
-    WEAK_RE.forEach(([re, label, tip]) => find(re, text).filter(h => !inQuote(h.start)).forEach(h => weakHits.push({ ...h, label, tip })));
+    WEAK_RE.filter(([, label]) => !(kind === 'petal' && (label === 'shows' || label === 'uses'))).forEach(([re, label, tip]) => find(re, text).filter(h => !inQuote(h.start)).forEach(h => weakHits.push({ ...h, label, tip })));
     const informal = [];
     if (kind !== 'creative') INFORMAL.forEach(([re, label, tip]) => find(re, text).filter(h => !inQuote(h.start)).forEach(h => informal.push({ ...h, label, tip })));
     const longS = sents.filter(s => words(s.text).length > (kind === 'creative' ? 55 : 45));
@@ -117,10 +118,10 @@ const WR = (() => {
     /* --- length and shape --- */
     if (K.words) {
       const [lo, hi] = K.words;
-      add({ id: 'length', title: 'Length', score: band(nW, lo, hi, lo * 0.8), weight: 1, msg: nW < lo ? `${nW} words. Aim for about ${lo}–${hi} in exam conditions: develop another idea or another piece of evidence.` : nW > hi ? `${nW} words. That's long for ${kind === 'paragraph' ? 'one paragraph' : 'the time you get'}: cut repetition and retelling.` : `${nW} words: a good length for ${K.label.toLowerCase()}.` });
+      add({ id: 'length', title: 'Length', score: nW < lo || nW > hi ? Math.min(0.75, band(nW, lo, hi, lo * 0.8)) : 1, weight: 1, msg: nW < lo ? `${nW} words. Aim for about ${lo}–${hi} in exam conditions: develop another idea or another piece of evidence.` : nW > hi ? `${nW} words. That's long for ${kind === 'paragraph' ? 'one paragraph' : 'the time you get'}: cut repetition and retelling.` : `${nW} words: a good length for ${K.label.toLowerCase()}.` });
     } else {
       const mk = Math.max(1, Math.min(8, +opts.marks || 4)), lo = mk * 20, hi = mk * 60;
-      add({ id: 'length', title: 'Length for the marks', score: band(nW, lo, hi, lo), weight: 1, msg: nW < lo ? `${nW} words for ${mk} marks is thin. Aim for roughly ${lo}–${hi}: one technique and its effect per mark.` : nW > hi ? `${nW} words is more than ${mk} marks needs. Get to the point faster.` : `${nW} words suits ${mk} marks.` });
+      add({ id: 'length', title: 'Length for the marks', score: nW < lo || nW > hi ? Math.min(0.75, band(nW, lo, hi, lo)) : 1, weight: 1, msg: nW < lo ? `${nW} words for ${mk} marks is thin. Aim for roughly ${lo}–${hi}: one technique and its effect per mark.` : nW > hi ? `${nW} words is more than ${mk} marks needs. Get to the point faster.` : `${nW} words suits ${mk} marks.` });
     }
 
     if (kind === 'creative') creative(); else analytical();
@@ -150,7 +151,7 @@ const WR = (() => {
         }
       }
       // Topic sentences
-      if (body.length && kind !== 'short') {
+      if (body.length && kind !== 'short' && kind !== 'petal') {
         const thesisWords = kind === 'essay' ? keyWords(paras[0].text) : [];
         const results = body.map(p => {
           const first = sentences(p.text, p.start)[0]; if (!first) return 0;
@@ -166,7 +167,7 @@ const WR = (() => {
       }
       // Evidence
       const perPara = body.map(p => quotes.filter(q => q.start >= p.start && q.end <= p.end).length);
-      const want = kind === 'short' ? Math.max(1, Math.ceil((+opts.marks || 4) / 2)) : 2;
+      const want = kind === 'short' ? Math.max(1, Math.ceil((+opts.marks || 4) / 2)) : kind === 'petal' ? 1 : 2;
       const evid = perPara.length ? perPara.reduce((a, n) => a + Math.min(1, n / want), 0) / perPara.length : 0;
       const longQ = quotes.filter(q => words(q.text).length > 25);
       mark(longQ, 'longquote', 'Long quote. Trim it to the key words you\'ll analyse.');
@@ -179,8 +180,8 @@ const WR = (() => {
       mark(techs.filter(t => !inQuote(t.start)), 'tech', 'Technique named');
       mark(verbs.filter(t => !inQuote(t.start)), 'verb', 'Analytical verb');
       const techPer = body.length ? body.map(p => new Set(find(TECH_RE, p.text.replace(QUOTE_RE, '')).map(t => lc(t.text))).size) : [];
-      const tsc = techPer.length ? techPer.reduce((a, n) => a + Math.min(1, n / 2), 0) / techPer.length : 0;
-      add({ id: 'techniques', title: 'Techniques named', score: tsc, weight: 1.2, msg: !techs.length ? 'You don\'t name any techniques. Name the technique for each quote (metaphor, juxtaposition, high modality…).' : tsc < 0.75 ? `You name ${stats.techniques} different technique${stats.techniques > 1 ? 's' : ''}. Aim for at least 2 in every body paragraph.` : `${stats.techniques} different techniques named. Good range.` });
+      const tWant = kind === 'petal' ? 1 : 2, tsc = techPer.length ? techPer.reduce((a, n) => a + Math.min(1, n / tWant), 0) / techPer.length : 0;
+      add({ id: 'techniques', title: 'Techniques named', score: tsc, weight: 1.2, msg: !techs.length ? 'You don\'t name any techniques. Name the technique for each quote (metaphor, juxtaposition, high modality…).' : tsc < 0.75 ? `You name ${stats.techniques} different technique${stats.techniques > 1 ? 's' : ''}. Aim for at least ${tWant} in every ${kind === 'petal' ? '' : 'body '}paragraph.` : `${stats.techniques} different techniques named. Good range.` });
       const verbRate = quotes.length ? Math.min(1, verbs.filter(v => !inQuote(v.start)).length / quotes.length) : (verbs.length ? 0.5 : 0);
       const effSc = Math.min(dropped.length ? 0.75 : 1, clamp(verbRate * 0.7 + (quotes.length ? (1 - dropped.length / quotes.length) * 0.3 : 0)));
       add({ id: 'effects', title: 'Analysis of effect', score: effSc, weight: 1.6, msg: dropped.length ? `${dropped.length} quote${dropped.length > 1 ? 's are' : ' is'} dropped in without analysis (highlighted). After each quote, explain the effect: what it makes the reader feel or understand, and how that answers the question.` : verbRate < 0.6 ? 'You explain some effects, but use more analytical verbs (conveys, underscores, foregrounds) to show what each technique does.' : 'You consistently explain what your evidence does. That\'s what lifts a response.' });
@@ -189,15 +190,44 @@ const WR = (() => {
       const plotty = body.flatMap(p => sentences(p.text, p.start)).filter(s => !HAS_QUOTE.test(s.text) && !find(TECH_RE, s.text).length && !find(VERB_RE, s.text).length && /\b(?:goes|went|walks|walked|tells|told|meets|met|dies|died|decides|decided|leaves|left|finds|found|returns|returned|arrives|arrived|gets|got)\b/i.test(s.text));
       mark(plotty, 'retell', 'This sentence retells the plot. Analyse instead: how and why, not what happens.');
       mark(retell, 'retell', 'Plot-order word: are you retelling?');
-      add({ id: 'retell', title: 'Analysis, not retelling', score: clamp(1 - plotty.length * 0.2 - retell.length * 0.06), weight: 1, msg: plotty.length ? `${plotty.length} sentence${plotty.length > 1 ? 's' : ''} retell${plotty.length === 1 ? 's' : ''} what happens. Markers assume you know the plot; spend the words on how the composer shapes meaning.` : retell.length > 2 ? 'A few plot-order words ("then", "in the end") suggest some retelling. Structure by ideas, not by what happens next.' : 'You stay analytical instead of retelling the plot.' });
+      add({ id: 'retell', title: 'Analysis, not retelling', score: clamp(1 - plotty.length * 0.2 - retell.length * 0.06), weight: 1, msg: plotty.length ? `${plotty.length} sentence${plotty.length > 1 ? 's' : ''} retell${plotty.length === 1 ? 's' : ''} what happens. Markers assume you know the plot; spend the words on how ${kind === 'petal' ? 'the author' : 'the composer'} shapes meaning.` : retell.length > 2 ? 'A few plot-order words ("then", "in the end") suggest some retelling. Structure by ideas, not by what happens next.' : 'You stay analytical instead of retelling the plot.' });
       // Formal analytical language
       mark(weakHits, 'weak', null); mark(informal, 'informal', null);
       const verbsUsed = verbs.filter(v => !inQuote(v.start)).map(v => lc(v.text).replace(/(?:es|s|d|ed|ing)$/, '')), counts = {};
       verbsUsed.forEach(v => counts[v] = (counts[v] || 0) + 1);
       const overused = Object.entries(counts).filter(([, n]) => n >= 4).map(([v]) => v);
-      const lsc = clamp(1 - per100(weakHits.length) * 0.18 - per100(informal.length) * 0.3 - overused.length * 0.08);
+      const lsc = clamp(1 - Math.min(weakHits.length, per100(weakHits.length)) * 0.18 - Math.min(informal.length * 1.5, per100(informal.length)) * 0.3 - overused.length * 0.08); // short pieces aren't punished per 100 words
       const topWeak = [...new Set(weakHits.map(h => h.label))].slice(0, 3);
       add({ id: 'language', title: 'Formal, precise language', score: lsc, weight: 1, msg: [informal.length ? `${informal.length} informal bit${informal.length > 1 ? 's' : ''} (${[...new Set(informal.map(h => h.label))].join(', ')}).` : '', topWeak.length ? `Vague words to sharpen: ${topWeak.map(w => `"${w}"`).join(', ')}.` : '', overused.length ? `You lean on "${overused[0]}" a lot: vary your verbs.` : ''].filter(Boolean).join(' ') || 'Formal and precise. Your word choice sounds like an analytical response.', tips: [...new Map([...weakHits, ...informal].map(h => [h.label, h.tip])).values()].slice(0, 4) });
+      // PETAL: Point, Evidence, Technique, Analysis, Link, checked in every paragraph.
+      if (kind === 'petal') {
+        const LINK_END = /\b(?:orwell|message|warns?|warning|ultimately|therefore|thus|overall|in this way|as a result|this (?:reveals|highlights|shows|suggests|emphasises|demonstrates|conveys))\b/i;
+        const ANALYSIS = /\b(?:this (?:suggests|reveals|highlights|emphasises|shows how|makes the reader|positions)|which (?:suggests|reveals|highlights|emphasises|shows)|because|so that|in order to|the reader (?:sees|feels|understands|realises))\b/i;
+        const rows = body.map(p => {
+          const ss = sentences(p.text, p.start), first = ss[0], last = ss[ss.length - 1], bare = p.text.replace(QUOTE_RE, '');
+          const P = !!first && !/^["“‘]/.test(first.text) && words(first.text).length >= 8 && (overlap(keyWords(first.text), qWords) >= 2 || find(VERB_RE, first.text).length > 0 || /\b(?:orwell|the author)\b/i.test(first.text));
+          const E = HAS_QUOTE.test(p.text);
+          const T = find(TECH_RE, bare).length > 0;
+          const A = find(VERB_RE, bare).length >= 2 || ANALYSIS.test(bare);
+          const L = ss.length >= 3 && (overlap(keyWords(last.text), qWords) >= 1 && find(VERB_RE, last.text).length > 0 || LINK_END.test(last.text));
+          if (first && !P) mark([first], 'topic', 'Point: open with a clear claim that answers the question.');
+          if (ss.length >= 3 && !L) mark([last], 'topic', 'Link: finish by tying this back to the question and Orwell\'s message.');
+          return { P, E, T, A, L };
+        });
+        const NAME = { P: 'Point', E: 'Evidence', T: 'Technique', A: 'Analysis', L: 'Link' };
+        const TIP = {
+          P: 'Point: start with a clear claim that answers the question, e.g. "Orwell uses Squealer to show how language can control others."',
+          E: 'Evidence: add a short quote (in quotation marks) or a specific moment from the text.',
+          T: 'Technique: name the technique in your evidence: rhetorical question, irony, symbolism, emotive language, allegory…',
+          A: 'Analysis: explain how the technique creates meaning: "This suggests… because…".',
+          L: 'Link: finish by tying back to the question: "Therefore, Orwell warns that…".',
+        };
+        const missing = Object.keys(NAME).filter(k => rows.some(r => !r[k]));
+        const got = rows.reduce((a, r) => a + Object.keys(NAME).filter(k => r[k]).length, 0);
+        add({ id: 'petal', title: 'PETAL structure', score: rows.length ? got / (rows.length * 5) : 0, weight: 2.2, petal: rows, msg: missing.length ? rows.map((r, i) => { const m = Object.keys(NAME).filter(k => !r[k]); return m.length ? `${rows.length > 1 ? `Paragraph ${i + 1}` : 'Your paragraph'} is missing ${m.length === 5 ? 'every part' : m.map(k => NAME[k]).join(', ').replace(/, ([^,]*)$/, ' and $1')}.` : ''; }).filter(Boolean).join(' ') : 'Every part of PETAL is there: Point, Evidence, Technique, Analysis and Link.', tips: missing.map(k => TIP[k]) });
+        const named = /\b(?:orwell|the author|the composer|the writer|the novelist)\b/i.test(text);
+        add({ id: 'author', title: 'Naming the author', score: named ? 1 : 0.3, weight: 0.5, msg: named ? 'You write about the author\'s choices ("Orwell uses…"), which keeps it analytical.' : 'Talk about the author\'s choices: "Orwell uses…", "Orwell suggests…". It shows the marker you\'re analysing, not retelling.' });
+      }
       // Linking
       if (kind === 'essay' && paras.length >= 3) {
         const links = find(LINK_RE, text);
@@ -246,7 +276,8 @@ const WR = (() => {
     const lenSc = checks.find(c => c.id === 'length')?.score ?? 1;
     const score = Math.round(checks.reduce((a, c) => a + c.score * (c.weight || 1), 0) / tw * 100 * (0.7 + 0.3 * lenSc));
     const label = score >= 85 ? 'Strong' : score >= 70 ? 'Solid' : score >= 50 ? 'Developing' : 'Needs work';
-    const next = checks.filter(c => c.status !== 'good').sort((a, b) => a.score * (a.weight || 1) - b.score * (b.weight || 1)).slice(0, 3).map(c => c.id);
+    const pri = (c) => (c.id === 'petal' ? -1 : c.score * (c.weight || 1)); // in PETAL mode the structure comes first
+    const next = checks.filter(c => c.status !== 'good').sort((a, b) => pri(a) - pri(b)).slice(0, 3).map(c => c.id);
     return { kind, stats, checks, marks, score, label, next };
   }
 

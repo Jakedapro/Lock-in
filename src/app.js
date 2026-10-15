@@ -58,7 +58,7 @@
     { id: 'maths', name: 'Maths', hue: 'gold', exam: examDate('maths'), when: examWhen('maths'), format: 'The exam covers chapters 8, 9, 10 and 12, with multi-part questions like the Test Yourself pages. Ch 3 and Ch 7 are extra practice.', mock: 'maths' },
     { id: 'y12', name: 'Maths Extension 2', tab: 'Ext 2', hue: 'lilac', exam: examDate('y12'), when: examWhen('y12'), format: 'HSC paper: 3 hours. Section I is 10 multiple choice; Section II is 90 marks across proof, complex numbers, induction, integration, vectors and mechanics.', mock: 'gen', papers: 'https://www.nsw.gov.au/education-and-training/nesa/curriculum/hsc-exam-papers/mathematics-extension-2' },
     { id: 'e1', name: 'Maths Extension 1', tab: 'Ext 1', hue: 'cyan', exam: examDate('e1'), when: examWhen('e1'), format: 'HSC paper: 2 hours. Section I is 10 multiple choice; Section II is 60 marks of multi-part questions.', mock: 'gen', papers: 'https://www.nsw.gov.au/education-and-training/nesa/curriculum/hsc-exam-papers/mathematics-extension-1' },
-    { id: 'eng', name: 'English', hue: 'pink', exam: examDate('eng'), when: examWhen('eng'), format: 'HSC English Advanced and Standard. Paper 1 is Texts and Human Experiences; Paper 2 is Modules A, B and C. Writing feedback marks your essays and stories; the Quote bank drills your quotes.', mock: 'gen', papers: 'https://www.nsw.gov.au/education-and-training/nesa/curriculum/hsc-exam-papers/english-advanced' },
+    { id: 'eng', name: 'English', hue: 'pink', exam: examDate('eng'), when: examWhen('eng'), format: 'Task 4: Animal Farm. 60 minutes, 20 marks. Section 1 is multiple choice and short answers on unseen extracts; Section 2 is one extended response in 1–2 PETAL paragraphs. No quotes to memorise. Writing feedback checks your PETAL paragraphs.', mock: 'eng' },
     { id: 'phys', name: 'Physics', hue: 'coral', exam: examDate('phys'), when: examWhen('phys'), format: 'HSC paper: 3 hours. Section I is 20 multiple choice; Section II is 80 marks of short answers and extended responses on modules 5 to 8.', mock: 'gen', papers: 'https://www.nsw.gov.au/education-and-training/nesa/curriculum/hsc-exam-papers/physics' },
   ];
   const BUILTIN = [
@@ -132,7 +132,7 @@
       return 'The AI had a problem. Try again in a moment.';
     },
   };
-  const HSC = ['y12', 'e1', 'phys', 'eng'];
+  const HSC = ['y12', 'e1', 'phys'];
   const whoFor = (sid) => (HSC.includes(sid) ? 'a Year 12 student in NSW, Australia, preparing for the HSC' : 'a Year 8 student in NSW, Australia');
   const aiReady = () => AI.state === 'ready' && !!AI.fn;
   function renderAiNote() {
@@ -204,7 +204,7 @@
   const WEEK = [
     ['Monday', 26, [['P1–2', 'Geography', 'geo'], ['P3–4', 'Science'], ['P5–6', 'D&T / Visual Arts']]],
     ['Tuesday', 27, [['P1–2', 'Supervised study'], ['P3–4', 'Languages'], ['P5–6', 'Sport']]],
-    ['Wednesday', 28, [['9:15', 'Late start'], ['P3', 'SAGE prep meeting'], ['P5–6', 'English']]],
+    ['Wednesday', 28, [['9:15', 'Late start'], ['P3', 'SAGE prep meeting'], ['P5–6', 'English', 'eng']]],
     ['Thursday', 29, [['P1–2', 'Chinese / Spanish'], ['P3–4', 'Mathematics', 'maths'], ['P5–6', 'Science activity']]],
     ['Friday', 30, [['P1–2', 'Music']]],
   ];
@@ -828,6 +828,7 @@ Write 8 mcq (answer = index 0-3 of the correct option, vary its position) and 2 
 
   /* ---------------- practice exams ---------------- */
   function buildMock(sid) {
+    if (sid === 'eng') return buildEngMock();
     const blocks = [];
     if (sid !== 'geo' && sid !== 'maths') { // any other subject: two bank questions per deck plus a quick multiple choice
       const s = getSubj(sid);
@@ -857,6 +858,20 @@ Write 8 mcq (answer = index 0-3 of the correct option, vary its position) and 2 
     });
     md.forEach(d => { const c = conceptsOf(d); if (c.length) blocks.push(mcqQ(pick(c), d)); });
     return { sid, title: 'Maths practice exam', minutes: 60, blocks: shuffle(blocks), acc: 'c-gold', intro: 'Two multi-part questions from each chapter (8, 9, 10, 12) plus quick multiple choice. 60 minutes. Calculator allowed.' };
+  }
+  // Year 8 English Task 4: Section 1 (multiple choice + short answers on extracts), Section 2 (one 8-mark PETAL response). 20 marks, 60 minutes.
+  function buildEngMock() {
+    const af = decksOf('eng').filter(d => /^af/.test(d.id)), all = af.length ? af : decksOf('eng');
+    const shorts = all.flatMap(d => shortOf(d).map(s => [s, d]));
+    const big = shuffle(shorts.filter(([s]) => s.marks >= 6))[0];
+    const blocks = [], marks = (q) => q.parts.reduce((a, p) => a + (p.marks || 1), 0);
+    let total = 0; const add = (q) => { if (q && total + marks(q) <= 12) { blocks.push(q); total += marks(q); } };
+    shuffle(all.flatMap(d => conceptsOf(d).map(c => [c, d]))).slice(0, 4).forEach(([c, d]) => add(mcqQ(c, d)));
+    shuffle(all.filter(d => d.bank)).slice(0, 2).forEach(d => add(bankQ(pick(d.bank), d, 'S')));
+    for (const [s, d] of shuffle(shorts.filter(([s]) => s.marks <= 4 && s.passage))) { if (total >= 12) break; add(shortQ(s, d)); }
+    for (const [s, d] of shuffle(shorts.filter(([s]) => s.marks <= 4))) { if (total >= 12) break; add(shortQ(s, d)); }
+    if (big) blocks.push(shortQ(big[0], big[1]));
+    return { sid: 'eng', title: 'English practice exam: Animal Farm', minutes: 60, blocks, acc: 'c-pink', intro: 'Like Task 4. Section 1: multiple choice and short answers, some on extracts from the novel. Section 2 (the last question): one extended response in 1–2 PETAL paragraphs. 60 minutes. No need to memorise quotes: use the extracts and moments you remember.' };
   }
   function openMock(sid) {
     const ex = buildMock(sid);
@@ -1328,10 +1343,11 @@ Aim for 2-5 sections with 3-6 notes each, 10-20 flashcards (key terms, people, d
     <ul class="badges">${Badges.LIST.map(b => `<li class="${S.badges[b.id] ? 'on' : ''}" title="${esc(b.name)}: ${esc(b.how)}${S.badges[b.id] ? ' (unlocked)' : ''}"><span aria-hidden="true">${b.icon}</span><span class="sr">${esc(b.name)}${S.badges[b.id] ? ', unlocked' : ', locked'}</span></li>`).join('')}</ul>`;
 
   /* ---------------- daily challenge ---------------- */
-  // One Complex question a day, the same for everyone (seeded by the date), from the HSC subjects.
-  const DAILY_SUBJ = ['y12', 'e1', 'phys', 'eng'];
+  // One Complex question a day, the same for everyone (seeded by the date).
+  // From every subject with an exam still to come, so it's useful whatever you're studying.
   function dailyQ(date = today()) {
-    const decks = allDecks().filter(d => !d.custom && DAILY_SUBJ.includes(d.subject) && d.bank && d.bank.length);
+    const live = SUBJ.filter(s => s.exam && s.exam > Date.now()).map(s => s.id);
+    const decks = allDecks().filter(d => !d.custom && live.includes(d.subject) && d.bank && d.bank.length);
     if (!decks.length) return null;
     decks.forEach(d => d.bank.forEach(infoOf)); // sampling generators uses Math.random, so do it before seeding
     return Logic.withSeed('daily:' + date, () => { const d = pick(decks); const fns = bankFor(d, 'all', 'C'); return bankQ(pick(fns.length ? fns : d.bank), d, 'C'); });
@@ -1505,12 +1521,12 @@ Aim for 2-5 sections with 3-6 notes each, 10-20 flashcards (key terms, people, d
   }
 
   /* ---------------- English: writing feedback ---------------- */
-  const WKINDS = [['essay', 'Essay'], ['paragraph', 'Paragraph'], ['short', 'Short answer'], ['creative', 'Creative']];
+  const WKINDS = [['petal', 'PETAL'], ['short', 'Short answer'], ['essay', 'Essay'], ['creative', 'Creative']];
   const LEGEND = {
     analytical: [['quote', 'Quotes'], ['dropped', 'Dropped quotes'], ['tech', 'Techniques'], ['verb', 'Analysis verbs'], ['thesis', 'Thesis'], ['topic', 'Weak topic sentences'], ['retell', 'Retelling'], ['weak', 'Vague words'], ['informal', 'Informal'], ['long', 'Long sentences']],
     creative: [['tell', 'Telling'], ['adverb', 'Adverbs'], ['cliche', 'Clichés'], ['informal', 'Dialogue punctuation'], ['long', 'Long sentences']],
   };
-  const engState = () => (S.eng ||= { draft: { kind: 'essay', question: '', text: '', marks: 4 }, history: [] });
+  const engState = () => { const E = (S.eng ||= { draft: { kind: 'petal', question: '', text: '', marks: 4 }, history: [] }); if (!WKINDS.some(k => k[0] === E.draft.kind)) E.draft.kind = 'petal'; return E; };
   // In memory only (not saved or synced): the latest feedback, and the exam timer.
   // Handlers re-read engState() because a cloud sync replaces S while the screen is open.
   let wlTimer = null, lastFb = null, wlClock = null;
@@ -1530,11 +1546,11 @@ Aim for 2-5 sections with 3-6 notes each, 10-20 flashcards (key terms, people, d
       <div class="wl-edit">
         <div class="pills" role="group" aria-label="What are you writing?">${WKINDS.map(([k, l]) => `<button class="pill" type="button" data-wk="${k}" aria-pressed="${D.kind === k}">${l}</button>`).join('')}</div>
         <label class="lbl" for="wlQ">${D.kind === 'creative' ? 'Prompt or stimulus (optional)' : 'The question (optional, but feedback is sharper with it)'}</label>
-        <div class="row wl-qrow"><input class="field" id="wlQ" maxlength="300" value="${esc(D.question)}" placeholder="${D.kind === 'creative' ? 'e.g. Write a story that begins with a sound' : 'e.g. How does the text represent the paradoxes of human behaviour?'}">${D.kind === 'short' ? `<select class="field" id="wlMarks" aria-label="Marks">${[2, 3, 4, 5, 6, 7].map(n => `<option value="${n}"${+D.marks === n ? ' selected' : ''}>${n} marks</option>`).join('')}</select>` : ''}</div>
-        <textarea class="field wl-text" id="wlText" spellcheck="true" placeholder="${D.kind === 'creative' ? 'Paste or write your story here…' : 'Paste or write your response here. Put quotes in quotation marks and leave a blank line between paragraphs.'}">${esc(D.text)}</textarea>
-        <div class="wl-bar"><span id="wlCount" class="mono"></span><span class="row"><button class="btn btn-ghost btn-sm" type="button" id="wlTime">${wlClock ? 'Stop timer' : 'Time me (40 min)'}</button><button class="btn btn-hot" type="button" id="wlGo">Get feedback</button></span></div>
+        <div class="row wl-qrow"><input class="field" id="wlQ" maxlength="300" value="${esc(D.question)}" placeholder="${D.kind === 'creative' ? 'e.g. Write a story that begins with a sound' : 'e.g. How does Orwell use Squealer to show the power of language?'}">${D.kind === 'short' ? `<select class="field" id="wlMarks" aria-label="Marks">${[2, 3, 4, 5, 6, 7].map(n => `<option value="${n}"${+D.marks === n ? ' selected' : ''}>${n} marks</option>`).join('')}</select>` : ''}</div>
+        <textarea class="field wl-text" id="wlText" spellcheck="true" placeholder="${D.kind === 'creative' ? 'Paste or write your story here…' : D.kind === 'petal' ? 'Write 1 or 2 PETAL paragraphs: Point, Evidence (a quote), Technique, Analysis, Link. Leave a blank line between paragraphs.' : 'Paste or write your response here. Put quotes in quotation marks and leave a blank line between paragraphs.'}">${esc(D.text)}</textarea>
+        <div class="wl-bar"><span id="wlCount" class="mono"></span><span class="row"><button class="btn btn-ghost btn-sm" type="button" id="wlTime">${wlClock ? 'Stop timer' : `Time me (${D.kind === 'petal' ? 20 : 40} min)`}</button><button class="btn btn-hot" type="button" id="wlGo">Get feedback</button></span></div>
       </div>
-      <div class="wl-out" id="wlOut" aria-live="polite">${lastFb ? '' : `<div class="wl-empty"><h3>Instant feedback on your writing</h3><ul class="note"><li>Thesis, topic sentences and whether you answer the question</li><li>Quotes, techniques and whether you explain their effect</li><li>Retelling, vague words and informal language</li><li>For creative: showing not telling, senses, clichés and rhythm</li></ul><p class="note" style="font-size:13.5px">It checks the things markers look for. It can't judge how good your ideas are${aiReady() ? ', so use AI marking for that' : ''}.</p></div>`}</div>
+      <div class="wl-out" id="wlOut" aria-live="polite">${lastFb ? '' : `<div class="wl-empty"><h3>Instant feedback on your writing</h3><ul class="note"><li>PETAL: Point, Evidence, Technique, Analysis and Link in every paragraph</li><li>Thesis, topic sentences and whether you answer the question</li><li>Quotes, techniques and whether you explain their effect</li><li>Retelling, vague words and informal language</li><li>For creative: showing not telling, senses, clichés and rhythm</li></ul><p class="note" style="font-size:13.5px">It checks the things markers look for. It can't judge how good your ideas are${aiReady() ? ', so use AI marking for that' : ''}.</p></div>`}</div>
     </div>`;
     const ta = $('#wlText', body), cnt = $('#wlCount', body);
     const count = () => {
@@ -1547,7 +1563,7 @@ Aim for 2-5 sections with 3-6 notes each, 10-20 flashcards (key terms, people, d
     $('#wlQ', body).oninput = (e) => { Dn().question = e.target.value; clearTimeout(saveT); saveT = setTimeout(save, 800); };
     const mk = $('#wlMarks', body); if (mk) mk.onchange = () => { Dn().marks = +mk.value; save(); };
     $$('[data-wk]', body).forEach(b => b.onclick = () => { Dn().text = ta.value; Dn().kind = b.dataset.wk; lastFb = null; save(); drawWriting(); });
-    $('#wlTime', body).onclick = () => { Dn().text = ta.value; wlClock = wlClock ? null : { start: Date.now(), end: Date.now() + 40 * 6e4 }; drawWriting(); };
+    $('#wlTime', body).onclick = () => { Dn().text = ta.value; wlClock = wlClock ? null : { start: Date.now(), end: Date.now() + (Dn().kind === 'petal' ? 20 : 40) * 6e4 }; drawWriting(); };
     $('#wlGo', body).onclick = () => runFeedback(body);
     if (wlClock) wlTimer = setInterval(() => { if (cur?.kind !== 'writing' || !$('#wlCount')) return clearInterval(wlTimer); count(); }, 1000);
     count();
@@ -1571,6 +1587,11 @@ Aim for 2-5 sections with 3-6 notes each, 10-20 flashcards (key terms, people, d
     if (innerWidth < 980) out.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
     if (r.score >= 85 && isNew) burst(innerWidth * 0.7, 200, 90);
   }
+  const petalHtml = (r) => {
+    const c = r.checks.find(x => x.id === 'petal'); if (!c) return '';
+    const L = [['P', 'Point'], ['E', 'Evidence'], ['T', 'Technique'], ['A', 'Analysis'], ['L', 'Link']];
+    return `<div class="petal-grid">${c.petal.map((row, i) => `<div class="petal-row"><span class="petal-n">Paragraph ${i + 1}</span>${L.map(([k, n]) => `<span class="petal-k ${row[k] ? 'on' : 'off'}" title="${n}: ${row[k] ? 'there' : 'missing or weak'}"><b>${k}</b><small>${n}</small></span>`).join('')}</div>`).join('')}</div>`;
+  };
   function showFeedback2(out, r, D) {
     const E = engState(), prevs = E.history.filter(h => h.kind === D.kind), before = prevs.length > 1 ? prevs[prevs.length - 2].score : null;
     const groups = D.kind === 'creative' ? LEGEND.creative : LEGEND.analytical;
@@ -1580,7 +1601,8 @@ Aim for 2-5 sections with 3-6 notes each, 10-20 flashcards (key terms, people, d
         <div class="ring" style="--p:${r.score}"><b>${r.score}</b></div>
         <div><h3>${esc(r.label)}</h3><p class="note">${r.stats.words} words, ${r.stats.paragraphs} paragraph${r.stats.paragraphs === 1 ? '' : 's'}${D.kind !== 'creative' ? `, ${r.stats.quotes} quote${r.stats.quotes === 1 ? '' : 's'}, ${r.stats.techniques} technique${r.stats.techniques === 1 ? '' : 's'}` : ''}.${before != null ? ` ${r.score > before ? `Up ${r.score - before} on last time.` : r.score < before ? `Down ${before - r.score} on last time.` : 'Same as last time.'}` : ''}</p></div></div>
       ${r.next.length ? `<div class="wl-next"><h4>Fix these first</h4><ol>${r.next.map(id => { const c = r.checks.find(x => x.id === id); return `<li><b>${esc(c.title)}.</b> ${esc(c.msg)}</li>`; }).join('')}</ol></div>` : '<div class="wl-next good"><h4>Nothing big to fix.</h4><p class="note">Now push the ideas: a more sophisticated thesis and a sharper personal response.</p></div>'}
-      ${aiReady() ? `<div class="row" style="margin:14px 0"><button class="btn btn-acc" type="button" id="wlAi">Mark it with AI</button><span class="note" style="font-size:13.5px">A mark out of ${D.kind === 'short' ? D.marks : 20}, judged on ideas as well as craft.</span></div><div id="wlAiOut"></div>` : ''}
+      ${petalHtml(r)}
+      ${aiReady() ? `<div class="row" style="margin:14px 0"><button class="btn btn-acc" type="button" id="wlAi">Mark it with AI</button><span class="note" style="font-size:13.5px">A mark out of ${D.kind === 'short' ? D.marks : D.kind === 'petal' ? 8 : 20}, judged on ideas as well as craft.</span></div><div id="wlAiOut"></div>` : ''}
       <ul class="wl-checks">${r.checks.map(c => `<li class="st-${c.status}"><span class="ic" aria-label="${c.status === 'good' ? 'Good' : c.status === 'ok' ? 'Could be better' : 'Fix this'}">${icon[c.status]}</span><div><b>${esc(c.title)}</b><p>${esc(c.msg)}</p>${c.tips && c.tips.length ? `<ul class="tips">${c.tips.map(t => `<li>${esc(t)}</li>`).join('')}</ul>` : ''}</div></li>`).join('')}</ul>
       <h4 style="margin:18px 0 8px">Your writing, marked up</h4>
       <div class="filters wl-legend" role="group" aria-label="Show highlights">${groups.filter(([k]) => present.has(k)).map(([k, l]) => `<button class="fchip lg-${k}" type="button" data-hl="${k}" aria-pressed="${show.has(k)}"><i></i>${l}</button>`).join('') || '<span class="note">Nothing highlighted.</span>'}</div>
@@ -1593,12 +1615,13 @@ Aim for 2-5 sections with 3-6 notes each, 10-20 flashcards (key terms, people, d
   }
   async function aiWriting(D, btn, box) {
     btn.disabled = true; box.innerHTML = '<div class="fb info"><b>Marking…</b><div class="note">Claude is reading it like an HSC marker would. This takes up to a minute.</div></div>';
-    const outOf = D.kind === 'short' ? D.marks : 20;
-    const what = { essay: 'an HSC English extended response (essay)', paragraph: 'one body paragraph from an HSC English essay', short: `an HSC English Paper 1 short-answer response worth ${D.marks} marks`, creative: 'a piece of HSC English Module C imaginative/creative writing' }[D.kind];
+    const outOf = D.kind === 'short' ? D.marks : D.kind === 'petal' ? 8 : 20;
+    const what = { essay: 'an English analytical essay', paragraph: 'one analytical body paragraph', petal: 'an extended response of one or two PETAL paragraphs (Point, Evidence, Technique, Analysis, Link) about George Orwell\'s Animal Farm, worth 8 marks', short: `an English short-answer response worth ${D.marks} marks`, creative: 'a piece of imaginative/creative writing' }[D.kind];
     const crit = D.kind === 'creative'
       ? 'how well it fulfils the prompt; control of voice, perspective and structure; deliberate use of language and literary devices for effect; originality and emotional impact; control of grammar, punctuation and expression'
+      : D.kind === 'petal' ? 'a clear Point that answers the question; well-chosen Evidence (a quote or specific moment); the correct Technique named; Analysis that explains how the technique creates meaning and links to Orwell\'s ideas; a Link back to the question; clear, formal expression'
       : 'how directly and thoughtfully it answers the question with a clear, sustained thesis; analysis of how the composer shapes meaning, using well-chosen textual references and techniques; insight into ideas and context; structure and cohesion; control of formal analytical language';
-    const prompt = `You are an experienced, fair NSW HSC English marker. Mark ${what}.
+    const prompt = `You are an experienced, fair NSW English teacher marking work by a Year 8 student. Mark ${what}. Use Year 8 expectations and explain things in plain words a 13-year-old understands.
 ${D.question ? `Question/prompt: ${D.question}\n` : ''}Judge it on: ${crit}.
 Be honest and specific, quote short bits of the student's writing when you comment, and use Australian spelling. Don't invent details about texts you can't see.
 
