@@ -1649,7 +1649,36 @@ Aim for 2-5 sections with 3-6 notes each, 10-20 flashcards (key terms, people, d
     const first = await doc.getPage(1), base = first.getViewport({ scale: 1 }), ratio = base.height / base.width;
     const width = () => Math.min(pagesEl.clientWidth - 32, 860) * zoom;
     pagesEl.innerHTML = Array.from({ length: doc.numPages }, (_, k) => { const pg = k + 1, qs = ctx.itemsOn ? ctx.itemsOn(pg) : [];
-      return `<section class="pv-page" data-p="${pg}">${qs.length ? `<div class="pv-qs">${qs.map((q, j) => `<span class="pv-q"><b>${esc(Mix.name(q).replace(/^\d{4} /, ''))}</b><small>${q.marks} mark${q.marks > 1 ? 's' : ''}${ctx.showYear ? ` · ${q.year}` : ''}</small><button type="button" class="pv-help-btn" data-hq="${pg}:${j}" aria-label="Help with ${esc(Mix.name(q))}">?</button></span>`).join('')}</div>` : ''}<div class="pv-sheet"><canvas></canvas></div></section>`; }).join('');
+      return `<section class="pv-page" data-p="${pg}"${qs.length ? ' data-qs="1"' : ''}><div class="pv-qs"></div><div class="pv-sheet"><canvas></canvas></div></section>`; }).join('');
+    const chip = (q, pg, j) => `<span class="pv-q"><b>${esc(Mix.name(q).replace(/^\d{4} /, ''))}</b><small>${q.marks} mark${q.marks > 1 ? 's' : ''}${ctx.showYear ? ` · ${q.year}` : ''}</small><button type="button" class="pv-help-btn" data-hq="${pg}:${j}" aria-label="Help with ${esc(Mix.name(q))}">?</button></span>`;
+    // Put each question's ? in the margin beside it: find its label on the page ("Question 13", "(b)",
+    // "(ii)", or a multiple-choice number) in reading order. Anything not found goes in the strip above.
+    async function placeMarks(sec, page) {
+      if (sec.dataset.mk || !sec.dataset.qs) return; sec.dataset.mk = 1;
+      const pg = +sec.dataset.p, qs = ctx.itemsOn(pg), vp = page.getViewport({ scale: 1 });
+      let lines = [];
+      try {
+        const toks = (await page.getTextContent()).items.filter(t => t.str.trim()).map(t => ({ s: t.str, x: t.transform[4], y: vp.height - t.transform[5], h: Math.abs(t.transform[3]) || 10 })).sort((a, b) => a.y - b.y || a.x - b.x);
+        for (const t of toks) { const L = lines[lines.length - 1]; if (L && Math.abs(L.y - t.y) < 3) { L.parts.push(t); } else lines.push({ y: t.y, h: t.h, parts: [t] }); }
+        lines = lines.map(L => { L.parts.sort((a, b) => a.x - b.x); return { y: L.y, h: L.h, x: L.parts[0].x, text: L.parts.map(p => p.s).join(' ').replace(/\s+/g, ' ').trim() }; });
+      } catch (e) { lines = []; }
+      let cursor = -1; const missing = [];
+      qs.forEach((q, j) => {
+        let re;
+        if (q.kind === 'mc') re = new RegExp(`^${q.n}(\\s|\\.|$)`);
+        else if (q.kind === 'q') re = new RegExp(`^Question\\s*${q.n}\\b`, 'i');
+        else { const lab = String(q.label || ''), letter = (lab.match(/^[a-z]/) || [])[0], roman = (lab.match(/\(([ivx]+)\)/) || [])[1];
+          re = roman ? new RegExp(`^(Question\\s*\\d+\\s*(\\(\\d+ marks?\\))?.*?)?(\\(\\s*[a-z]\\s*\\)\\s*)?\\(\\s*${roman}\\s*\\)`) : letter ? new RegExp(`^(Question\\s*\\d+.*?)?\\(\\s*${letter}\\s*\\)`) : new RegExp(`^Question\\s*${q.n}\\b`, 'i'); }
+        const i = lines.findIndex((L, k) => k > cursor && re.test(L.text) && (q.kind !== 'mc' || L.x < vp.width * 0.3));
+        if (i < 0) { missing.push(j); return; }
+        cursor = i; const L = lines[i];
+        const b = document.createElement('button'); b.type = 'button'; b.className = 'pv-mark'; b.dataset.hq = `${pg}:${j}`; b.textContent = '?';
+        b.title = `${Mix.name(q)}: ${q.marks} mark${q.marks > 1 ? 's' : ''}`; b.setAttribute('aria-label', `Help with ${Mix.name(q)}`);
+        b.style.left = `${Math.max(0.6, (L.x / vp.width) * 100 - 5.2)}%`; b.style.top = `${((L.y - L.h * 0.85) / vp.height) * 100}%`;
+        $('.pv-sheet', sec).appendChild(b);
+      });
+      $('.pv-qs', sec).innerHTML = missing.map(j => chip(qs[j], pg, j)).join('');
+    }
     const size = () => $$('.pv-sheet', pagesEl).forEach(s => { s.style.width = width() + 'px'; s.style.height = width() * ratio + 'px'; });
     const drawn = new Map();
     const render = async (sec) => {
@@ -1657,6 +1686,7 @@ Aim for 2-5 sections with 3-6 notes each, 10-20 flashcards (key terms, people, d
       const page = await doc.getPage(pg), vp = page.getViewport({ scale: w / page.getViewport({ scale: 1 }).width * devicePixelRatio });
       const c = $('canvas', sec); c.width = vp.width; c.height = vp.height; c.style.width = '100%'; c.style.height = '100%';
       await page.render({ canvasContext: c.getContext('2d'), viewport: vp }).promise.catch(() => drawn.delete(pg));
+      if (ctx.itemsOn) placeMarks(sec, page);
     };
     size();
     obs = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) render(e.target); }), { root: pagesEl, rootMargin: '900px 0px' });
@@ -1760,7 +1790,7 @@ Aim for 2-5 sections with 3-6 notes each, 10-20 flashcards (key terms, people, d
     const names = codeName(sid), counts = Mix.topicCounts(PAPER_INDEX[sid]), sel = new Set(cur.mixTopics || []), len = cur.mixLen || 30, mixes = mixesOf(sid);
     return `<section class="panel mix-panel"><h3>Mix and match</h3>
       <p class="note">Real HSC questions from different years, mixed into a new paper. Each one opens on the right page of the paper.</p>
-      <div class="row"><button class="btn" type="button" data-mx="random">Random HSC paper</button><span class="note">Full length, every question from a random year.</span></div>
+      <div class="row"><button class="btn" type="button" data-mx="random">Random HSC paper</button><span class="note">Full length, questions from any year${PAPERS.LIST[sid].some(p => p.old) ? ` back to ${PAPERS.LIST[sid][PAPERS.LIST[sid].length - 1].year}, only the ones in your course` : ''}.</span></div>
       <h4>Or pick topics</h4>
       ${decksOf(sid).map(d => { const secs = (d.sections || []).filter(sec => counts[sec.code]); return secs.length ? `<div class="pp-topics"><b>${esc(d.title)}</b><div class="pills">${secs.map(sec => `<button class="pill" type="button" data-mt="${esc(sec.code)}" aria-pressed="${sel.has(sec.code)}" title="${counts[sec.code]} marks across all papers">${esc(sec.code)} ${fm(sec.name)}</button>`).join('')}</div></div>` : ''; }).join('')}
       <div class="row" style="margin-top:10px"><span class="note">Length</span><div class="pills" role="group" aria-label="Length">${[15, 30, 45, 60].map(n => `<button class="pill" type="button" data-ml="${n}" aria-pressed="${len === n}">${n} marks</button>`).join('')}</div><button class="btn btn-hot" type="button" data-mx="topic">Build it</button></div>
@@ -1774,7 +1804,7 @@ Aim for 2-5 sections with 3-6 notes each, 10-20 flashcards (key terms, people, d
     $$('[data-mx]', body).forEach(b => b.onclick = () => {
       const s = getSubj(sid), F = PAPERS.formatOf(sid, 9999), perMark = F.writing / PAPERS.outOf(sid), names = codeName(sid);
       let items, title;
-      if (b.dataset.mx === 'random') { items = Mix.randomPaper(sid, currentIndex(sid)); title = `Mixed ${s.tab || s.name} paper`; }
+      if (b.dataset.mx === 'random') { const hasOld = PAPERS.LIST[sid].some(p => p.old); items = hasOld ? Mix.randomPaperAll(sid, PAPER_INDEX[sid], (y) => !!yearPaper(sid, y).old) : Mix.randomPaper(sid, PAPER_INDEX[sid]); title = `Mixed ${s.tab || s.name} paper`; }
       else {
         const t = cur.mixTopics || []; if (!t.length) { toast('Pick at least one topic'); return; }
         items = Mix.byTopic(sid, PAPER_INDEX[sid], t, cur.mixLen || 30);

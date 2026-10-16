@@ -200,11 +200,21 @@ async function createWindows() {
       const badAuth = await new Promise(res => { const q = http.request(`${ORIGIN}/auth-callback`, { method: 'POST' }, (x) => res(x.statusCode)); q.end('{"state":"nope","idToken":"x"}'); });
       let shot = null;
       if (process.env.LOCKIN_SELFTEST_SHOT) { // open a past paper in the in-app viewer and save a screenshot of it
-        shot = await win.webContents.executeJavaScript(`(async () => { const w = (ms) => new Promise(r => setTimeout(r, ms)); document.documentElement.classList.remove('locked'); document.querySelector('.gate')?.remove(); document.querySelector('[data-subj="y12"]').click(); await w(400); document.querySelector('#subject [data-act="papers"]').click(); await w(500); [...document.querySelectorAll('[data-pdf]')].find(x => /2024-paper/.test(x.dataset.pdf)).click(); for (let k = 0; k < 40 && !document.querySelector('.pv-sheet'); k++) await w(250); await w(800); document.querySelector('[data-t="start"]')?.click(); await w(800); const pages = document.querySelectorAll('.pv-page').length, chips = document.querySelectorAll('.pv-q').length; const q = [...document.querySelectorAll('.pv-help-btn')][12]; q.scrollIntoView({ block: 'center' }); await w(300); q.click(); await w(600); return { pages, chips, timer: document.querySelector('.pv-clock')?.textContent, help: document.querySelector('.pv-help-head')?.textContent, topics: document.querySelectorAll('.pv-topic').length, answerBtn: !!document.querySelector('[data-ans]') }; })()`);
+        shot = await win.webContents.executeJavaScript(`(async () => { const w = (ms) => new Promise(r => setTimeout(r, ms)); document.documentElement.classList.remove('locked'); document.querySelector('.gate')?.remove(); document.querySelector('[data-subj="y12"]').click(); await w(400); document.querySelector('#subject [data-act="papers"]').click(); await w(500);
+  const res = {};
+  for (const yr of ['2005', '2013']) {
+    document.querySelector('details.pp-old')?.setAttribute('open', '');
+    [...document.querySelectorAll('[data-pdf]')].find(x => x.dataset.pdf.includes(yr + '-paper')).click();
+    for (let k = 0; k < 40 && !document.querySelector('.pv-sheet'); k++) await w(250);
+    const pe = document.querySelector('.pv:last-of-type .pv-pages'); for (let y = 0; y < pe.scrollHeight; y += 600) { pe.scrollTop = y; await w(120); } await w(1500);
+    res[yr] = { marks: document.querySelectorAll('.pv-mark').length, strip: document.querySelectorAll('.pv-q').length };
+    document.querySelector('.pv-mark')?.scrollIntoView({ block: 'center' }); await w(800); if (yr === '2013') break; document.querySelector('.pv:last-of-type .back').click(); await w(300);
+  }
+  return res; })()`);
         win.show(); await wait(4000);
         fs.writeFileSync(process.env.LOCKIN_SELFTEST_SHOT, (await win.webContents.capturePage()).toPNG());
-        shot.answer = await win.webContents.executeJavaScript(`(async () => { const w = (ms) => new Promise(r => setTimeout(r, ms)); document.querySelector('[data-ans]').click(); for (let k = 0; k < 40 && document.querySelectorAll('.pv').length < 2; k++) await w(250); await w(1500); const all = [...document.querySelectorAll('.pv')], v = all.pop(), pe = v.querySelector('.pv-pages'), p2 = v.querySelector('.pv-page[data-p="2"]'); return { count: all.length + 1, title: v.querySelector('.pv-title').textContent, page: v.querySelector('.pv-pg').textContent, scrollTop: pe.scrollTop, p2top: p2 && p2.offsetTop, peTop: pe.offsetTop, z: getComputedStyle(v).zIndex, vis: getComputedStyle(v).display, rect: JSON.stringify(v.getBoundingClientRect()) }; })()`);
-        fs.writeFileSync(process.env.LOCKIN_SELFTEST_SHOT.replace('.png', '-ans.png'), (await win.webContents.capturePage()).toPNG());
+        if (0) shot.answer = await win.webContents.executeJavaScript(`(async () => { const w = (ms) => new Promise(r => setTimeout(r, ms)); document.querySelector('[data-ans]').click(); for (let k = 0; k < 40 && document.querySelectorAll('.pv').length < 2; k++) await w(250); await w(1500); const all = [...document.querySelectorAll('.pv')], v = all.pop(), pe = v.querySelector('.pv-pages'), p2 = v.querySelector('.pv-page[data-p="2"]'); return { count: all.length + 1, title: v.querySelector('.pv-title').textContent, page: v.querySelector('.pv-pg').textContent, scrollTop: pe.scrollTop, p2top: p2 && p2.offsetTop, peTop: pe.offsetTop, z: getComputedStyle(v).zIndex, vis: getComputedStyle(v).display, rect: JSON.stringify(v.getBoundingClientRect()) }; })()`);
+
       }
       console.log('SELFTEST ' + JSON.stringify({ ...r, signin, escape, badAuth, shot }));
       app.quit();

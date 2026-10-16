@@ -41,6 +41,31 @@ const Mix = (() => {
     return [...items, ...chosen];
   }
 
+  // A full-length paper from every year, old course included, keeping only what's in the current course:
+  // multiple choice from any year's relevant items; Section II filled to the real total with whole
+  // current-course questions and the relevant parts of old questions (at least `minChunk` marks of them).
+  function randomPaperAll(sid, idx, isOld, rand = Math.random, minChunk = 6) {
+    const Y = years(idx); if (!Y.length) return [];
+    const cur = Y.filter(y => !isOld(y)), mcN = cur.length ? Math.max(...cur.map(y => idx[y].mc.length)) : 10;
+    const sec2 = cur.length ? Math.round(cur.reduce((a, y) => a + idx[y].q.reduce((b, q) => b + q.marks, 0), 0) / cur.length) : 90;
+    const mcs = shuffle(Y.flatMap(y => idx[y].mc.map(m => mcItem(y, m))), rand).slice(0, mcN).map((m, k) => m);
+    const chunks = shuffle(Y.flatMap(y => idx[y].q.map(q => {
+      if (!isOld(y)) return [qItem(y, q)];
+      const parts = q.parts.filter(p => p.marks > 0); return parts.reduce((a, p) => a + p.marks, 0) >= minChunk ? parts.map(p => partItem(y, q, p)) : null;
+    }).filter(Boolean)), rand);
+    const chosen = [], perTopic = {};
+    for (const c of chunks) {
+      const marks = total(c), t = (c[0].topics[0] || '0').split('.')[0];
+      if (total(chosen) + marks > sec2 || (perTopic[t] || 0) + marks > sec2 * 0.3) continue;
+      chosen.push(...c); perTopic[t] = (perTopic[t] || 0) + marks;
+      if (total(chosen) >= sec2 - 2) break;
+    }
+    for (const c of chunks) { // top up without the topic cap if the spread rule left it short
+      if (total(chosen) >= sec2 - 2) break;
+      if (!c.some(i => chosen.includes(i)) && total(chosen) + total(c) <= sec2) chosen.push(...c);
+    }
+    return [...mcs, ...chosen];
+  }
   // Questions on chosen topics from every year, about `marks` marks: question parts first,
   // plus up to a fifth of the marks as matching multiple choice.
   function byTopic(sid, idx, codes, marks = 30, rand = Math.random) {
@@ -84,6 +109,6 @@ const Mix = (() => {
     return out;
   }
 
-  return { randomPaper, byTopic, topicCounts, minutes, total, name, pagesFor, pageList };
+  return { randomPaper, randomPaperAll, byTopic, topicCounts, minutes, total, name, pagesFor, pageList };
 })();
 if (typeof module !== 'undefined') module.exports = Mix;

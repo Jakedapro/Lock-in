@@ -55,6 +55,18 @@ test('pages for each item, and one de-duplicated page list for the whole paper',
   assert.deepStrictEqual(Mix.pageList(idx, [{ year: 2022, kind: 'mc', n: 1, page: 2 }, { year: 2022, kind: 'mc', n: 2, page: 2 }, { year: 2022, kind: 'part', n: 11, label: 'b', page: 7 }]), [{ year: 2022, page: 2 }, { year: 2022, page: 7 }, { year: 2022, page: 8 }]);
 });
 
+test('random paper from every year: old questions only as relevant parts, total close to the real paper', () => {
+  const OLD = { 2001: { mc: [], q: [{ n: 1, page: 2, marks: 15, parts: [{ label: 'a', marks: 4, page: 2, topics: ['4.5'] }, { label: 'c', marks: 5, page: 3, topics: ['2.3'] }] }, { n: 2, page: 4, marks: 15, parts: [{ label: 'b', marks: 2, page: 4, topics: ['6.2'] }] }] } };
+  const idx = { ...MATHS, ...OLD }, isOld = (y) => +y < 2020;
+  for (let k = 0; k < 30; k++) {
+    const p = Mix.randomPaperAll('y12', idx, isOld, Logic.seeded(k));
+    assert.strictEqual(p.filter(i => i.kind === 'mc').length, 10);
+    const s2 = Mix.total(p.filter(i => i.kind !== 'mc')); assert.ok(s2 >= 80 && s2 <= 90, 'section II ' + s2);
+    assert.ok(!p.some(i => i.year === 2001 && i.n === 2), 'a 2-mark scrap of an old question is skipped');
+    p.filter(i => i.year === 2001).forEach(i => assert.strictEqual(i.kind, 'part'));
+  }
+});
+
 let fail = 0;
 for (const [name, fn] of tests) { try { fn(); } catch (e) { fail++; console.log('FAIL', name, '\n ', e.message); } }
 console.log(fail ? `${fail}/${tests.length} failed` : `ok (${tests.length} tests)`);
