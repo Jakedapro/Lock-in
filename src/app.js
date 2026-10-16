@@ -1593,23 +1593,122 @@ Aim for 2-5 sections with 3-6 notes each, 10-20 flashcards (key terms, people, d
     $$('[data-rch]', body).forEach(b => b.onclick = () => { const v = b.dataset.rch; readState().ch = v === 'cast' ? 'cast' : +v; save(); drawReader(); ov.scrollTo({ top: 0 }); });
   }
 
-  /* ---------------- PDF viewer (past papers, inside the app) ---------------- */
-  function openPdf(src, title) {
-    $('.pdfv')?.remove();
-    const st = typeof sitState === 'function' ? sitState() : null;
-    const el = document.createElement('div'); el.className = 'pdfv'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-label', title || 'Paper');
-    el.innerHTML = `<div class="pdfv-head"><button class="back" type="button" aria-label="Close"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg></button><b>${esc(title || 'Paper')}</b>${st ? '<span class="pdfv-timer" id="pdfvT"></span>' : ''}</div><iframe class="pdfv-frame" src="${esc(src)}" title="${esc(title || 'Paper')}"></iframe>`;
-    document.body.appendChild(el);
-    const close = () => { clearInterval(t); el.remove(); };
+  /* ---------------- paper viewer: our own, drawn with pdf.js ---------------- */
+  // Pages are drawn onto canvases inside the app. Above each page: the questions that start on it, each
+  // with a "?" for help (topic notes, the answer, practise, a hint). The header has the exam timer.
+  const pvSit = () => (typeof sitState === 'function' ? sitState() : null);
+  function questionsOnPage(sid, year, page) { // full paper: every mapped item starting on this page
+    const P = hasIndex(sid) && PAPER_INDEX[sid][year]; if (!P) return [];
+    return [...P.mc.filter(m => m.page === page).map(m => ({ year: +year, kind: 'mc', n: m.n, label: '', page: m.page, marks: 1, topics: m.topics || [] })),
+      ...P.q.flatMap(q => q.parts.filter(p => (p.page || q.page) === page).map(p => ({ year: +year, kind: 'part', n: q.n, label: p.label, page: p.page || q.page, marks: p.marks, topics: p.topics || [], about: p.about || '' })))];
+  }
+  const paperCtx = (sid, year) => ({ sid, itemsOn: (pg) => questionsOnPage(sid, year, pg), startSit: () => { const F = PAPERS.formatOf(sid, year), now = Date.now(); setSit({ sid, year, start: now, readEnd: now + F.reading * 6e4, end: now + (F.reading + F.writing) * 6e4, paused: null }); openSit(sid, year); }, sitMatch: (st) => st && st.sid === sid && st.year === year && !st.mix });
+  const mixCtx = (m) => { const list = Mix.pageList(PAPER_INDEX[m.sid], m.items); return { sid: m.sid, itemsOn: (pg) => { const at = list[pg - 2]; return at ? m.items.filter(i => i.year === at.year && Mix.pagesFor(PAPER_INDEX[m.sid], i)[0] === at.page) : []; }, startSit: () => { const now = Date.now(); setSit({ sid: m.sid, mix: m.id, start: now, readEnd: now + 5 * 6e4, end: now + (5 + m.minutes) * 6e4, paused: null }); openSit(m.sid, null); }, sitMatch: (st) => st && st.mix === m.id }; };
+  async function viewerPdfjs() {
+    if (window.pdfjsLib) return window.pdfjsLib;
+    if (window.lockinDesktop) { await loadScript('vendor/pdf.min.js'); window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'vendor/pdf.worker.min.js'; return window.pdfjsLib; }
+    return pdfLib();
+  }
+  async function openPdf(src, title, ctx = {}) {
+    const [file, frag] = String(src).split('#'), startPage = +((frag || '').match(/page=(\d+)/) || [])[1] || ctx.startPage || 1;
+    const el = document.createElement('div'); el.className = 'pv'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-label', title || 'Paper'); el.tabIndex = -1;
+    el.innerHTML = `<header class="pv-head"><button class="back" type="button" aria-label="Close"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+      <b class="pv-title">${esc(title || 'Paper')}</b><span class="pv-pg" aria-live="polite"></span>
+      <span class="pv-zoom"><button type="button" data-z="-1" aria-label="Zoom out">−</button><button type="button" data-z="1" aria-label="Zoom in">+</button></span>
+      <span class="pv-timer"></span></header>
+      <div class="pv-body"><div class="pv-pages"><p class="pv-loading">Opening the paper…</p></div><aside class="pv-help" hidden></aside></div>`;
+    document.body.appendChild(el); el.focus();
+    const pagesEl = $('.pv-pages', el), help = $('.pv-help', el); let zoom = 1, doc = null, obs = null, tick = null;
+    const close = () => { clearInterval(tick); obs?.disconnect(); doc?.destroy(); el.remove(); };
     $('.back', el).onclick = close;
-    el.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
-    const t = setInterval(() => { const T = $('#sitTime'), o = $('#pdfvT', el); if (o) o.textContent = T ? T.textContent : ''; if (!document.body.contains(el)) clearInterval(t); }, 500);
+    el.addEventListener('keydown', e => { if (e.key === 'Escape') { e.stopPropagation(); if (!help.hidden) help.hidden = true; else close(); } });
+    // timer
+    const drawTimer = () => {
+      const box = $('.pv-timer', el), st = pvSit(); if (!box) return;
+      if (st && (!ctx.sitMatch || ctx.sitMatch(st))) {
+        const now = st.paused || Date.now(), reading = now < st.readEnd, left = Math.max(0, (reading ? st.readEnd : st.end) - now), h = Math.floor(left / 36e5), mm = Math.floor(left % 36e5 / 6e4), ss = Math.floor(left % 6e4 / 1e3);
+        const t = `${h ? h + ':' + pad(mm) : mm}:${pad(ss)}`;
+        if (box.dataset.mode !== 'run') { box.dataset.mode = 'run'; box.innerHTML = `<span class="pv-clock"><small></small><b></b></span><button type="button" class="pv-tbtn" data-t="pause"></button><button type="button" class="pv-tbtn" data-t="done">Finish</button>`; }
+        $('small', box).textContent = st.paused ? 'Paused' : reading ? 'Reading' : 'Writing'; $('b', box).textContent = t; $('[data-t=pause]', box).textContent = st.paused ? 'Resume' : 'Pause';
+        box.classList.toggle('low', !reading && left < 15 * 6e4);
+      } else if (ctx.startSit && !st) {
+        if (box.dataset.mode !== 'start') { box.dataset.mode = 'start'; box.innerHTML = '<button type="button" class="pv-tbtn hot" data-t="start">Start timer</button>'; }
+      } else if (box.dataset.mode) { box.dataset.mode = ''; box.innerHTML = ''; }
+    };
+    $('.pv-timer', el).addEventListener('click', e => {
+      const t = e.target.closest('[data-t]')?.dataset.t; if (!t) return;
+      if (t === 'start') { ctx.startSit(); toast('Timer started. Reading time first.'); }
+      if (t === 'pause') $('#sitPause')?.click();
+      if (t === 'done') { close(); $('#sitDone')?.click(); return; }
+      drawTimer();
+    });
+    tick = setInterval(() => { if (!document.body.contains(el)) return clearInterval(tick); drawTimer(); }, 500); drawTimer();
+    // pages
+    try { const lib = await viewerPdfjs(); doc = await lib.getDocument({ url: file, isEvalSupported: false }).promise; }
+    catch (e) { pagesEl.innerHTML = '<p class="pv-loading">Couldn\'t open this paper.</p>'; return; }
+    const first = await doc.getPage(1), base = first.getViewport({ scale: 1 }), ratio = base.height / base.width;
+    const width = () => Math.min(pagesEl.clientWidth - 32, 860) * zoom;
+    pagesEl.innerHTML = Array.from({ length: doc.numPages }, (_, k) => { const pg = k + 1, qs = ctx.itemsOn ? ctx.itemsOn(pg) : [];
+      return `<section class="pv-page" data-p="${pg}">${qs.length ? `<div class="pv-qs">${qs.map((q, j) => `<span class="pv-q"><b>${esc(Mix.name(q).replace(/^\d{4} /, ''))}</b><small>${q.marks} mark${q.marks > 1 ? 's' : ''}${ctx.showYear ? ` · ${q.year}` : ''}</small><button type="button" class="pv-help-btn" data-hq="${pg}:${j}" aria-label="Help with ${esc(Mix.name(q))}">?</button></span>`).join('')}</div>` : ''}<div class="pv-sheet"><canvas></canvas></div></section>`; }).join('');
+    const size = () => $$('.pv-sheet', pagesEl).forEach(s => { s.style.width = width() + 'px'; s.style.height = width() * ratio + 'px'; });
+    const drawn = new Map();
+    const render = async (sec) => {
+      const pg = +sec.dataset.p, w = Math.round(width()); if (drawn.get(pg) === w) return; drawn.set(pg, w);
+      const page = await doc.getPage(pg), vp = page.getViewport({ scale: w / page.getViewport({ scale: 1 }).width * devicePixelRatio });
+      const c = $('canvas', sec); c.width = vp.width; c.height = vp.height; c.style.width = '100%'; c.style.height = '100%';
+      await page.render({ canvasContext: c.getContext('2d'), viewport: vp }).promise.catch(() => drawn.delete(pg));
+    };
+    size();
+    obs = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) render(e.target); }), { root: pagesEl, rootMargin: '900px 0px' });
+    $$('.pv-page', pagesEl).forEach(s => obs.observe(s));
+    const pgLabel = () => { const top = pagesEl.getBoundingClientRect().top; const cur = $$('.pv-page', pagesEl).find(s => s.getBoundingClientRect().bottom > top + 80); $('.pv-pg', el).textContent = `${cur ? cur.dataset.p : 1} / ${doc.numPages}`; };
+    pagesEl.addEventListener('scroll', pgLabel, { passive: true }); pgLabel();
+    // Zooming or resizing changes every page's height, so keep the page you're on where it was.
+    const goTo = (pg, within = 0) => { const sec = $(`.pv-page[data-p="${pg}"]`, pagesEl); if (sec) pagesEl.scrollTop = sec.offsetTop - pagesEl.offsetTop - 12 + within * sec.offsetHeight; };
+    const relayout = () => {
+      const top = pagesEl.getBoundingClientRect().top, sec = $$('.pv-page', pagesEl).find(x => x.getBoundingClientRect().bottom > top + 1);
+      const within = sec ? (top - sec.getBoundingClientRect().top) / sec.offsetHeight : 0;
+      size(); if (sec) goTo(+sec.dataset.p, Math.max(0, within));
+      $$('.pv-page', pagesEl).forEach(x => { const r = x.getBoundingClientRect(); if (r.bottom > -900 && r.top < innerHeight + 900) render(x); });
+    };
+    $$('[data-z]', el).forEach(b => b.onclick = () => { zoom = Math.max(0.6, Math.min(2.2, zoom + +b.dataset.z * 0.2)); relayout(); });
+    const onResize = () => { if (document.body.contains(el)) relayout(); else removeEventListener('resize', onResize); };
+    addEventListener('resize', onResize);
+    if (startPage > 1) requestAnimationFrame(() => { goTo(startPage); pgLabel(); });
+    // "?" help
+    pagesEl.addEventListener('click', e => {
+      const b = e.target.closest('[data-hq]'); if (!b) return;
+      const [pg, j] = b.dataset.hq.split(':').map(Number), q = ctx.itemsOn(pg)[j]; if (q) showHelp(q, pg);
+    });
+    function showHelp(q, pg) {
+      const sid = ctx.sid, names = codeName(sid), yp = yearPaper(sid, q.year), A = (typeof PAPER_ANSWERS !== 'undefined' && PAPER_ANSWERS[sid]?.[q.year]) || {};
+      const key = q.kind === 'mc' ? 'mc' : `${q.n}${q.label || ''}`, ansPage = A[key] || A[`${q.n}${String(q.label || '').replace(/\(.*$/, '')}`] || A[String(q.n)];
+      const decks = {}; decksOf(sid).forEach(d => (d.sections || []).forEach(s => { decks[s.code] = { d, s }; }));
+      help.hidden = false;
+      help.innerHTML = `<div class="pv-help-head"><b>${esc(Mix.name(q))}</b><span class="note">${q.marks} mark${q.marks > 1 ? 's' : ''}${q.kind === 'mc' ? ' · multiple choice' : ''}</span><button type="button" class="pv-x" aria-label="Close help">×</button></div>
+        ${q.about ? `<p class="pv-about">${esc(q.about)}</p>` : ''}
+        ${q.topics.map(c => { const t = decks[c]; return t ? `<div class="pv-topic"><h4>${esc(c)} ${fm(t.s.name)}</h4><ul>${(t.s.notes || []).slice(0, 4).map(n => `<li>${fm(n)}</li>`).join('')}</ul><button type="button" class="linkbtn" data-prac="${esc(t.d.id)}|${esc(c)}">Practise this topic</button></div>` : ''; }).join('')}
+        <div class="pv-help-acts">${yp.mg ? `<button type="button" class="btn btn-sm" data-ans="1">Show the answer</button>` : '<span class="note">No answers for this year.</span>'}${aiReady() ? '<button type="button" class="btn btn-ghost btn-sm" data-hint="1">Get a hint</button>' : ''}</div><div class="pv-hint"></div>`;
+      $('.pv-x', help).onclick = () => { help.hidden = true; };
+      const ab = $('[data-ans]', help); if (ab) ab.onclick = () => openPdf(yp.mg + (ansPage ? `#page=${ansPage}` : ''), `${q.year} ${getSubj(sid).tab || getSubj(sid).name} answers${ansPage ? ` · ${Mix.name(q).replace(/^\d{4} /, '')}` : ''}`, {});
+      $$('[data-prac]', help).forEach(b => b.onclick = () => { const [d, c] = b.dataset.prac.split('|'); close(); if (pvSit()) toast('Your timer keeps running. Past papers takes you back to it.'); openDeck(d, 'practice', c); });
+      const hb = $('[data-hint]', help); if (hb) hb.onclick = async () => {
+        hb.disabled = true; const out = $('.pv-hint', help); out.textContent = 'Thinking…';
+        try {
+          const txt = (await (await doc.getPage(pg)).getTextContent()).items.map(i => i.str).join(' ').slice(0, 3000);
+          const r = await AI.fn(`A Year 12 NSW student is doing ${getSubj(sid).name} HSC ${q.year} ${Mix.name(q).replace(/^\d{4} /, '')} (${q.marks} marks${q.about ? `: ${q.about}` : ''}). Here is the text of that page of the exam (maths symbols may be garbled):\n"""${txt}"""\n\nGive a short HINT only: the first step or the key idea, in 2-4 sentences. Do NOT give the full solution or the final answer. Use LaTeX between $ signs for maths.`, { modelTier: 'default' });
+          out.innerHTML = Fmt.rich(r.text);
+        } catch (e) { out.textContent = AI.msg(e); } finally { hb.disabled = false; }
+      };
+    }
   }
   document.addEventListener('click', e => {
     const b = e.target.closest('[data-pdf]'); if (!b) return;
     e.preventDefault();
     const src = b.dataset.pdf, f = src.match(/papers\/(y12|e1|phys)-(\d{4})-(paper|mg)/);
-    openPdf(src, f ? `${f[2]} ${getSubj(f[1]).tab || getSubj(f[1]).name} ${f[3] === 'mg' ? 'marking guidelines' : 'paper'}${/#page=(\d+)/.test(src) ? `, page ${src.match(/#page=(\d+)/)[1]}` : ''}` : 'Paper');
+    if (!f) return openPdf(src, 'Paper');
+    const sid = f[1], year = +f[2], s = getSubj(sid), pg = (src.match(/#page=(\d+)/) || [])[1];
+    openPdf(src, `${year} ${s.tab || s.name} ${f[3] === 'mg' ? 'answers' : 'paper'}`, f[3] === 'paper' ? paperCtx(sid, year) : {});
   });
 
   /* ---------------- official HSC past papers ---------------- */
@@ -1704,7 +1803,7 @@ Aim for 2-5 sections with 3-6 notes each, 10-20 flashcards (key terms, people, d
   }
   async function openMixPaper(m, btn) {
     const old = btn && btn.textContent; if (btn) { btn.disabled = true; btn.textContent = 'Putting it together…'; }
-    try { openPdf(await mixPdf(m), m.title); } catch (e) { toast('Couldn\'t build the paper. Try again.'); }
+    try { openPdf(await mixPdf(m), m.title, { ...mixCtx(m), showYear: true }); } catch (e) { toast('Couldn\'t build the paper. Try again.'); }
     finally { if (btn) { btn.disabled = false; btn.textContent = old; } }
   }
   function openMix(id) {

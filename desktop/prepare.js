@@ -13,6 +13,7 @@ fs.mkdirSync(path.join(out, 'vendor', 'fonts'), { recursive: true });
 
 copy(mod('mathjax/es5/tex-svg-full.js'), path.join(out, 'vendor', 'tex-svg-full.js'));
 copy(mod('gsap/dist/gsap.min.js'), path.join(out, 'vendor', 'gsap.min.js'));
+for (const f of ['pdf.min.js', 'pdf.worker.min.js']) copy(mod(`pdfjs-dist/build/${f}`), path.join(out, 'vendor', f)); // our paper viewer
 let fontCss = '';
 for (const [w, style] of [['400', 'normal'], ['700', 'normal'], ['400', 'italic']]) {
   const name = `atkinson-hyperlegible-latin-${w}-${style}.woff2`;

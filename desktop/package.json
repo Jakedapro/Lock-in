@@ -19,7 +19,8 @@
     "electron-builder": "25.1.8",
     "firebase": "10.14.1",
     "gsap": "3.12.5",
-    "mathjax": "3.2.2"
+    "mathjax": "3.2.2",
+    "pdfjs-dist": "3.11.174"
   },
   "build": {
     "appId": "io.github.jamalmusialla81-hub.lockin",
