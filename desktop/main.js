@@ -180,7 +180,8 @@ async function createWindows() {
     title: 'Lock in', backgroundColor: '#E8ECF0', autoHideMenuBar: true, icon,
     webPreferences: { contextIsolation: true, sandbox: true, plugins: true, preload: path.join(__dirname, 'preload.js') }, // plugins: the built-in PDF viewer for past papers
   });
-  win.loadURL(`${ORIGIN}/index.html`);
+  // LOCKIN_KEY=<invite key>: open with that key filled in, like an invite link (the app removes it from the address).
+  win.loadURL(`${ORIGIN}/index.html${process.env.LOCKIN_KEY ? '#key=' + encodeURIComponent(process.env.LOCKIN_KEY) : ''}`);
   // Web links (past papers, the website, GitHub) open in the normal browser, not inside the app.
   win.webContents.setWindowOpenHandler(({ url }) => { if (/^https?:/.test(url) && !url.startsWith(ORIGIN)) shell.openExternal(url); return { action: 'deny' }; });
   win.webContents.on('will-navigate', (e, url) => { if (!url.startsWith(ORIGIN)) { e.preventDefault(); if (/^https?:/.test(url)) shell.openExternal(url); } });
