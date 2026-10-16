@@ -66,6 +66,24 @@ const Mix = (() => {
   const minutes = (items, perMark) => Math.max(10, Math.round(total(items) * perMark / 5) * 5);
   // "2023 Q13(b)(ii)": a part label like "b(ii)" gets brackets round its first letter.
   const name = (i) => `${i.year} Q${i.n}${i.kind === 'part' && i.label ? String(i.label).replace(/^([a-z])/, '($1)') : ''}`;
-  return { randomPaper, byTopic, topicCounts, minutes, total, name };
+  // Which pages of its year's paper an item needs: from where it starts to just before the next thing starts.
+  function pagesFor(idx, item) {
+    const P = idx && idx[item.year]; if (!P) return [item.page, item.page];
+    const qs = P.q.slice().sort((a, b) => a.n - b.n), q = qs.find(x => x.n === item.n);
+    const nextQ = q ? qs[qs.indexOf(q) + 1] : null, lastPartPage = q ? Math.max(q.page, ...q.parts.map(x => x.page || q.page)) : item.page;
+    if (item.kind === 'mc') return [item.page, item.page];
+    if (item.kind === 'q') return [q.page, Math.max(lastPartPage, nextQ ? nextQ.page - 1 : lastPartPage)];
+    const parts = q ? q.parts : [], i = parts.findIndex(x => x.label === item.label), next = parts[i + 1];
+    const start = item.page, nextStart = next ? (next.page || q.page) : nextQ ? nextQ.page : start;
+    return [start, Math.max(start, nextStart > start ? nextStart - 1 : start)];
+  }
+  // Every page the paper needs, in order, each page only once: [{year, page}].
+  function pageList(idx, items) {
+    const seen = new Set(), out = [];
+    for (const it of items) { const [a, b] = pagesFor(idx, it); for (let pg = a; pg <= b; pg++) { const k = it.year + ':' + pg; if (!seen.has(k)) { seen.add(k); out.push({ year: it.year, page: pg }); } } }
+    return out;
+  }
+
+  return { randomPaper, byTopic, topicCounts, minutes, total, name, pagesFor, pageList };
 })();
 if (typeof module !== 'undefined') module.exports = Mix;

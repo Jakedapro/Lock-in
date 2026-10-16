@@ -37,6 +37,9 @@ fs.writeFileSync(path.join(out, 'index.html'), html);
 // The splash screen, and the exam dates it counts down to.
 copy(path.join(__dirname, 'splash.html'), path.join(out, 'splash.html'));
 copy(path.join(__dirname, 'blank.html'), path.join(out, 'blank.html'));
+// Past papers (desktop/papers, kept out of the public repo) go inside the app when they're present.
+const papers = path.join(__dirname, 'papers');
+if (fs.existsSync(papers)) fs.readdirSync(papers).filter(f => f.endsWith('.pdf')).forEach(f => copy(path.join(papers, f), path.join(out, 'papers', f)));
 // The browser sign-in page uses the same Firebase settings as the app (read from src/cloud.js).
 const cfg = fs.readFileSync(path.join(root, 'src', 'cloud.js'), 'utf8').match(/const CONFIG = (\{[\s\S]*?\});/);
 if (!cfg) throw new Error('prepare.js: could not find the Firebase CONFIG in src/cloud.js');

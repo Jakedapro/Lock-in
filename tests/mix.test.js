@@ -44,6 +44,17 @@ test('names and timing', () => {
   const c = Mix.topicCounts(MATHS); assert.ok(c['2.3'] > 0 && c['4.5'] > 0);
 });
 
+test('pages for each item, and one de-duplicated page list for the whole paper', () => {
+  const idx = { 2022: { mc: [{ n: 1, page: 2, topics: [] }, { n: 2, page: 2, topics: [] }], q: [
+    { n: 11, page: 5, marks: 15, parts: [{ label: 'a', marks: 5, page: 5 }, { label: 'b', marks: 10, page: 7 }] },
+    { n: 12, page: 9, marks: 15, parts: [{ label: 'a', marks: 15, page: 9 }] }] } };
+  assert.deepStrictEqual(Mix.pagesFor(idx, { year: 2022, kind: 'q', n: 11, page: 5 }), [5, 8]);
+  assert.deepStrictEqual(Mix.pagesFor(idx, { year: 2022, kind: 'q', n: 12, page: 9 }), [9, 9]);
+  assert.deepStrictEqual(Mix.pagesFor(idx, { year: 2022, kind: 'part', n: 11, label: 'a', page: 5 }), [5, 6]);
+  assert.deepStrictEqual(Mix.pagesFor(idx, { year: 2022, kind: 'part', n: 11, label: 'b', page: 7 }), [7, 8]);
+  assert.deepStrictEqual(Mix.pageList(idx, [{ year: 2022, kind: 'mc', n: 1, page: 2 }, { year: 2022, kind: 'mc', n: 2, page: 2 }, { year: 2022, kind: 'part', n: 11, label: 'b', page: 7 }]), [{ year: 2022, page: 2 }, { year: 2022, page: 7 }, { year: 2022, page: 8 }]);
+});
+
 let fail = 0;
 for (const [name, fn] of tests) { try { fn(); } catch (e) { fail++; console.log('FAIL', name, '\n ', e.message); } }
 console.log(fail ? `${fail}/${tests.length} failed` : `ok (${tests.length} tests)`);

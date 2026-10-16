@@ -16,6 +16,7 @@ try {
 
 contextBridge.exposeInMainWorld('lockinDesktop', {
   signInWithGoogle: () => ipcRenderer.invoke('auth:google'),
+  buildPaper: (spec) => ipcRenderer.invoke('papers:build', spec),
   ai: {
     available: () => ipcRenderer.invoke('ai:available'),
     ask: (prompt, tier) => ipcRenderer.invoke('ai:ask', { prompt: String(prompt), tier: tier === 'quick' ? 'quick' : 'default' }),

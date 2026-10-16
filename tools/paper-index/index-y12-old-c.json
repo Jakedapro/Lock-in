@@ -1,0 +1,2200 @@
+{
+ "2012": {
+  "mc": [
+   {
+    "n": 1,
+    "page": 2,
+    "topics": [
+     "2.2"
+    ]
+   },
+   {
+    "n": 3,
+    "page": 3,
+    "topics": [
+     "2.7"
+    ]
+   },
+   {
+    "n": 10,
+    "page": 8,
+    "topics": [
+     "4.7"
+    ]
+   }
+  ],
+  "q": [
+   {
+    "n": 11,
+    "page": 9,
+    "marks": 15,
+    "parts": [
+     {
+      "label": "a",
+      "marks": 2,
+      "page": 9,
+      "topics": [
+       "2.2"
+      ],
+      "about": "divide complex numbers into Cartesian form"
+     },
+     {
+      "label": "b",
+      "marks": 2,
+      "page": 9,
+      "topics": [
+       "2.8"
+      ],
+      "about": "shade intersection of two circular regions"
+     },
+     {
+      "label": "c",
+      "marks": 2,
+      "page": 9,
+      "topics": [
+       "4.1"
+      ],
+      "about": "integral after completing the square"
+     },
+     {
+      "label": "d(i)",
+      "marks": 2,
+      "page": 9,
+      "topics": [
+       "2.3"
+      ],
+      "about": "convert to modulus-argument form"
+     },
+     {
+      "label": "d(ii)",
+      "marks": 1,
+      "page": 9,
+      "topics": [
+       "2.9"
+      ],
+      "about": "high power via de Moivre"
+     },
+     {
+      "label": "e",
+      "marks": 3,
+      "page": 9,
+      "topics": [
+       "4.2",
+       "4.7"
+      ],
+      "about": "definite integral of exponential quotient"
+     }
+    ]
+   },
+   {
+    "n": 12,
+    "page": 10,
+    "marks": 15,
+    "parts": [
+     {
+      "label": "a",
+      "marks": 3,
+      "page": 10,
+      "topics": [
+       "4.4"
+      ],
+      "about": "t-formula integral with cosine denominator"
+     },
+     {
+      "label": "c",
+      "marks": 3,
+      "page": 11,
+      "topics": [
+       "4.6"
+      ],
+      "about": "reduction formula for powers of log"
+     },
+     {
+      "label": "d(i)",
+      "marks": 1,
+      "page": 11,
+      "topics": [
+       "2.7"
+      ],
+      "about": "rotation gives vertex of isosceles triangle"
+     },
+     {
+      "label": "d(ii)",
+      "marks": 2,
+      "page": 11,
+      "topics": [
+       "2.7",
+       "2.8"
+      ],
+      "about": "locus of midpoint as point varies"
+     }
+    ]
+   },
+   {
+    "n": 13,
+    "page": 12,
+    "marks": 15,
+    "parts": [
+     {
+      "label": "a(i)",
+      "marks": 4,
+      "page": 12,
+      "topics": [
+       "6.4"
+      ],
+      "about": "sinking object velocity with quadratic resistance"
+     },
+     {
+      "label": "a(ii)",
+      "marks": 2,
+      "page": 12,
+      "topics": [
+       "6.4"
+      ],
+      "about": "displacement in terms of velocity"
+     },
+     {
+      "label": "a(iii)",
+      "marks": 2,
+      "page": 12,
+      "topics": [
+       "6.4"
+      ],
+      "about": "distance sunk after given time"
+     }
+    ]
+   },
+   {
+    "n": 14,
+    "page": 14,
+    "marks": 15,
+    "parts": [
+     {
+      "label": "a",
+      "marks": 3,
+      "page": 14,
+      "topics": [
+       "4.3"
+      ],
+      "about": "partial fractions with irreducible quadratic"
+     }
+    ]
+   },
+   {
+    "n": 15,
+    "page": 17,
+    "marks": 15,
+    "parts": [
+     {
+      "label": "a(i)",
+      "marks": 1,
+      "page": 17,
+      "topics": [
+       "1.6"
+      ],
+      "about": "prove two-variable AM-GM"
+     },
+     {
+      "label": "a(ii)",
+      "marks": 2,
+      "page": 17,
+      "topics": [
+       "1.5"
+      ],
+      "about": "product inequality for ordered reals"
+     },
+     {
+      "label": "a(iii)",
+      "marks": 2,
+      "page": 17,
+      "topics": [
+       "1.5"
+      ],
+      "about": "bounds on product of integer pairs"
+     },
+     {
+      "label": "a(iv)",
+      "marks": 1,
+      "page": 17,
+      "topics": [
+       "1.5"
+      ],
+      "about": "factorial bounded above and below"
+     },
+     {
+      "label": "b(i)",
+      "marks": 1,
+      "page": 17,
+      "topics": [
+       "2.6"
+      ],
+      "about": "conjugates of roots are also roots"
+     },
+     {
+      "label": "b(ii)",
+      "marks": 1,
+      "page": 17,
+      "topics": [
+       "2.10"
+      ],
+      "about": "factorise quartic with complex roots"
+     },
+     {
+      "label": "b(iii)",
+      "marks": 2,
+      "page": 17,
+      "topics": [
+       "2.10"
+      ],
+      "about": "factorisation when a real root exists"
+     },
+     {
+      "label": "b(iv)",
+      "marks": 2,
+      "page": 17,
+      "topics": [
+       "2.10"
+      ],
+      "about": "all roots lie on unit circle"
+     },
+     {
+      "label": "b(v)",
+      "marks": 1,
+      "page": 17,
+      "topics": [
+       "2.10"
+      ],
+      "about": "link parameter to root components"
+     },
+     {
+      "label": "b(vi)",
+      "marks": 2,
+      "page": 17,
+      "topics": [
+       "2.10",
+       "1.5"
+      ],
+      "about": "bound the real parameter"
+     }
+    ]
+   },
+   {
+    "n": 16,
+    "page": 18,
+    "marks": 15,
+    "parts": [
+     {
+      "label": "b(ii)",
+      "marks": 3,
+      "page": 18,
+      "topics": [
+       "3.5"
+      ],
+      "about": "induction on inverse tangent sum"
+     }
+    ]
+   }
+  ]
+ },
+ "2013": {
+  "mc": [
+   {
+    "n": 1,
+    "page": 2,
+    "topics": [
+     "4.4"
+    ]
+   },
+   {
+    "n": 3,
+    "page": 3,
+    "topics": [
+     "2.9"
+    ]
+   },
+   {
+    "n": 5,
+    "page": 4,
+    "topics": [
+     "2.8"
+    ]
+   },
+   {
+    "n": 6,
+    "page": 4,
+    "topics": [
+     "4.1"
+    ]
+   }
+  ],
+  "q": [
+   {
+    "n": 11,
+    "page": 7,
+    "marks": 15,
+    "parts": [
+     {
+      "label": "a(i)",
+      "marks": 1,
+      "page": 7,
+      "topics": [
+       "2.2"
+      ],
+      "about": "add two complex numbers"
+     },
+     {
+      "label": "a(ii)",
+      "marks": 2,
+      "page": 7,
+      "topics": [
+       "2.3"
+      ],
+      "about": "modulus-argument form"
+     },
+     {
+      "label": "a(iii)",
+      "marks": 2,
+      "page": 7,
+      "topics": [
+       "2.9"
+      ],
+      "about": "large power by de Moivre"
+     },
+     {
+      "label": "b",
+      "marks": 2,
+      "page": 7,
+      "topics": [
+       "4.3"
+      ],
+      "about": "find partial fraction coefficients"
+     },
+     {
+      "label": "c",
+      "marks": 2,
+      "page": 7,
+      "topics": [
+       "2.5",
+       "2.10"
+      ],
+      "about": "factorise quadratic with complex coefficients"
+     },
+     {
+      "label": "d",
+      "marks": 3,
+      "page": 7,
+      "topics": [
+       "4.2"
+      ],
+      "about": "definite integral by substitution"
+     },
+     {
+      "label": "e",
+      "marks": 3,
+      "page": 7,
+      "topics": [
+       "2.8"
+      ],
+      "about": "region from sum of squared conjugates"
+     }
+    ]
+   },
+   {
+    "n": 12,
+    "page": 8,
+    "marks": 15,
+    "parts": [
+     {
+      "label": "a",
+      "marks": 4,
+      "page": 8,
+      "topics": [
+       "4.4"
+      ],
+      "about": "t-formula definite integral"
+     }
+    ]
+   },
+   {
+    "n": 13,
+    "page": 10,
+    "marks": 15,
+    "parts": [
+     {
+      "label": "a(i)",
+      "marks": 3,
+      "page": 10,
+      "topics": [
+       "4.6"
+      ],
+      "about": "derive reduction formula by parts"
+     },
+     {
+      "label": "a(ii)",
+      "marks": 2,
+      "page": 10,
+      "topics": [
+       "4.6"
+      ],
+      "about": "apply recurrence to evaluate"
+     }
+    ]
+   },
+   {
+    "n": 14,
+    "page": 12,
+    "marks": 15,
+    "parts": [
+     {
+      "label": "a",
+      "marks": 3,
+      "page": 12,
+      "topics": [
+       "1.5",
+       "4.7"
+      ],
+      "about": "log inequality by comparing areas"
+     },
+     {
+      "label": "b",
+      "marks": 3,
+      "page": 12,
+      "topics": [
+       "3.5",
+       "2.3"
+      ],
+      "about": "induction on recursive complex modulus"
+     },
+     {
+      "label": "c(ii)",
+      "marks": 2,
+      "page": 13,
+      "topics": [
+       "4.4"
+      ],
+      "about": "integrate high power of secant"
+     }
+    ]
+   },
+   {
+    "n": 15,
+    "page": 14,
+    "marks": 15,
+    "parts": [
+     {
+      "label": "a",
+      "marks": 3,
+      "page": 14,
+      "topics": [
+       "2.7"
+      ],
+      "about": "triangle area via conjugate expression"
+     },
+     {
+      "label": "d(i)",
+      "marks": 1,
+      "page": 15,
+      "topics": [
+       "6.4"
+      ],
+      "about": "terminal velocity of falling ball"
+     },
+     {
+      "label": "d(ii)",
+      "marks": 3,
+      "page": 15,
+      "topics": [
+       "6.4"
+      ],
+      "about": "maximum height with quadratic resistance"
+     },
+     {
+      "label": "d(iii)",
+      "marks": 2,
+      "page": 15,
+      "topics": [
+       "6.4"
+      ],
+      "about": "impact speed relation to launch speed"
+     }
+    ]
+   },
+   {
+    "n": 16,
+    "page": 16,
+    "marks": 15,
+    "parts": [
+     {
+      "label": "a(ii)",
+      "marks": 1,
+      "page": 16,
+      "topics": [
+       "1.5"
+      ],
+      "about": "deduce polynomial inequality"
+     },
+     {
+      "label": "a(iii)",
+      "marks": 2,
+      "page": 16,
+      "topics": [
+       "1.5"
+      ],
+      "about": "two-variable inequality from earlier result"
+     }
+    ]
+   }
+  ]
+ },
+ "2014": {
+  "mc": [
+   {
+    "n": 1,
+    "page": 2,
+    "topics": [
+     "4.3"
+    ]
+   },
+   {
+    "n": 2,
+    "page": 2,
+    "topics": [
+     "2.6"
+    ]
+   },
+   {
+    "n": 4,
+    "page": 3,
+    "topics": [
+     "2.3"
+    ]
+   },
+   {
+    "n": 7,
+    "page": 5,
+    "topics": [
+     "4.4"
+    ]
+   },
+   {
+    "n": 8,
+    "page": 5,
+    "topics": [
+     "2.7"
+    ]
+   },
+   {
+    "n": 9,
+    "page": 5,
+    "topics": [
+     "6.1"
+    ]
+   },
+   {
+    "n": 10,
+    "page": 6,
+    "topics": [
+     "4.7"
+    ]
+   }
+  ],
+  "q": [
+   {
+    "n": 11,
+    "page": 7,
+    "marks": 15,
+    "parts": [
+     {
+      "label": "a(i)",
+      "marks": 2,
+      "page": 7,
+      "topics": [
+       "2.3"
+      ],
+      "about": "sum in modulus-argument form"
+     },
+     {
+      "label": "a(ii)",
+      "marks": 2,
+      "page": 7,
+      "topics": [
+       "2.2"
+      ],
+      "about": "quotient in Cartesian form"
+     },
+     {
+      "label": "b",
+      "marks": 3,
+      "page": 7,
+      "topics": [
+       "4.5"
+      ],
+      "about": "definite integral by parts with cosine"
+     },
+     {
+      "label": "c",
+      "marks": 3,
+      "page": 7,
+      "topics": [
+       "2.8"
+      ],
+      "about": "region from distance and argument"
+     }
+    ]
+   },
+   {
+    "n": 12,
+    "page": 8,
+    "marks": 15,
+    "parts": [
+     {
+      "label": "d(i)",
+      "marks": 1,
+      "page": 9,
+      "topics": [
+       "4.7"
+      ],
+      "about": "evaluate base integral"
+     },
+     {
+      "label": "d(ii)",
+      "marks": 2,
+      "page": 9,
+      "topics": [
+       "4.6"
+      ],
+      "about": "establish recurrence relation"
+     },
+     {
+      "label": "d(iii)",
+      "marks": 2,
+      "page": 9,
+      "topics": [
+       "4.6"
+      ],
+      "about": "use recurrence to evaluate"
+     }
+    ]
+   },
+   {
+    "n": 13,
+    "page": 10,
+    "marks": 15,
+    "parts": [
+     {
+      "label": "a",
+      "marks": 3,
+      "page": 10,
+      "topics": [
+       "4.4"
+      ],
+      "about": "t-formula with linear trig denominator"
+     }
+    ]
+   },
+   {
+    "n": 14,
+    "page": 12,
+    "marks": 15,
+    "parts": [
+     {
+      "label": "a(ii)",
+      "marks": 2,
+      "page": 12,
+      "topics": [
+       "2.10"
+      ],
+      "about": "find non-real roots of quintic"
+     },
+     {
+      "label": "c(i)",
+      "marks": 2,
+      "page": 13,
+      "topics": [
+       "6.3"
+      ],
+      "about": "equation of motion with resistance"
+     },
+     {
+      "label": "c(ii)",
+      "marks": 4,
+      "page": 13,
+      "topics": [
+       "6.3"
+      ],
+      "about": "time to reach given speed"
+     }
+    ]
+   },
+   {
+    "n": 15,
+    "page": 14,
+    "marks": 15,
+    "parts": [
+     {
+      "label": "a",
+      "marks": 2,
+      "page": 14,
+      "topics": [
+       "1.5"
+      ],
+      "about": "inequality for ordered positive reals"
+     },
+     {
+      "label": "b(i)",
+      "marks": 2,
+      "page": 14,
+      "topics": [
+       "2.9"
+      ],
+      "about": "sum of conjugate powers via de Moivre"
+     },
+     {
+      "label": "b(ii)",
+      "marks": 3,
+      "page": 14,
+      "topics": [
+       "2.9"
+      ],
+      "about": "alternating binomial sum identity"
+     }
+    ]
+   },
+   {
+    "n": 16,
+    "page": 16,
+    "marks": 15,
+    "parts": [
+     {
+      "label": "b(i)",
+      "marks": 3,
+      "page": 17,
+      "topics": [
+       "1.5"
+      ],
+      "about": "bound reciprocal by finite series"
+     },
+     {
+      "label": "b(ii)",
+      "marks": 2,
+      "page": 17,
+      "topics": [
+       "1.5",
+       "4.7"
+      ],
+      "about": "integrate inequality to bound series"
+     },
+     {
+      "label": "c",
+      "marks": 3,
+      "page": 17,
+      "topics": [
+       "4.2"
+      ],
+      "about": "logarithmic substitution integral"
+     }
+    ]
+   }
+  ]
+ },
+ "2015": {
+  "mc": [
+   {
+    "n": 2,
+    "page": 2,
+    "topics": [
+     "2.5"
+    ]
+   },
+   {
+    "n": 5,
+    "page": 4,
+    "topics": [
+     "2.9"
+    ]
+   },
+   {
+    "n": 6,
+    "page": 4,
+    "topics": [
+     "4.5"
+    ]
+   },
+   {
+    "n": 9,
+    "page": 6,
+    "topics": [
+     "2.8"
+    ]
+   }
+  ],
+  "q": [
+   {
+    "n": 11,
+    "page": 7,
+    "marks": 15,
+    "parts": [
+     {
+      "label": "a",
+      "marks": 2,
+      "page": 7,
+      "topics": [
+       "2.2"
+      ],
+      "about": "complex division to Cartesian form"
+     },
+     {
+      "label": "b(i)",
+      "marks": 1,
+      "page": 7,
+      "topics": [
+       "2.3"
+      ],
+      "about": "find modulus"
+     },
+     {
+      "label": "b(ii)",
+      "marks": 1,
+      "page": 7,
+      "topics": [
+       "2.3"
+      ],
+      "about": "find argument"
+     },
+     {
+      "label": "b(iii)",
+      "marks": 1,
+      "page": 7,
+      "topics": [
+       "2.3"
+      ],
+      "about": "argument of a quotient"
+     },
+     {
+      "label": "c",
+      "marks": 2,
+      "page": 7,
+      "topics": [
+       "4.3"
+      ],
+      "about": "partial fraction coefficients"
+     },
+     {
+      "label": "f(ii)",
+      "marks": 1,
+      "page": 7,
+      "topics": [
+       "4.4"
+      ],
+      "about": "integrate using trig identity"
+     }
+    ]
+   },
+   {
+    "n": 12,
+    "page": 8,
+    "marks": 15,
+    "parts": [
+     {
+      "label": "a(i)",
+      "marks": 1,
+      "page": 8,
+      "topics": [
+       "2.7"
+      ],
+      "about": "plot conjugate"
+     },
+     {
+      "label": "a(ii)",
+      "marks": 1,
+      "page": 8,
+      "topics": [
+       "2.9"
+      ],
+      "about": "plot square of number"
+     },
+     {
+      "label": "a(iii)",
+      "marks": 1,
+      "page": 8,
+      "topics": [
+       "2.7"
+      ],
+      "about": "plot difference of numbers"
+     },
+     {
+      "label": "b(i)",
+      "marks": 3,
+      "page": 8,
+      "topics": [
+       "2.6",
+       "2.10"
+      ],
+      "about": "roots of quartic with complex roots"
+     },
+     {
+      "label": "b(ii)",
+      "marks": 1,
+      "page": 8,
+      "topics": [
+       "2.10"
+      ],
+      "about": "real quadratic factor"
+     }
+    ]
+   },
+   {
+    "n": 13,
+    "page": 10,
+    "marks": 15,
+    "parts": []
+   },
+   {
+    "n": 14,
+    "page": 13,
+    "marks": 15,
+    "parts": [
+     {
+      "label": "a(i)",
+      "marks": 2,
+      "page": 13,
+      "topics": [
+       "4.6"
+      ],
+      "about": "derivative for sine power reduction"
+     },
+     {
+      "label": "a(ii)",
+      "marks": 2,
+      "page": 13,
+      "topics": [
+       "4.6"
+      ],
+      "about": "deduce sine power recurrence"
+     },
+     {
+      "label": "a(iii)",
+      "marks": 1,
+      "page": 13,
+      "topics": [
+       "4.6"
+      ],
+      "about": "evaluate fourth power integral"
+     }
+    ]
+   },
+   {
+    "n": 15,
+    "page": 15,
+    "marks": 15,
+    "parts": [
+     {
+      "label": "a(i)",
+      "marks": 2,
+      "page": 15,
+      "topics": [
+       "6.3"
+      ],
+      "about": "horizontal motion with quadratic resistance"
+     },
+     {
+      "label": "a(ii)",
+      "marks": 3,
+      "page": 15,
+      "topics": [
+       "6.4"
+      ],
+      "about": "upward motion time formula"
+     },
+     {
+      "label": "a(iii)",
+      "marks": 1,
+      "page": 15,
+      "topics": [
+       "6.3",
+       "6.4"
+      ],
+      "about": "velocity when other particle stops"
+     },
+     {
+      "label": "a(iv)",
+      "marks": 1,
+      "page": 15,
+      "topics": [
+       "6.4"
+      ],
+      "about": "limiting behaviour for large speed"
+     },
+     {
+      "label": "b(i)",
+      "marks": 2,
+      "page": 16,
+      "topics": [
+       "1.5"
+      ],
+      "about": "bound reciprocal expression"
+     },
+     {
+      "label": "b(ii)",
+      "marks": 2,
+      "page": 16,
+      "topics": [
+       "1.5",
+       "4.7"
+      ],
+      "about": "log inequality by integration"
+     },
+     {
+      "label": "c(i)",
+      "marks": 1,
+      "page": 16,
+      "topics": [
+       "1.6"
+      ],
+      "about": "two-variable mean inequality"
+     },
+     {
+      "label": "c(ii)",
+      "marks": 2,
+      "page": 16,
+      "topics": [
+       "1.6"
+      ],
+      "about": "four-variable mean inequality"
+     }
+    ]
+   },
+   {
+    "n": 16,
+    "page": 17,
+    "marks": 15,
+    "parts": [
+     {
+      "label": "b(i)",
+      "marks": 2,
+      "page": 18,
+      "topics": [
+       "2.9"
+      ],
+      "about": "multiple angle cosine expansion"
+     },
+     {
+      "label": "b(ii)",
+      "marks": 2,
+      "page": 18,
+      "topics": [
+       "2.9"
+      ],
+      "about": "polynomial in cosine form"
+     },
+     {
+      "label": "b(iii)",
+      "marks": 3,
+      "page": 18,
+      "topics": [
+       "2.9",
+       "2.10"
+      ],
+      "about": "product of cosines from roots"
+     },
+     {
+      "label": "b(iv)",
+      "marks": 2,
+      "page": 18,
+      "topics": [
+       "2.9"
+      ],
+      "about": "alternating binomial sum identity"
+     }
+    ]
+   }
+  ]
+ },
+ "2016": {
+  "mc": [
+   {
+    "n": 4,
+    "page": 3,
+    "topics": [
+     "2.7"
+    ]
+   },
+   {
+    "n": 5,
+    "page": 4,
+    "topics": [
+     "2.7",
+     "2.3"
+    ]
+   },
+   {
+    "n": 10,
+    "page": 6,
+    "topics": [
+     "2.10"
+    ]
+   }
+  ],
+  "q": [
+   {
+    "n": 11,
+    "page": 7,
+    "marks": 15,
+    "parts": [
+     {
+      "label": "a(i)",
+      "marks": 2,
+      "page": 7,
+      "topics": [
+       "2.3"
+      ],
+      "about": "modulus-argument form"
+     },
+     {
+      "label": "a(ii)",
+      "marks": 1,
+      "page": 7,
+      "topics": [
+       "2.9"
+      ],
+      "about": "show power is real"
+     },
+     {
+      "label": "a(iii)",
+      "marks": 1,
+      "page": 7,
+      "topics": [
+       "2.9"
+      ],
+      "about": "power that is purely imaginary"
+     },
+     {
+      "label": "b",
+      "marks": 3,
+      "page": 7,
+      "topics": [
+       "4.5"
+      ],
+      "about": "integration by parts with exponential"
+     }
+    ]
+   },
+   {
+    "n": 12,
+    "page": 9,
+    "marks": 15,
+    "parts": [
+     {
+      "label": "b(i)",
+      "marks": 1,
+      "page": 9,
+      "topics": [
+       "4.5"
+      ],
+      "about": "differentiate expression involving integral"
+     },
+     {
+      "label": "b(ii)",
+      "marks": 2,
+      "page": 9,
+      "topics": [
+       "4.5"
+      ],
+      "about": "integrate inverse tangent"
+     },
+     {
+      "label": "c(i)",
+      "marks": 2,
+      "page": 10,
+      "topics": [
+       "2.9"
+      ],
+      "about": "multiple angle expansion via powers"
+     },
+     {
+      "label": "c(ii)",
+      "marks": 1,
+      "page": 10,
+      "topics": [
+       "2.9"
+      ],
+      "about": "express using cosine powers only"
+     }
+    ]
+   },
+   {
+    "n": 13,
+    "page": 11,
+    "marks": 15,
+    "parts": []
+   },
+   {
+    "n": 14,
+    "page": 13,
+    "marks": 15,
+    "parts": [
+     {
+      "label": "a(i)",
+      "marks": 1,
+      "page": 13,
+      "topics": [
+       "4.4"
+      ],
+      "about": "integrate cube of sine"
+     },
+     {
+      "label": "a(ii)",
+      "marks": 1,
+      "page": 13,
+      "topics": [
+       "4.7"
+      ],
+      "about": "symmetry argument for zero integral"
+     },
+     {
+      "label": "b(i)",
+      "marks": 3,
+      "page": 14,
+      "topics": [
+       "4.2"
+      ],
+      "about": "evaluate integral by substitution"
+     },
+     {
+      "label": "b(ii)",
+      "marks": 1,
+      "page": 14,
+      "topics": [
+       "4.6"
+      ],
+      "about": "sum of consecutive integrals"
+     },
+     {
+      "label": "b(iii)",
+      "marks": 3,
+      "page": 14,
+      "topics": [
+       "4.6"
+      ],
+      "about": "find later integral in sequence"
+     },
+     {
+      "label": "c",
+      "marks": 3,
+      "page": 14,
+      "topics": [
+       "1.5"
+      ],
+      "about": "inequality involving square roots"
+     }
+    ]
+   },
+   {
+    "n": 15,
+    "page": 15,
+    "marks": 15,
+    "parts": [
+     {
+      "label": "b(i)",
+      "marks": 2,
+      "page": 15,
+      "topics": [
+       "6.1"
+      ],
+      "about": "velocity from inverse square acceleration"
+     },
+     {
+      "label": "b(ii)",
+      "marks": 3,
+      "page": 15,
+      "topics": [
+       "6.1",
+       "4.2"
+      ],
+      "about": "time via trig substitution"
+     },
+     {
+      "label": "b(iii)",
+      "marks": 1,
+      "page": 15,
+      "topics": [
+       "6.1"
+      ],
+      "about": "limiting time to reach origin"
+     },
+     {
+      "label": "c(i)",
+      "marks": 2,
+      "page": 16,
+      "topics": [
+       "4.3"
+      ],
+      "about": "partial fractions with four factors"
+     },
+     {
+      "label": "c(ii)",
+      "marks": 3,
+      "page": 16,
+      "topics": [
+       "4.3"
+      ],
+      "about": "general partial fraction coefficients"
+     }
+    ]
+   },
+   {
+    "n": 16,
+    "page": 17,
+    "marks": 15,
+    "parts": [
+     {
+      "label": "a(i)",
+      "marks": 3,
+      "page": 17,
+      "topics": [
+       "2.7"
+      ],
+      "about": "unit complex numbers forming equilateral triangle"
+     },
+     {
+      "label": "a(ii)",
+      "marks": 2,
+      "page": 17,
+      "topics": [
+       "2.7"
+      ],
+      "about": "extend equilateral triangle result"
+     },
+     {
+      "label": "b(i)",
+      "marks": 2,
+      "page": 17,
+      "topics": [
+       "2.7"
+      ],
+      "about": "relation for equilateral triangle with origin"
+     },
+     {
+      "label": "b(ii)",
+      "marks": 1,
+      "page": 17,
+      "topics": [
+       "2.7"
+      ],
+      "about": "example of equilateral triangle vertices"
+     },
+     {
+      "label": "c(v)",
+      "marks": 2,
+      "page": 18,
+      "topics": [
+       "3.4"
+      ],
+      "about": "induction on derangement formula"
+     }
+    ]
+   }
+  ]
+ },
+ "2017": {
+  "mc": [
+   {
+    "n": 1,
+    "page": 2,
+    "topics": [
+     "2.10"
+    ]
+   },
+   {
+    "n": 3,
+    "page": 3,
+    "topics": [
+     "2.8"
+    ]
+   },
+   {
+    "n": 6,
+    "page": 4,
+    "topics": [
+     "2.6"
+    ]
+   },
+   {
+    "n": 7,
+    "page": 4,
+    "topics": [
+     "4.7"
+    ]
+   },
+   {
+    "n": 10,
+    "page": 6,
+    "topics": [
+     "4.7"
+    ]
+   }
+  ],
+  "q": [
+   {
+    "n": 11,
+    "page": 7,
+    "marks": 15,
+    "parts": [
+     {
+      "label": "a(i)",
+      "marks": 1,
+      "page": 7,
+      "topics": [
+       "2.3"
+      ],
+      "about": "exact argument"
+     },
+     {
+      "label": "a(ii)",
+      "marks": 2,
+      "page": 7,
+      "topics": [
+       "2.3"
+      ],
+      "about": "argument of a quotient"
+     },
+     {
+      "label": "c",
+      "marks": 2,
+      "page": 7,
+      "topics": [
+       "2.8"
+      ],
+      "about": "region from argument and disc"
+     },
+     {
+      "label": "d",
+      "marks": 3,
+      "page": 8,
+      "topics": [
+       "4.4"
+      ],
+      "about": "t-formula definite integral"
+     },
+     {
+      "label": "f",
+      "marks": 3,
+      "page": 8,
+      "topics": [
+       "4.2"
+      ],
+      "about": "trig substitution definite integral"
+     }
+    ]
+   },
+   {
+    "n": 12,
+    "page": 9,
+    "marks": 15,
+    "parts": [
+     {
+      "label": "b",
+      "marks": 3,
+      "page": 9,
+      "topics": [
+       "2.5",
+       "2.10"
+      ],
+      "about": "quadratic with complex coefficients"
+     },
+     {
+      "label": "c",
+      "marks": 3,
+      "page": 9,
+      "topics": [
+       "4.5"
+      ],
+      "about": "integrate product with inverse tangent"
+     }
+    ]
+   },
+   {
+    "n": 13,
+    "page": 10,
+    "marks": 15,
+    "parts": [
+     {
+      "label": "a",
+      "marks": 1,
+      "page": 10,
+      "topics": [
+       "1.6"
+      ],
+      "about": "prove two-variable AM-GM"
+     },
+     {
+      "label": "b(ii)",
+      "marks": 2,
+      "page": 10,
+      "topics": [
+       "1.6"
+      ],
+      "about": "bound coefficient via mean inequality"
+     },
+     {
+      "label": "c",
+      "marks": 4,
+      "page": 10,
+      "topics": [
+       "6.4"
+      ],
+      "about": "maximum height with quadratic resistance"
+     },
+     {
+      "label": "e",
+      "marks": 2,
+      "page": 11,
+      "topics": [
+       "2.7"
+      ],
+      "about": "square vertices via vector rotation"
+     }
+    ]
+   },
+   {
+    "n": 14,
+    "page": 12,
+    "marks": 15,
+    "parts": [
+     {
+      "label": "a(i)",
+      "marks": 1,
+      "page": 12,
+      "topics": [
+       "4.3"
+      ],
+      "about": "partial fraction constants"
+     },
+     {
+      "label": "a(ii)",
+      "marks": 2,
+      "page": 12,
+      "topics": [
+       "4.3"
+      ],
+      "about": "definite integral via partial fractions"
+     },
+     {
+      "label": "a(iii)",
+      "marks": 1,
+      "page": 12,
+      "topics": [
+       "4.7"
+      ],
+      "about": "limit of improper-style integral"
+     }
+    ]
+   },
+   {
+    "n": 15,
+    "page": 15,
+    "marks": 15,
+    "parts": [
+     {
+      "label": "a(i)",
+      "marks": 1,
+      "page": 15,
+      "topics": [
+       "4.2"
+      ],
+      "about": "evaluate first integral"
+     },
+     {
+      "label": "a(ii)",
+      "marks": 3,
+      "page": 15,
+      "topics": [
+       "4.6"
+      ],
+      "about": "recurrence by integration by parts"
+     },
+     {
+      "label": "a(iii)",
+      "marks": 1,
+      "page": 15,
+      "topics": [
+       "4.6"
+      ],
+      "about": "evaluate using recurrence"
+     }
+    ]
+   },
+   {
+    "n": 16,
+    "page": 17,
+    "marks": 15,
+    "parts": [
+     {
+      "label": "a(i)",
+      "marks": 1,
+      "page": 17,
+      "topics": [
+       "2.9"
+      ],
+      "about": "sum of power and reciprocal power"
+     },
+     {
+      "label": "a(ii)",
+      "marks": 3,
+      "page": 17,
+      "topics": [
+       "2.9"
+      ],
+      "about": "sum geometric series of complex powers"
+     },
+     {
+      "label": "a(iii)",
+      "marks": 2,
+      "page": 17,
+      "topics": [
+       "2.9"
+      ],
+      "about": "deduce cosine sum identity"
+     },
+     {
+      "label": "a(iv)",
+      "marks": 1,
+      "page": 17,
+      "topics": [
+       "2.9"
+      ],
+      "about": "cosine sum independent of n"
+     },
+     {
+      "label": "c(ii)",
+      "marks": 2,
+      "page": 18,
+      "topics": [
+       "3.5"
+      ],
+      "about": "induction on grid colouring count"
+     }
+    ]
+   }
+  ]
+ },
+ "2018": {
+  "mc": [
+   {
+    "n": 1,
+    "page": 2,
+    "topics": [
+     "4.1"
+    ]
+   },
+   {
+    "n": 6,
+    "page": 4,
+    "topics": [
+     "2.10"
+    ]
+   },
+   {
+    "n": 7,
+    "page": 5,
+    "topics": [
+     "2.8"
+    ]
+   },
+   {
+    "n": 9,
+    "page": 6,
+    "topics": [
+     "1.5"
+    ]
+   }
+  ],
+  "q": [
+   {
+    "n": 11,
+    "page": 8,
+    "marks": 15,
+    "parts": [
+     {
+      "label": "a(i)",
+      "marks": 1,
+      "page": 8,
+      "topics": [
+       "2.2"
+      ],
+      "about": "product of complex numbers"
+     },
+     {
+      "label": "a(ii)",
+      "marks": 2,
+      "page": 8,
+      "topics": [
+       "2.2"
+      ],
+      "about": "expression to Cartesian form"
+     },
+     {
+      "label": "c",
+      "marks": 4,
+      "page": 8,
+      "topics": [
+       "4.3"
+      ],
+      "about": "integrate using partial fractions"
+     },
+     {
+      "label": "d(i)",
+      "marks": 1,
+      "page": 9,
+      "topics": [
+       "2.7"
+      ],
+      "about": "square vertex by rotation"
+     },
+     {
+      "label": "d(ii)",
+      "marks": 1,
+      "page": 9,
+      "topics": [
+       "2.7"
+      ],
+      "about": "opposite vertex by vector addition"
+     },
+     {
+      "label": "d(iii)",
+      "marks": 1,
+      "page": 9,
+      "topics": [
+       "2.3"
+      ],
+      "about": "argument of quotient of vertices"
+     }
+    ]
+   },
+   {
+    "n": 12,
+    "page": 10,
+    "marks": 15,
+    "parts": [
+     {
+      "label": "c",
+      "marks": 3,
+      "page": 10,
+      "topics": [
+       "4.1"
+      ],
+      "about": "rational integrand with completed square"
+     }
+    ]
+   },
+   {
+    "n": 13,
+    "page": 12,
+    "marks": 15,
+    "parts": [
+     {
+      "label": "b(i)",
+      "marks": 2,
+      "page": 12,
+      "topics": [
+       "2.3"
+      ],
+      "about": "modulus using double angle forms"
+     },
+     {
+      "label": "b(ii)",
+      "marks": 2,
+      "page": 12,
+      "topics": [
+       "2.3"
+      ],
+      "about": "argument using double angle forms"
+     }
+    ]
+   },
+   {
+    "n": 14,
+    "page": 15,
+    "marks": 15,
+    "parts": [
+     {
+      "label": "a",
+      "marks": 3,
+      "page": 15,
+      "topics": [
+       "4.4"
+      ],
+      "about": "t-formula definite integral"
+     },
+     {
+      "label": "b",
+      "marks": 3,
+      "page": 15,
+      "topics": [
+       "6.4"
+      ],
+      "about": "falling speed with quadratic resistance"
+     },
+     {
+      "label": "c(i)",
+      "marks": 3,
+      "page": 15,
+      "topics": [
+       "4.6"
+      ],
+      "about": "recurrence for root integrand"
+     },
+     {
+      "label": "c(ii)",
+      "marks": 2,
+      "page": 15,
+      "topics": [
+       "4.6"
+      ],
+      "about": "evaluate via recurrence"
+     }
+    ]
+   },
+   {
+    "n": 15,
+    "page": 16,
+    "marks": 15,
+    "parts": [
+     {
+      "label": "b(i)",
+      "marks": 2,
+      "page": 17,
+      "topics": [
+       "2.9"
+      ],
+      "about": "multiple angle sine expansion"
+     },
+     {
+      "label": "b(ii)",
+      "marks": 3,
+      "page": 17,
+      "topics": [
+       "2.9"
+      ],
+      "about": "ratio of sines as polynomial"
+     },
+     {
+      "label": "c(i)",
+      "marks": 1,
+      "page": 17,
+      "topics": [
+       "1.5"
+      ],
+      "about": "factorisation identity for inequality"
+     },
+     {
+      "label": "c(ii)",
+      "marks": 2,
+      "page": 17,
+      "topics": [
+       "1.5"
+      ],
+      "about": "Bernoulli-type inequality"
+     },
+     {
+      "label": "c(iii)",
+      "marks": 2,
+      "page": 17,
+      "topics": [
+       "1.5"
+      ],
+      "about": "deduce weighted power inequality"
+     }
+    ]
+   },
+   {
+    "n": 16,
+    "page": 18,
+    "marks": 15,
+    "parts": [
+     {
+      "label": "a",
+      "marks": 3,
+      "page": 18,
+      "topics": [
+       "3.5"
+      ],
+      "about": "induction on product factorisation"
+     }
+    ]
+   }
+  ]
+ },
+ "2019": {
+  "mc": [
+   {
+    "n": 1,
+    "page": 2,
+    "topics": [
+     "2.2"
+    ]
+   },
+   {
+    "n": 2,
+    "page": 2,
+    "topics": [
+     "4.2"
+    ]
+   },
+   {
+    "n": 3,
+    "page": 2,
+    "topics": [
+     "4.5"
+    ]
+   },
+   {
+    "n": 5,
+    "page": 3,
+    "topics": [
+     "2.8"
+    ]
+   },
+   {
+    "n": 7,
+    "page": 4,
+    "topics": [
+     "4.7"
+    ]
+   },
+   {
+    "n": 8,
+    "page": 4,
+    "topics": [
+     "2.10"
+    ]
+   }
+  ],
+  "q": [
+   {
+    "n": 11,
+    "page": 7,
+    "marks": 15,
+    "parts": [
+     {
+      "label": "a(i)",
+      "marks": 1,
+      "page": 7,
+      "topics": [
+       "2.2"
+      ],
+      "about": "sum involving a conjugate"
+     },
+     {
+      "label": "a(ii)",
+      "marks": 2,
+      "page": 7,
+      "topics": [
+       "2.2"
+      ],
+      "about": "quotient in Cartesian form"
+     },
+     {
+      "label": "c",
+      "marks": 2,
+      "page": 7,
+      "topics": [
+       "4.1"
+      ],
+      "about": "complete square for inverse tangent"
+     },
+     {
+      "label": "d",
+      "marks": 3,
+      "page": 7,
+      "topics": [
+       "4.3"
+      ],
+      "about": "partial fractions log integral"
+     },
+     {
+      "label": "e(i)",
+      "marks": 2,
+      "page": 7,
+      "topics": [
+       "2.3"
+      ],
+      "about": "modulus-argument form"
+     },
+     {
+      "label": "e(ii)",
+      "marks": 2,
+      "page": 7,
+      "topics": [
+       "2.9"
+      ],
+      "about": "cube via de Moivre"
+     }
+    ]
+   },
+   {
+    "n": 12,
+    "page": 8,
+    "marks": 15,
+    "parts": [
+     {
+      "label": "a",
+      "marks": 2,
+      "page": 8,
+      "topics": [
+       "2.8"
+      ],
+      "about": "region from argument and imaginary part"
+     }
+    ]
+   },
+   {
+    "n": 13,
+    "page": 10,
+    "marks": 15,
+    "parts": [
+     {
+      "label": "c(i)",
+      "marks": 2,
+      "page": 12,
+      "topics": [
+       "6.5"
+      ],
+      "about": "range of projectile"
+     },
+     {
+      "label": "c(ii)",
+      "marks": 3,
+      "page": 12,
+      "topics": [
+       "6.5"
+      ],
+      "about": "second projectile meets first"
+     }
+    ]
+   },
+   {
+    "n": 14,
+    "page": 13,
+    "marks": 15,
+    "parts": [
+     {
+      "label": "b(i)",
+      "marks": 1,
+      "page": 13,
+      "topics": [
+       "6.4"
+      ],
+      "about": "terminal velocity with linear resistance"
+     },
+     {
+      "label": "b(ii)",
+      "marks": 4,
+      "page": 13,
+      "topics": [
+       "6.4"
+      ],
+      "about": "time to slow to given speed"
+     },
+     {
+      "label": "b(iii)",
+      "marks": 3,
+      "page": 13,
+      "topics": [
+       "6.4"
+      ],
+      "about": "distance while slowing down"
+     },
+     {
+      "label": "c(ii)",
+      "marks": 2,
+      "page": 13,
+      "topics": [
+       "3.5"
+      ],
+      "about": "induction on cosecant sum"
+     }
+    ]
+   },
+   {
+    "n": 15,
+    "page": 14,
+    "marks": 15,
+    "parts": [
+     {
+      "label": "a(i)",
+      "marks": 2,
+      "page": 14,
+      "topics": [
+       "4.7"
+      ],
+      "about": "symmetry property of definite integral"
+     },
+     {
+      "label": "a(ii)",
+      "marks": 2,
+      "page": 14,
+      "topics": [
+       "4.7"
+      ],
+      "about": "evaluate using symmetry"
+     },
+     {
+      "label": "c(i)",
+      "marks": 2,
+      "page": 14,
+      "topics": [
+       "4.2",
+       "4.3"
+      ],
+      "about": "evaluate rational definite integral"
+     },
+     {
+      "label": "c(ii)",
+      "marks": 3,
+      "page": 14,
+      "topics": [
+       "4.6"
+      ],
+      "about": "derive reduction formula"
+     },
+     {
+      "label": "c(iii)",
+      "marks": 2,
+      "page": 14,
+      "topics": [
+       "4.6"
+      ],
+      "about": "apply reduction formula"
+     }
+    ]
+   },
+   {
+    "n": 16,
+    "page": 15,
+    "marks": 15,
+    "parts": [
+     {
+      "label": "b(i)",
+      "marks": 3,
+      "page": 16,
+      "topics": [
+       "2.6",
+       "2.10"
+      ],
+      "about": "conjugate roots on unit circle"
+     },
+     {
+      "label": "b(ii)",
+      "marks": 2,
+      "page": 16,
+      "topics": [
+       "2.8"
+      ],
+      "about": "possible positions of other root"
+     }
+    ]
+   }
+  ]
+ }
+}

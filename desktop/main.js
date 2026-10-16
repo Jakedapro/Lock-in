@@ -25,7 +25,7 @@ const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 let win = null;
 
 /* ---------------- local web server ---------------- */
-const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.json': 'application/json', '.woff2': 'font/woff2', '.png': 'image/png', '.svg': 'image/svg+xml' };
+const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.json': 'application/json', '.woff2': 'font/woff2', '.png': 'image/png', '.svg': 'image/svg+xml', '.pdf': 'application/pdf' };
 const signins = new Map(); // state -> resolve
 function serve() {
   return new Promise((resolve, reject) => {
@@ -33,6 +33,9 @@ function serve() {
       const url = new URL(req.url, ORIGIN);
       if (req.method === 'POST' && url.pathname === '/auth-callback') return authCallback(req, res);
       if (req.method !== 'GET') { res.writeHead(405); return res.end(); }
+      if (url.pathname.startsWith('/mix/') && /^\/mix\/[a-f0-9]{16}\.pdf$/.test(url.pathname)) { // built mixed papers
+        return fs.readFile(path.join(MIX_DIR(), url.pathname.slice(5)), (err, data) => { if (err) { res.writeHead(404); return res.end(); } res.writeHead(200, { 'Content-Type': 'application/pdf' }); res.end(data); });
+      }
       const rel = decodeURIComponent(url.pathname === '/' ? '/index.html' : url.pathname);
       const file = path.normalize(path.join(APP_DIR, rel));
       if (!file.startsWith(APP_DIR + path.sep)) { res.writeHead(403); return res.end(); }
@@ -64,6 +67,34 @@ ipcMain.handle('auth:google', async () => {
   const result = new Promise((resolve) => { signins.set(state, resolve); setTimeout(() => { if (signins.delete(state)) resolve(null); }, 10 * 60e3); });
   await shell.openExternal(`${ORIGIN}/signin.html#state=${state}`);
   return result; // null if they gave up
+});
+
+/* ---------------- mixed papers: one PDF from pages of the bundled papers ---------------- */
+// The page asks for {title, lines (cover page text), pages: [{file, page}]}; we build it here (fast, in Node)
+// and serve it from /mix/<name>.pdf, so it opens in the same viewer as the real papers.
+let PDFLib = null; const parsed = {};
+const MIX_DIR = () => { const d = path.join(app.getPath('userData'), 'mixes'); fs.mkdirSync(d, { recursive: true }); return d; };
+ipcMain.handle('papers:build', async (e, spec) => {
+  PDFLib ||= require('pdf-lib');
+  const { PDFDocument, StandardFonts, rgb } = PDFLib, out = await PDFDocument.create();
+  const ascii = (t) => String(t || '').replace(/[–—]/g, '-').replace(/[^\x20-\x7E]/g, '').slice(0, 140);
+  out.setTitle(ascii(spec.title));
+  const font = await out.embedFont(StandardFonts.Helvetica), bold = await out.embedFont(StandardFonts.HelveticaBold);
+  let page = out.addPage([595, 842]), y = 780;
+  for (const [text, size, isBold, grey] of [['Lock in', 13, true, 2], [spec.title, 24, true, 0], ...(spec.lines || [])]) {
+    if (y < 60) { page = out.addPage([595, 842]); y = 780; }
+    page.drawText(ascii(text), { x: 56, y, size, font: isBold ? bold : font, color: grey === 2 ? rgb(0.35, 0.27, 0.69) : grey ? rgb(0.35, 0.38, 0.45) : rgb(0.1, 0.12, 0.16) });
+    y -= size + 8;
+  }
+  for (const { file, page: pg } of spec.pages || []) {
+    const f = path.normalize(path.join(APP_DIR, file)); if (!f.startsWith(path.join(APP_DIR, 'papers') + path.sep)) continue;
+    parsed[f] ||= PDFDocument.load(fs.readFileSync(f), { ignoreEncryption: true });
+    const src = await parsed[f]; if (pg < 1 || pg > src.getPageCount()) continue;
+    const [cp] = await out.copyPages(src, [pg - 1]); out.addPage(cp);
+  }
+  const name = crypto.randomBytes(8).toString('hex') + '.pdf';
+  fs.writeFileSync(path.join(MIX_DIR(), name), await out.save());
+  return `/mix/${name}`;
 });
 
 /* ---------------- moving progress from older versions ---------------- */
@@ -147,7 +178,7 @@ async function createWindows() {
   win = new BrowserWindow({
     width: 1280, height: 860, minWidth: 420, minHeight: 560, show: false,
     title: 'Lock in', backgroundColor: '#E8ECF0', autoHideMenuBar: true, icon,
-    webPreferences: { contextIsolation: true, sandbox: true, preload: path.join(__dirname, 'preload.js') },
+    webPreferences: { contextIsolation: true, sandbox: true, plugins: true, preload: path.join(__dirname, 'preload.js') }, // plugins: the built-in PDF viewer for past papers
   });
   win.loadURL(`${ORIGIN}/index.html`);
   // Web links (past papers, the website, GitHub) open in the normal browser, not inside the app.
@@ -166,7 +197,13 @@ async function createWindows() {
       const signin = await new Promise(res => http.get(`${ORIGIN}/signin.html`, (x) => { let b = ''; x.on('data', d => b += d); x.on('end', () => res({ status: x.statusCode, hasConfig: b.includes('apiKey') })); }).on('error', e => res({ error: String(e) })));
       const escape = await new Promise(res => http.get(`${ORIGIN}/..%2f..%2fmain.js`, (x) => res(x.statusCode)).on('error', () => res('err')));
       const badAuth = await new Promise(res => { const q = http.request(`${ORIGIN}/auth-callback`, { method: 'POST' }, (x) => res(x.statusCode)); q.end('{"state":"nope","idToken":"x"}'); });
-      console.log('SELFTEST ' + JSON.stringify({ ...r, signin, escape, badAuth }));
+      let shot = null;
+      if (process.env.LOCKIN_SELFTEST_SHOT) { // open a past paper in the in-app viewer and save a screenshot of it
+        shot = await win.webContents.executeJavaScript(`(async () => { const w = (ms) => new Promise(r => setTimeout(r, ms)); document.documentElement.classList.remove('locked'); document.querySelector('.gate')?.remove(); document.querySelector('[data-subj="y12"]').click(); await w(400); document.querySelector('#subject [data-act="papers"]').click(); await w(500); document.querySelector('[data-mt="4.5"]').click(); document.querySelector('[data-mt="2.9"]').click(); document.querySelector('[data-ml="45"]').click(); document.querySelector('[data-mx="topic"]').click(); await w(500); const summary = document.querySelector('.pp > .note')?.textContent; document.querySelector('#mxOpen').click(); window.__errs = []; addEventListener('error', e => window.__errs.push(String(e.message))); addEventListener('unhandledrejection', e => window.__errs.push(String(e.reason))); const t0 = Date.now(); for (let k = 0; k < 160 && !document.querySelector('.pdfv'); k++) await w(250); return { secs: (Date.now() - t0) / 1000, toast: document.querySelector('#toast').hidden ? '' : document.querySelector('#toast').textContent, btn: document.querySelector('#mxOpen')?.textContent, errs: window.__errs, pdflib: typeof window.PDFLib, summary, viewer: !!document.querySelector('.pdfv iframe'), title: document.querySelector('.pdfv-head b')?.textContent, years: [...new Set([...document.querySelectorAll('.mix-items b')].map(b => b.textContent.slice(0, 4)))].join(' ') }; })()`);
+        win.show(); await wait(4000);
+        fs.writeFileSync(process.env.LOCKIN_SELFTEST_SHOT, (await win.webContents.capturePage()).toPNG());
+      }
+      console.log('SELFTEST ' + JSON.stringify({ ...r, signin, escape, badAuth, shot }));
       app.quit();
     });
   }

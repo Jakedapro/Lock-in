@@ -573,6 +573,14 @@ footer { padding-block: 26px 44px; color: var(--ink-3); font-size: 14px; border-
 .mx-links { display: flex; gap: 10px; align-items: center; }
 .mix-mini { text-align: left; max-width: 520px; margin: 22px auto 0; columns: 2; font-size: 14px; }
 @media (max-width: 560px) { .mix-items li { grid-template-columns: 26px minmax(0, 1fr); } .mx-links { grid-column: 2; } .mix-mini { columns: 1; } }
+.pdfv { position: fixed; inset: 0; z-index: 110; display: flex; flex-direction: column; background: var(--paper); }
+.pdfv-head { display: flex; align-items: center; gap: 12px; padding: 10px 16px; background: var(--sheet); border-bottom: 1px solid var(--rule); }
+.pdfv-head b { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pdfv-timer { font-weight: 700; font-variant-numeric: tabular-nums; padding: 4px 10px; border-radius: 8px; background: var(--pen-soft); color: var(--pen); }
+.pdfv-frame { flex: 1; width: 100%; border: 0; background: #525659; }
+.mix-what summary { cursor: pointer; padding: 6px 0; } .mix-what .mix-items { margin-top: 10px; }
+.pp-old { margin-top: 6px; } .pp-old summary { cursor: pointer; padding: 6px 0; } .pp-old .pp-list { margin-top: 10px; }
+.pp-list button.linkbtn { font: inherit; }
 /* ---- quote bank ---- */
 .qb { display: grid; gap: 18px; max-width: 860px; }
 .qb-add h3 { margin: 0 0 4px; }

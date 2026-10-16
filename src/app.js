@@ -406,7 +406,7 @@
     if (S.subj === 'home') return renderHome($('#subject'));
     const s = getSubj(S.subj), ds = decksOf(s.id), el = $('#subject'), nm = mistakesOf(s.id).length;
     el.className = 'wrap section c-' + s.hue;
-    el.innerHTML = `<div class="subj-head"><div><h2>${esc(s.name)}</h2><p class="subj-meta">${s.exam ? `Exam ${esc(s.when)}. ` : ''}${esc(s.format)}</p>${hasPapers(s.id) ? (() => { const done = papersOf(s.id).filter(p => p.result); return `<p class="subj-meta">${done.length ? `Past papers: ${done.length} of ${PAPERS.LIST[s.id].length} done, best ${Math.max(...done.map(p => pct(p.result)))}%.` : `${PAPERS.LIST[s.id].length} official HSC past papers to sit.`}</p>`; })() : s.papers ? `<p class="subj-meta"><a class="linkbtn" href="${esc(s.papers)}" target="_blank" rel="noopener">Official HSC past papers and marking guidelines (NESA)</a></p>` : ''}${nm ? `<button class="linkbtn mist-link" type="button" data-act="mistakes" data-s="${esc(s.id)}">${nm} mistake${nm > 1 ? 's' : ''} to fix</button>` : ''}</div>
+    el.innerHTML = `<div class="subj-head"><div><h2>${esc(s.name)}</h2><p class="subj-meta">${s.exam ? `Exam ${esc(s.when)}. ` : ''}${esc(s.format)}</p>${!papersHere && ['y12', 'e1', 'phys'].includes(s.id) ? '<p class="subj-meta">Past papers and mix and match are in the Lock in app on your computer.</p>' : ''}${hasPapers(s.id) ? (() => { const done = papersOf(s.id).filter(p => p.result); return `<p class="subj-meta">${done.length ? `Past papers: ${done.length} of ${PAPERS.LIST[s.id].length} done, best ${Math.max(...done.map(p => pct(p.result)))}%.` : `${PAPERS.LIST[s.id].length} HSC past papers to sit.`}</p>`; })() : ''}${nm ? `<button class="linkbtn mist-link" type="button" data-act="mistakes" data-s="${esc(s.id)}">${nm} mistake${nm > 1 ? 's' : ''} to fix</button>` : ''}</div>
       <div class="subj-actions">${hasPapers(s.id) ? `<button class="btn btn-hot" type="button" data-act="papers" data-s="${esc(s.id)}">Past papers</button>` : ''}${s.id === 'eng' ? '<button class="btn btn-hot" type="button" data-act="read">Read the book</button><button class="btn btn-ghost" type="button" data-act="writing">Writing feedback</button>' : ''}${s.mock ? `<button class="btn" type="button" data-act="mock" data-s="${s.id}">Practice exam${s.mock === 'geo' ? ', 45 min' : ''}</button>` : ''}${ds.length ? `<button class="btn btn-ghost" type="button" data-act="cards" data-s="${esc(s.id)}">All flashcards</button>` : ''}<button class="btn btn-ghost" type="button" data-act="upload" data-s="${esc(s.id)}">Upload notes</button></div></div>
       ${ds.length ? `<ol class="decks">${ds.map(d => { const m = mastery(d.id), L = levelOf(d); return `<li><button class="deck ${hue(d)}" type="button" data-open="${esc(d.id)}">
           <span class="d-ch">${esc(d.chapter || 'Yours')}</span>
@@ -1557,7 +1557,7 @@ Aim for 2-5 sections with 3-6 notes each, 10-20 flashcards (key terms, people, d
   function drawReader() {
     const body = $('#ovBody'), R = readState(), C = RD.CHAPTERS, done = Object.keys(R.done).length;
     const strip = `<div class="rd-strip" role="tablist" aria-label="Chapters">${C.map(c => `<button class="rd-ch${R.done[c.n] ? ' done' : ''}" type="button" role="tab" data-rch="${c.n}" aria-selected="${R.ch === c.n}" title="Chapter ${c.n}: ${esc(c.title)}">${c.n}</button>`).join('')}<button class="rd-ch rd-cast" type="button" role="tab" data-rch="cast" aria-selected="${R.ch === 'cast'}">Characters</button></div>
-      <p class="note rd-prog">${done ? `${done} of ${C.length} chapters done.` : 'Go chapter by chapter: read the moments, then take the quick check.'} <a class="linkbtn" href="${RD.SOURCE}" target="_blank" rel="noopener">Read the full book free</a></p>`;
+      <p class="note rd-prog">${done ? `${done} of ${C.length} chapters done.` : 'Go chapter by chapter: read the moments, then take the quick check.'}</p>`;
     if (R.ch === 'cast') {
       body.innerHTML = strip + `<div class="rd-cast-grid">${RD.CAST.map(p => `<div class="rd-person"><h3>${esc(p.name)}</h3><p>${fm(p.who)}</p><p class="rd-tag"><b>Stands for</b> ${fm(p.stands)}</p><p class="rd-tag"><b>How they change</b> ${fm(p.arc)}</p></div>`).join('')}</div>`;
       bindStrip(body); return;
@@ -1593,11 +1593,32 @@ Aim for 2-5 sections with 3-6 notes each, 10-20 flashcards (key terms, people, d
     $$('[data-rch]', body).forEach(b => b.onclick = () => { const v = b.dataset.rch; readState().ch = v === 'cast' ? 'cast' : +v; save(); drawReader(); ov.scrollTo({ top: 0 }); });
   }
 
+  /* ---------------- PDF viewer (past papers, inside the app) ---------------- */
+  function openPdf(src, title) {
+    $('.pdfv')?.remove();
+    const st = typeof sitState === 'function' ? sitState() : null;
+    const el = document.createElement('div'); el.className = 'pdfv'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-label', title || 'Paper');
+    el.innerHTML = `<div class="pdfv-head"><button class="back" type="button" aria-label="Close"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg></button><b>${esc(title || 'Paper')}</b>${st ? '<span class="pdfv-timer" id="pdfvT"></span>' : ''}</div><iframe class="pdfv-frame" src="${esc(src)}" title="${esc(title || 'Paper')}"></iframe>`;
+    document.body.appendChild(el);
+    const close = () => { clearInterval(t); el.remove(); };
+    $('.back', el).onclick = close;
+    el.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
+    const t = setInterval(() => { const T = $('#sitTime'), o = $('#pdfvT', el); if (o) o.textContent = T ? T.textContent : ''; if (!document.body.contains(el)) clearInterval(t); }, 500);
+  }
+  document.addEventListener('click', e => {
+    const b = e.target.closest('[data-pdf]'); if (!b) return;
+    e.preventDefault();
+    const src = b.dataset.pdf, f = src.match(/papers\/(y12|e1|phys)-(\d{4})-(paper|mg)/);
+    openPdf(src, f ? `${f[2]} ${getSubj(f[1]).tab || getSubj(f[1]).name} ${f[3] === 'mg' ? 'marking guidelines' : 'paper'}${/#page=(\d+)/.test(src) ? `, page ${src.match(/#page=(\d+)/)[1]}` : ''}` : 'Paper');
+  });
+
   /* ---------------- official HSC past papers ---------------- */
   // Papers open from NESA's website (src/papers.js has links only). Here you sit them on a real exam
   // timer, then mark yourself with NESA's marking guidelines. Topics you lose marks on count as weak
   // spots, so the plan and "weakest topic" send you back to them.
-  const hasPapers = (sid) => typeof PAPERS !== 'undefined' && !!PAPERS.LIST[sid];
+  // The papers are bundled in the desktop app only, and open in its own viewer.
+  const papersHere = !!window.lockinDesktop;
+  const hasPapers = (sid) => papersHere && typeof PAPERS !== 'undefined' && !!PAPERS.LIST[sid];
   const paperKey = (sid, y) => `${sid}-${y}`;
   const SIT_KEY = 'lockin.sit';
   const sitState = () => { try { return JSON.parse(localStorage.getItem(SIT_KEY)) || null; } catch (e) { return null; } };
@@ -1607,20 +1628,21 @@ Aim for 2-5 sections with 3-6 notes each, 10-20 flashcards (key terms, people, d
   function openPapers(sid) {
     if (!hasPapers(sid)) return;
     const sit = sitState(); if (sit) return openSit(sit.sid, sit.year);
-    cur = { kind: 'papers', tab: null, sid }; const s = getSubj(sid), F = PAPERS.FORMAT[sid];
+    cur = { kind: 'papers', tab: null, sid }; const s = getSubj(sid), F = PAPERS.formatOf(sid, 9999);
     const body = ovFrame(`Past papers: ${s.name}`, 'c-' + s.hue, null), list = papersOf(sid), done = list.filter(p => p.result);
     const avg = done.length ? Math.round(done.reduce((a, p) => a + pct(p.result), 0) / done.length) : null;
     body.innerHTML = `<div class="pp">
-      <p class="note">Every official HSC paper for the current course, straight from NESA. <b>Sit it</b> runs the real timer (${F.reading} min reading, ${F.writing / 60} hours writing). Then mark it with the marking guidelines and tick the topics you lost marks on: they go into your plan.</p>
+      <p class="note">Every HSC paper, right here in the app. <b>Sit it</b> runs the real timer (${F.reading} min reading, ${F.writing / 60} hours writing). Then mark it with the marking guidelines and tick the topics you lost marks on: they go into your plan.</p>
       ${done.length ? `<div class="adm-stats"><div><b>${done.length}/${list.length}</b><span>papers done</span></div><div><b>${avg}%</b><span>average</span></div><div><b>${Math.max(...done.map(p => pct(p.result)))}%</b><span>best</span></div></div>` : ''}
       ${mixPanelHtml(sid)}
       <h3 class="pp-h">Full papers</h3>
-      <ul class="pp-list">${list.map(p => `<li${p.result ? ' class="done"' : ''}>
+      ${[['Current course', list.filter(p => !p.old)], [`Older papers (${list.filter(p => p.old).length})`, list.filter(p => p.old)]].filter(g => g[1].length).map(([gt, gl], gi) => `${gi ? `<details class="pp-old"><summary><b>${gt}</b> <span class="note">old course: some questions are on topics you don't do any more. Mix and match only picks the ones in your course.</span></summary>` : ''}
+      <ul class="pp-list">${gl.map(p => `<li${p.result ? ' class="done"' : ''}>
         <span class="pp-year">${p.year}</span>
         <span class="pp-res">${p.result ? `<b>${p.result.total}/${p.result.outOf}</b> <span class="note">${pct(p.result)}% · ${new Date(p.result.at).toLocaleDateString('en-AU', { day: 'numeric', month: 'short' })}</span>` : '<span class="note">Not done yet</span>'}</span>
-        <span class="pp-links">${p.paper ? `<a class="linkbtn" href="${esc(p.paper)}" target="_blank" rel="noopener">Paper</a>` : ''}${p.mg ? `<a class="linkbtn" href="${esc(p.mg)}" target="_blank" rel="noopener">Marking guidelines</a>` : ''}${p.feedback ? `<a class="linkbtn" href="${esc(p.feedback)}" target="_blank" rel="noopener">Marker feedback</a>` : ''}</span>
-        <span class="pp-acts"><button class="btn btn-sm" type="button" data-sit="${p.year}">${p.result ? 'Sit again' : 'Sit it'}</button><button class="btn btn-ghost btn-sm" type="button" data-mark="${p.year}">${p.result ? 'Edit marks' : 'Enter marks'}</button></span></li>`).join('')}</ul>
-      <p class="note" style="font-size:13px">Papers and marking guidelines © NSW Education Standards Authority, opened from nsw.gov.au.</p></div>`;
+        <span class="pp-links">${p.paper ? `<button class="linkbtn" type="button" data-pdf="${esc(p.paper)}">Paper</button>` : ''}${p.mg ? `<button class="linkbtn" type="button" data-pdf="${esc(p.mg)}">Marking guidelines</button>` : ''}</span>
+        <span class="pp-acts"><button class="btn btn-sm" type="button" data-sit="${p.year}">${p.result ? 'Sit again' : 'Sit it'}</button><button class="btn btn-ghost btn-sm" type="button" data-mark="${p.year}">${p.result ? 'Edit marks' : 'Enter marks'}</button></span></li>`).join('')}</ul>${gi ? '</details>' : ''}`).join('')}
+      <p class="note" style="font-size:13px">Papers and marking guidelines © NSW Education Standards Authority, kept in this app for your own study.</p></div>`;
     $$('[data-sit]', body).forEach(b => b.onclick = () => { const now = Date.now(); setSit({ sid, year: +b.dataset.sit, start: now, readEnd: now + F.reading * 6e4, end: now + (F.reading + F.writing) * 6e4, paused: null }); openSit(sid, +b.dataset.sit); });
     $$('[data-mark]', body).forEach(b => b.onclick = () => openMarkSheet(sid, +b.dataset.mark, null));
     bindMixPanel(body, sid);
@@ -1628,6 +1650,8 @@ Aim for 2-5 sections with 3-6 notes each, 10-20 flashcards (key terms, people, d
   }
   /* ---------------- mix and match: papers made of questions from different years ---------------- */
   const hasIndex = (sid) => typeof PAPER_INDEX !== 'undefined' && !!PAPER_INDEX[sid] && typeof Mix !== 'undefined';
+  // Random full papers keep to the current course; by-topic mixes use every year (only in-course questions are mapped).
+  const currentIndex = (sid) => Object.fromEntries(Object.entries(PAPER_INDEX[sid]).filter(([y]) => !yearPaper(sid, y).old));
   const yearPaper = (sid, y) => (PAPERS.LIST[sid] || []).find(p => p.year === +y) || {};
   const itemUrl = (sid, i) => (yearPaper(sid, i.year).paper || '') + (i.page ? `#page=${i.page}` : '');
   const codeName = (sid) => { const m = {}; decksOf(sid).forEach(d => (d.sections || []).forEach(sec => { m[sec.code] = { name: sec.name, deck: d.id }; })); return m; };
@@ -1636,7 +1660,7 @@ Aim for 2-5 sections with 3-6 notes each, 10-20 flashcards (key terms, people, d
     if (!hasIndex(sid)) return '';
     const names = codeName(sid), counts = Mix.topicCounts(PAPER_INDEX[sid]), sel = new Set(cur.mixTopics || []), len = cur.mixLen || 30, mixes = mixesOf(sid);
     return `<section class="panel mix-panel"><h3>Mix and match</h3>
-      <p class="note">Real HSC questions from different years, mixed into a new paper. Each one opens on the right page of the official paper.</p>
+      <p class="note">Real HSC questions from different years, mixed into a new paper. Each one opens on the right page of the paper.</p>
       <div class="row"><button class="btn" type="button" data-mx="random">Random HSC paper</button><span class="note">Full length, every question from a random year.</span></div>
       <h4>Or pick topics</h4>
       ${decksOf(sid).map(d => { const secs = (d.sections || []).filter(sec => counts[sec.code]); return secs.length ? `<div class="pp-topics"><b>${esc(d.title)}</b><div class="pills">${secs.map(sec => `<button class="pill" type="button" data-mt="${esc(sec.code)}" aria-pressed="${sel.has(sec.code)}" title="${counts[sec.code]} marks across all papers">${esc(sec.code)} ${fm(sec.name)}</button>`).join('')}</div></div>` : ''; }).join('')}
@@ -1649,9 +1673,9 @@ Aim for 2-5 sections with 3-6 notes each, 10-20 flashcards (key terms, people, d
     $$('[data-ml]', body).forEach(b => b.onclick = () => { cur.mixLen = +b.dataset.ml; $$('[data-ml]', body).forEach(x => x.setAttribute('aria-pressed', x === b)); });
     $$('[data-mo]', body).forEach(b => b.onclick = () => openMix(b.dataset.mo));
     $$('[data-mx]', body).forEach(b => b.onclick = () => {
-      const s = getSubj(sid), F = PAPERS.FORMAT[sid], perMark = F.writing / PAPERS.outOf(sid), names = codeName(sid);
+      const s = getSubj(sid), F = PAPERS.formatOf(sid, 9999), perMark = F.writing / PAPERS.outOf(sid), names = codeName(sid);
       let items, title;
-      if (b.dataset.mx === 'random') { items = Mix.randomPaper(sid, PAPER_INDEX[sid]); title = `Mixed ${s.tab || s.name} paper`; }
+      if (b.dataset.mx === 'random') { items = Mix.randomPaper(sid, currentIndex(sid)); title = `Mixed ${s.tab || s.name} paper`; }
       else {
         const t = cur.mixTopics || []; if (!t.length) { toast('Pick at least one topic'); return; }
         items = Mix.byTopic(sid, PAPER_INDEX[sid], t, cur.mixLen || 30);
@@ -1666,18 +1690,36 @@ Aim for 2-5 sections with 3-6 notes each, 10-20 flashcards (key terms, people, d
       openMix(id);
     });
   }
+  // One paper out of a mix: a cover page listing the questions, then each question's pages from its
+  // year's paper, in order. Built on this device with pdf-lib from the bundled papers.
+  const mixUrls = {}, srcPdfs = {};
+  async function mixPdf(m) {
+    if (mixUrls[m.id]) return mixUrls[m.id];
+    const s = getSubj(m.sid), names = codeName(m.sid), clean = (t) => String(t).replace(/\$[^$]*\$/g, '').trim();
+    const lines = [[`${s.name}  |  ${Mix.total(m.items)} marks  |  ${m.minutes} minutes`, 12, false, 1], ['', 6], ['Questions in this paper', 13, true],
+      ...m.items.map((i, k) => [`${k + 1}.  ${Mix.name(i)}  (${i.kind === 'mc' ? 'multiple choice' : i.kind === 'q' ? 'whole question' : 'part'}, ${i.marks} mark${i.marks > 1 ? 's' : ''})  ${i.topics.map(c => clean(names[c]?.name || c)).join(', ')}`, 10.5]),
+      ['', 6], ['Each page keeps its original question numbers. Answer the questions listed above.', 10, false, 1]];
+    const pages = Mix.pageList(PAPER_INDEX[m.sid], m.items).map(({ year, page }) => ({ file: yearPaper(m.sid, year).paper, page })).filter(p => p.file);
+    return (mixUrls[m.id] = await window.lockinDesktop.buildPaper({ title: m.title, lines, pages }));
+  }
+  async function openMixPaper(m, btn) {
+    const old = btn && btn.textContent; if (btn) { btn.disabled = true; btn.textContent = 'Putting it together…'; }
+    try { openPdf(await mixPdf(m), m.title); } catch (e) { toast('Couldn\'t build the paper. Try again.'); }
+    finally { if (btn) { btn.disabled = false; btn.textContent = old; } }
+  }
   function openMix(id) {
     const m = (S.mixes || {})[id]; if (!m) return;
     const sid = m.sid, s = getSubj(sid), names = codeName(sid), Y = [...new Set(m.items.map(i => i.year))].sort();
     cur = { kind: 'mix', tab: null, sid }; const body = ovFrame(m.title, 'c-' + s.hue, null);
     body.innerHTML = `<div class="pp">
-      <p class="note">${m.items.length} questions · ${Mix.total(m.items)} marks · ${m.minutes} minutes · from ${Y.length > 1 ? `${Y[0]}–${Y[Y.length - 1]}` : Y[0]}. <b>Open</b> takes you to the question in the official paper.</p>
-      <div class="row"><button class="btn btn-hot" type="button" id="mxSit">Start the timer</button><button class="btn btn-ghost" type="button" id="mxMark">${m.result ? 'Edit marks' : 'Enter marks'}</button><button class="linkbtn" type="button" id="mxBack">← Past papers</button></div>
+      <p class="note">${m.items.length} questions · ${Mix.total(m.items)} marks · ${m.minutes} minutes · from ${Y.length > 1 ? `${Y[0]}–${Y[Y.length - 1]}` : Y[0]}.</p>
+      <div class="row"><button class="btn btn-hot" type="button" id="mxOpen">Open the paper</button><button class="btn" type="button" id="mxSit">Start the timer</button><button class="btn btn-ghost" type="button" id="mxMark">${m.result ? 'Edit marks' : 'Enter marks'}</button><button class="linkbtn" type="button" id="mxBack">← Past papers</button></div>
       ${m.result ? `<p><b>Your score: ${m.result.total}/${m.result.outOf} (${pct(m.result)}%)</b></p>` : ''}
-      <ol class="mix-items">${m.items.map((i, k) => `<li><span class="mx-n">${k + 1}</span><div><b>${esc(Mix.name(i))}</b> <span class="note">${i.kind === 'mc' ? 'multiple choice' : i.kind === 'q' ? 'whole question' : 'part'} · ${i.marks} mark${i.marks > 1 ? 's' : ''}</span>
+      <details class="mix-what"><summary><b>What's in it</b> <span class="note">${m.items.length} questions</span></summary><ol class="mix-items">${m.items.map((i, k) => `<li><span class="mx-n">${k + 1}</span><div><b>${esc(Mix.name(i))}</b> <span class="note">${i.kind === 'mc' ? 'multiple choice' : i.kind === 'q' ? 'whole question' : 'part'} · ${i.marks} mark${i.marks > 1 ? 's' : ''}</span>
         <div class="note">${i.about ? esc(i.about) + ' · ' : ''}${i.topics.map(c => `${esc(c)} ${fm(names[c]?.name || '')}`).join(', ')}</div></div>
-        <span class="mx-links"><a class="btn btn-ghost btn-sm" href="${esc(itemUrl(sid, i))}" target="_blank" rel="noopener">Open</a>${yearPaper(sid, i.year).mg ? `<a class="linkbtn" href="${esc(yearPaper(sid, i.year).mg)}" target="_blank" rel="noopener">Marking</a>` : ''}</span></li>`).join('')}</ol>
-      <p class="note" style="font-size:13px">Questions © NSW Education Standards Authority, opened from nsw.gov.au.</p></div>`;
+        <span class="mx-links"><button class="btn btn-ghost btn-sm" type="button" data-pdf="${esc(itemUrl(sid, i))}">Open</button>${yearPaper(sid, i.year).mg ? `<button class="linkbtn" type="button" data-pdf="${esc(yearPaper(sid, i.year).mg)}">Marking</button>` : ''}</span></li>`).join('')}</ol>
+      </details><p class="note" style="font-size:13px">Questions © NSW Education Standards Authority.</p></div>`;
+    $('#mxOpen', body).onclick = (e) => openMixPaper(m, e.currentTarget);
     $('#mxSit', body).onclick = () => { const now = Date.now(); setSit({ sid, mix: id, start: now, readEnd: now + 5 * 6e4, end: now + (5 + m.minutes) * 6e4, paused: null }); openSit(sid, null); };
     $('#mxMark', body).onclick = () => openMixMark(id, null);
     $('#mxBack', body).onclick = () => openPapers(sid);
@@ -1688,7 +1730,7 @@ Aim for 2-5 sections with 3-6 notes each, 10-20 flashcards (key terms, people, d
     const sid = m.sid, s = getSubj(sid), names = codeName(sid), old = m.result;
     cur = { kind: 'marksheet', tab: null }; const body = ovFrame(`Mark: ${m.title}`, 'c-' + s.hue, null);
     body.innerHTML = `<div class="pp-mark"><p class="note">Use each year's marking guidelines.${mins != null ? ` You wrote for ${mins} minute${mins === 1 ? '' : 's'}.` : ''} Every mark here counts towards your topic accuracy, so your plan knows what to work on.</p>
-      <div class="pp-parts">${m.items.map((i, k) => `<label class="pp-part"><span>${k + 1}. ${esc(Mix.name(i))}${yearPaper(sid, i.year).mg ? ` <a class="linkbtn" href="${esc(yearPaper(sid, i.year).mg)}" target="_blank" rel="noopener">marking</a>` : ''}</span><span class="pp-in"><input class="field" type="number" inputmode="numeric" min="0" max="${i.marks}" step="1" data-mi="${k}" value="${old?.scores?.[k] ?? ''}" aria-label="Marks for ${esc(Mix.name(i))}"> / ${i.marks}</span></label>`).join('')}</div>
+      <div class="pp-parts">${m.items.map((i, k) => `<label class="pp-part"><span>${k + 1}. ${esc(Mix.name(i))}${yearPaper(sid, i.year).mg ? ` <button class="linkbtn" type="button" data-pdf="${esc(yearPaper(sid, i.year).mg)}">marking</button>` : ''}</span><span class="pp-in"><input class="field" type="number" inputmode="numeric" min="0" max="${i.marks}" step="1" data-mi="${k}" value="${old?.scores?.[k] ?? ''}" aria-label="Marks for ${esc(Mix.name(i))}"> / ${i.marks}</span></label>`).join('')}</div>
       <div class="pp-total">Total <b id="ppTotal">0</b> / ${Mix.total(m.items)} <span id="ppPct" class="note"></span></div>
       <div class="row" style="margin-top:18px"><button class="btn btn-hot" type="button" id="mxSave">Save my mark</button><button class="btn btn-ghost" type="button" id="mxBack2">Back</button></div></div>`;
     const vals = () => $$('[data-mi]', body).map(i => i.value === '' ? null : Math.max(0, Math.min(+i.max, Math.round(+i.value))));
@@ -1711,14 +1753,15 @@ Aim for 2-5 sections with 3-6 notes each, 10-20 flashcards (key terms, people, d
   let sitTick = null;
   function openSit(sid, year) {
     const s = getSubj(sid), st0 = sitState() || {}, mix = st0.mix ? (S.mixes || {})[st0.mix] : null;
-    const p = mix ? {} : (PAPERS.LIST[sid] || []).find(x => x.year === year) || {}, F = PAPERS.FORMAT[sid];
+    const p = mix ? {} : (PAPERS.LIST[sid] || []).find(x => x.year === year) || {}, F = PAPERS.formatOf(sid, year || 9999);
     const readMin = Math.round((st0.readEnd - st0.start) / 6e4) || F.reading, writeMin = Math.round((st0.end - st0.readEnd) / 6e4) || F.writing;
     const label = mix ? mix.title : `${year} ${s.tab || s.name}`;
     cur = { kind: 'sit', tab: null }; const body = ovFrame(mix ? mix.title : `${year} HSC ${s.name}`, 'c-' + s.hue, null); ov.classList.add('focus');
     body.innerHTML = `<div class="focus-run sit"><p class="focus-sub" id="sitPhase"></p><div class="focus-time" id="sitTime" role="timer" aria-live="off"></div><div class="focus-bar"><i id="sitBar"></i></div>
       <p class="focus-task" id="sitTip"></p>
-      <div class="row" style="justify-content:center;margin-top:20px">${p.paper ? `<a class="btn" href="${esc(p.paper)}" target="_blank" rel="noopener">Open the paper</a>` : ''}<button class="btn btn-ghost" type="button" id="sitPause"></button><button class="btn btn-ghost" type="button" id="sitDone">Finish</button><button class="linkbtn" type="button" id="sitQuit">Quit</button></div>
-      ${mix ? `<ol class="mix-mini">${mix.items.map(i => `<li><a class="linkbtn" href="${esc(itemUrl(sid, i))}" target="_blank" rel="noopener">${esc(Mix.name(i))}</a> <span class="note">${i.marks} mark${i.marks > 1 ? 's' : ''}</span></li>`).join('')}</ol>` : ''}</div>`;
+      <div class="row" style="justify-content:center;margin-top:20px">${p.paper ? `<button class="btn" type="button" data-pdf="${esc(p.paper)}">Open the paper</button>` : ''}<button class="btn btn-ghost" type="button" id="sitPause"></button><button class="btn btn-ghost" type="button" id="sitDone">Finish</button><button class="linkbtn" type="button" id="sitQuit">Quit</button></div>
+</div>`;
+    if (mix) { const b = document.createElement('button'); b.className = 'btn'; b.type = 'button'; b.textContent = 'Open the paper'; b.onclick = () => openMixPaper(mix, b); $('.sit .row', body).prepend(b); }
     const draw = () => {
       const st = sitState(); if (!st) return;
       const now = st.paused || Date.now(), reading = now < st.readEnd, left = Math.max(0, (reading ? st.readEnd : st.end) - now);
@@ -1745,7 +1788,7 @@ Aim for 2-5 sections with 3-6 notes each, 10-20 flashcards (key terms, people, d
     showOv();
   }
   function openMarkSheet(sid, year, mins) {
-    const s = getSubj(sid), p = (PAPERS.LIST[sid] || []).find(x => x.year === year), F = PAPERS.FORMAT[sid], old = (S.papers || {})[paperKey(sid, year)];
+    const s = getSubj(sid), p = (PAPERS.LIST[sid] || []).find(x => x.year === year), F = PAPERS.formatOf(sid, year), old = (S.papers || {})[paperKey(sid, year)];
     // Real marks per question for that year when the question map has them (some Ext 1 questions are 14 or 16).
     const yi = hasIndex(sid) ? PAPER_INDEX[sid][year] : null;
     const parts = yi && sid !== 'phys' ? F.parts.map(([k, l, max]) => { const q = k[0] === 'Q' && yi.q.find(x => `Q${x.n}` === k); return [k, l, q ? q.marks : max]; }) : F.parts;
@@ -1754,7 +1797,7 @@ Aim for 2-5 sections with 3-6 notes each, 10-20 flashcards (key terms, people, d
     const topics = decksOf(sid).flatMap(d => (d.sections || []).map(sec => ({ id: d.id + ':' + sec.code, code: sec.code, name: sec.name, deck: d.title })));
     const lost = new Set(old?.lost || []);
     body.innerHTML = `<div class="pp-mark">
-      <p class="note">${p.mg ? `Open the <a class="linkbtn" href="${esc(p.mg)}" target="_blank" rel="noopener">marking guidelines</a> and mark each question honestly.` : 'Mark each question.'}${mins != null ? ` You wrote for ${mins} minute${mins === 1 ? '' : 's'}.` : ''}</p>
+      <p class="note">${p.mg ? `Open the <button class="linkbtn" type="button" data-pdf="${esc(p.mg)}">marking guidelines</button> and mark each question honestly.` : 'Mark each question.'}${mins != null ? ` You wrote for ${mins} minute${mins === 1 ? '' : 's'}.` : ''}</p>
       <div class="pp-parts">${parts.map(([k, l, max]) => `<label class="pp-part"><span>${esc(l)}</span><span class="pp-in"><input class="field" type="number" inputmode="numeric" min="0" max="${max}" step="1" data-pt="${k}" value="${old?.scores?.[k] ?? ''}" aria-label="${esc(l)} marks"> / ${max}</span></label>`).join('')}</div>
       <div class="pp-total">Total <b id="ppTotal">0</b> / ${outOf} <span id="ppPct" class="note"></span></div>
       <h3>Which topics did you lose marks on?</h3><p class="note">Tick them and they become weak spots in your plan.</p>
