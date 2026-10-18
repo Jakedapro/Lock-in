@@ -5,3 +5,4 @@ desktop/dist/
 desktop/app/
 desktop/papers/
 .DS_Store
+desktop/dist-mac/

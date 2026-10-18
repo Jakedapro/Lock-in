@@ -9302,7 +9302,10 @@ Reply with ONLY this JSON:
   applyTheme(theme);
   $('#themeBtn').onclick = () => { theme = THEMES[(THEMES.indexOf(theme) + 1) % 3]; try { localStorage.setItem('lockin.theme', theme); } catch (e) { } applyTheme(theme); };
   if (focusState()) openFocus(); // a session survives a reload
-  else if (typeof sitState === 'function' && sitState()) { const st = sitState(); Gate.onOpen(() => openSit(st.sid, st.year)); } // so does a past paper
+  else if (typeof sitState === 'function' && sitState()) { // so does a past paper, unless it ended more than an hour ago
+    const st = sitState();
+    if (!st.paused && Date.now() > st.end + 36e5) setSit(null); else Gate.onOpen(() => openSit(st.sid, st.year));
+  }
   $('#acctBtn').onclick = () => (me && !S.profile ? openProfile(true) : openAccount());
   if (S.subj !== 'home' && !subjects().some(s => s.id === S.subj)) S.subj = 'home';
   renderStats(); renderMistakeCount(); renderTabs(); renderNext(); renderBoard(); renderSubject(); renderWeek(); renderUpSubjects(); renderAiNote(); renderAcct(); renderLeague(); intro();

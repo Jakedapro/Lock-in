@@ -53,7 +53,19 @@
         "repo": "Lock-in",
         "releaseType": "release"
       }
-    ]
+    ],
+    "mac": {
+      "target": [
+        {
+          "target": "dir",
+          "arch": [
+            "arm64"
+          ]
+        }
+      ],
+      "icon": "build/icon.png",
+      "category": "public.app-category.education"
+    }
   },
   "dependencies": {
     "pdf-lib": "1.17.1"
