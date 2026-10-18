@@ -4,14 +4,14 @@ A study app for HSC Maths Extension 1, Maths Extension 2 and Physics, plus Year 
 
 **Invite only:** the website and the app ask for an invite key (`LOCK-XXXX-XXXX-XXXX`) the first time. Got an invite link? Open it and you're in. Keys can run out (1 day to 3 months, or never); the admin key opens an **Admin** panel to make, extend, turn off and remove keys.
 
-**Website:** https://jamalmusialla81-hub.github.io/lock-in/
+**Website:** https://jakedapro.github.io/Lock-in/
 
 ## Download the Windows app
 
 Open **PowerShell** and paste this once:
 
 ```powershell
-irm https://raw.githubusercontent.com/jamalmusialla81-hub/lock-in/main/install.ps1 | iex
+irm https://raw.githubusercontent.com/Jakedapro/Lock-in/main/install.ps1 | iex
 ```
 
 It installs the app and a `lockin` command. Then, in any terminal:
@@ -28,7 +28,7 @@ lockin web        open the website
 lockin uninstall  remove the app and the command
 ```
 
-Prefer clicking? Download `Lock-In-Setup.exe` from the [latest release](https://github.com/jamalmusialla81-hub/lock-in/releases/latest) and run it.
+Prefer clicking? Download `Lock-In-Setup.exe` from the [latest release](https://github.com/Jakedapro/Lock-in/releases/latest) and run it.
 
 Windows may show "Windows protected your PC" because the app isn't code-signed. Click **More info**, then **Run anyway**.
 

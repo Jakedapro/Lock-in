@@ -1207,7 +1207,7 @@ if (typeof module !== 'undefined') module.exports = Keys;
    revoked key stops working. Invite links look like …/lock-in/#key=LOCK-XXXX-XXXX-XXXX. */
 const Gate = (() => {
   const SAVED = 'lockin.key', CACHE = 'lockin.keys';
-  const RAW = 'https://raw.githubusercontent.com/jamalmusialla81-hub/lock-in/main/keys.json';
+  const RAW = 'https://raw.githubusercontent.com/Jakedapro/Lock-in/main/keys.json';
   const enabled = typeof BUILD !== 'undefined' && BUILD.gate;
   const get = (k) => { try { return localStorage.getItem(k); } catch (e) { return null; } };
   const set = (k, v) => { try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch (e) { } };
@@ -1270,7 +1270,7 @@ const Gate = (() => {
   // Fetch the live keys.json. Same site first (GitHub Pages), raw GitHub for the desktop app.
   async function refresh() {
     // The desktop app (file:// or localhost) asks the live website; the website asks itself.
-    const urls = location.protocol === 'https:' ? ['keys.json', RAW] : ['https://jamalmusialla81-hub.github.io/lock-in/keys.json', RAW];
+    const urls = location.protocol === 'https:' ? ['keys.json', RAW] : ['https://jakedapro.github.io/Lock-in/keys.json', RAW];
     for (const u of urls) {
       try {
         const r = await fetch(u + '?t=' + Date.now(), { cache: 'no-store' }); if (!r.ok) continue;
@@ -9188,7 +9188,7 @@ Reply with ONLY this JSON:
   // Keys live in keys.json in the repo. Edits are kept on this device as a list of changes; "Save" applies
   // them to the current keys.json on GitHub (with a token saved on this device), or you can paste it by hand.
   // Names are private to this device; keys.json only holds hashes and generic labels.
-  const REPO = 'jamalmusialla81-hub/lock-in', KEYS_EDIT = `https://github.com/${REPO}/edit/main/keys.json`;
+  const REPO = 'Jakedapro/Lock-in', KEYS_EDIT = `https://github.com/${REPO}/edit/main/keys.json`;
   const kget = (k, d) => { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch (e) { return d; } };
   const kset = (k, v) => { try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, JSON.stringify(v)); } catch (e) { } };
   const LENGTHS = [['1', '1 day'], ['7', '1 week'], ['30', '1 month'], ['90', '3 months'], ['0', 'Never']];
@@ -9196,7 +9196,7 @@ Reply with ONLY this JSON:
   let adm = { fresh: false, saving: false, filter: 'all', made: null, err: '' };
   const ops = () => kget('lockin.keyOps', []);
   const addOp = (o) => { kset('lockin.keyOps', [...ops(), o]); autoSave(); };
-  const siteUrl = () => (location.protocol === 'https:' ? location.href.split('#')[0].split('?')[0] : 'https://jamalmusialla81-hub.github.io/lock-in/');
+  const siteUrl = () => (location.protocol === 'https:' ? location.href.split('#')[0].split('?')[0] : 'https://jakedapro.github.io/Lock-in/');
   function openAdmin() {
     adm = { ...adm, fresh: false, made: null, err: '' }; cur = { kind: 'admin', tab: null }; ovFrame('Admin', 'c-lilac', null); drawAdmin(); showOv();
     Gate.refresh().then(ok => { adm.fresh = ok; if (cur?.kind === 'admin') drawAdmin(); });

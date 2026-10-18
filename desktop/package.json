@@ -3,7 +3,7 @@
   "productName": "Lock in",
   "version": "1.2.0",
   "description": "Study app for HSC Maths Extension 1 and 2, Physics, and Year 8 exams.",
-  "author": "jamalmusialla81-hub",
+  "author": "Jakedapro",
   "license": "UNLICENSED",
   "private": true,
   "main": "main.js",
@@ -49,8 +49,8 @@
     "publish": [
       {
         "provider": "github",
-        "owner": "jamalmusialla81-hub",
-        "repo": "lock-in",
+        "owner": "Jakedapro",
+        "repo": "Lock-in",
         "releaseType": "release"
       }
     ]

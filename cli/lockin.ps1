@@ -7,8 +7,8 @@ $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue' # makes downloads much faster in Windows PowerShell
 try { [Console]::OutputEncoding = [Text.Encoding]::UTF8 } catch { }
 
-$Repo = 'jamalmusialla81-hub/lock-in'
-$Site = 'https://jamalmusialla81-hub.github.io/lock-in/'
+$Repo = 'Jakedapro/Lock-in'
+$Site = 'https://jakedapro.github.io/Lock-in/'
 $Bin = Split-Path -Parent $MyInvocation.MyCommand.Path
 
 # ---------------------------------------------------------------- finding and installing the app

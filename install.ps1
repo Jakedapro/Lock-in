@@ -1,10 +1,10 @@
 # Installs the `lockin` command and the Lock in app on Windows.
-#   irm https://raw.githubusercontent.com/jamalmusialla81-hub/lock-in/main/install.ps1 | iex
+#   irm https://raw.githubusercontent.com/Jakedapro/Lock-in/main/install.ps1 | iex
 $ErrorActionPreference = 'Stop'
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 $ProgressPreference = 'SilentlyContinue'
 
-$Repo = 'jamalmusialla81-hub/lock-in'
+$Repo = 'Jakedapro/Lock-in'
 $Bin = Join-Path $env:LOCALAPPDATA 'LockIn\bin'
 New-Item -ItemType Directory -Force -Path $Bin | Out-Null
 

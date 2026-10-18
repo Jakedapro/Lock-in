@@ -2151,7 +2151,7 @@ Reply with ONLY this JSON:
   // Keys live in keys.json in the repo. Edits are kept on this device as a list of changes; "Save" applies
   // them to the current keys.json on GitHub (with a token saved on this device), or you can paste it by hand.
   // Names are private to this device; keys.json only holds hashes and generic labels.
-  const REPO = 'jamalmusialla81-hub/lock-in', KEYS_EDIT = `https://github.com/${REPO}/edit/main/keys.json`;
+  const REPO = 'Jakedapro/Lock-in', KEYS_EDIT = `https://github.com/${REPO}/edit/main/keys.json`;
   const kget = (k, d) => { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch (e) { return d; } };
   const kset = (k, v) => { try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, JSON.stringify(v)); } catch (e) { } };
   const LENGTHS = [['1', '1 day'], ['7', '1 week'], ['30', '1 month'], ['90', '3 months'], ['0', 'Never']];
@@ -2159,7 +2159,7 @@ Reply with ONLY this JSON:
   let adm = { fresh: false, saving: false, filter: 'all', made: null, err: '' };
   const ops = () => kget('lockin.keyOps', []);
   const addOp = (o) => { kset('lockin.keyOps', [...ops(), o]); autoSave(); };
-  const siteUrl = () => (location.protocol === 'https:' ? location.href.split('#')[0].split('?')[0] : 'https://jamalmusialla81-hub.github.io/lock-in/');
+  const siteUrl = () => (location.protocol === 'https:' ? location.href.split('#')[0].split('?')[0] : 'https://jakedapro.github.io/Lock-in/');
   function openAdmin() {
     adm = { ...adm, fresh: false, made: null, err: '' }; cur = { kind: 'admin', tab: null }; ovFrame('Admin', 'c-lilac', null); drawAdmin(); showOv();
     Gate.refresh().then(ok => { adm.fresh = ok; if (cur?.kind === 'admin') drawAdmin(); });

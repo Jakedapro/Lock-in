@@ -4,7 +4,7 @@
    revoked key stops working. Invite links look like …/lock-in/#key=LOCK-XXXX-XXXX-XXXX. */
 const Gate = (() => {
   const SAVED = 'lockin.key', CACHE = 'lockin.keys';
-  const RAW = 'https://raw.githubusercontent.com/jamalmusialla81-hub/lock-in/main/keys.json';
+  const RAW = 'https://raw.githubusercontent.com/Jakedapro/Lock-in/main/keys.json';
   const enabled = typeof BUILD !== 'undefined' && BUILD.gate;
   const get = (k) => { try { return localStorage.getItem(k); } catch (e) { return null; } };
   const set = (k, v) => { try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch (e) { } };
@@ -67,7 +67,7 @@ const Gate = (() => {
   // Fetch the live keys.json. Same site first (GitHub Pages), raw GitHub for the desktop app.
   async function refresh() {
     // The desktop app (file:// or localhost) asks the live website; the website asks itself.
-    const urls = location.protocol === 'https:' ? ['keys.json', RAW] : ['https://jamalmusialla81-hub.github.io/lock-in/keys.json', RAW];
+    const urls = location.protocol === 'https:' ? ['keys.json', RAW] : ['https://jakedapro.github.io/Lock-in/keys.json', RAW];
     for (const u of urls) {
       try {
         const r = await fetch(u + '?t=' + Date.now(), { cache: 'no-store' }); if (!r.ok) continue;
