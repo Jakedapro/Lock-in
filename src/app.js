@@ -68,9 +68,9 @@
     { ...X.ch12, subject: 'maths', bank: X.BANK.sim },
     ...E2.DECKS, ...E1.DECKS, ...PH.DECKS, ...EN.DECKS,
   ].map(d => ({ ...d, subject: d.subject || 'maths', bank: typeof d.bank === 'string' ? G.BANK[d.bank] : d.bank }));
-  // Ext 1 and Ext 2 are only for the admin key. Everyone else gets the app without them (subjects, decks,
+  // Ext 1, Ext 2 and Physics are only for the admin key. Everyone else gets the app without them (subjects, decks,
   // papers, plans and search all read SUBJ and BUILTIN, so trimming those two lists hides them everywhere).
-  const ADMIN_ONLY = ['y12', 'e1'], SUBJ_ALL = SUBJ.slice(), BUILTIN_ALL = BUILTIN.slice();
+  const ADMIN_ONLY = ['y12', 'e1', 'phys'], SUBJ_ALL = SUBJ.slice(), BUILTIN_ALL = BUILTIN.slice();
   function applyAccess() {
     const ok = (sid) => Gate.isAdmin() || !ADMIN_ONLY.includes(sid);
     SUBJ.splice(0, SUBJ.length, ...SUBJ_ALL.filter(s => ok(s.id)));
