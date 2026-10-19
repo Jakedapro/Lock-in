@@ -7293,6 +7293,7 @@ if (typeof module !== 'undefined') module.exports = Badges;
   const SUBJ = [
     { id: 'geo', name: 'Geography', hue: 'green', exam: examDate('geo'), when: examWhen('geo'), format: '45 minutes. 30 multiple choice (25 on geographical tools & skills, 5 on Water in the World) + 3 short answers.', mock: 'geo' },
     { id: 'maths', name: 'Maths', hue: 'gold', exam: examDate('maths'), when: examWhen('maths'), format: 'The exam covers chapters 8, 9, 10 and 12, with multi-part questions like the Test Yourself pages. Ch 3 and Ch 7 are extra practice.', mock: 'maths' },
+    { id: 'y12', name: 'Maths Extension 2', tab: 'Ext 2', hue: 'lilac', exam: examDate('y12'), when: examWhen('y12'), format: 'HSC paper: 3 hours. Section I is 10 multiple choice; Section II is 90 marks across proof, complex numbers, induction, integration, vectors and mechanics.', mock: 'gen', papers: 'https://www.nsw.gov.au/education-and-training/nesa/curriculum/hsc-exam-papers/mathematics-extension-2' },
     { id: 'e1', name: 'Maths Extension 1', tab: 'Ext 1', hue: 'cyan', exam: examDate('e1'), when: examWhen('e1'), format: 'HSC paper: 2 hours. Section I is 10 multiple choice; Section II is 60 marks of multi-part questions.', mock: 'gen', papers: 'https://www.nsw.gov.au/education-and-training/nesa/curriculum/hsc-exam-papers/mathematics-extension-1' },
     { id: 'eng', name: 'English', hue: 'pink', exam: examDate('eng'), when: examWhen('eng'), format: 'Task 4: Animal Farm. 60 minutes, 20 marks, on three extracts from the novel. Extract 1: 3 multiple choice (1 mark each) and a 2 mark emotion question with ONE quote. Extract 2: a 3 mark question (ONE quote, technique and effect) and a 5 mark creative journal entry from another character. Extract 3: a 7 mark extended response in 1–2 PETAL paragraphs on power and corruption. No quotes to memorise. Writing feedback checks your PETAL paragraphs.', mock: 'eng' },
     { id: 'phys', name: 'Physics', hue: 'coral', exam: examDate('phys'), when: examWhen('phys'), format: 'HSC paper: 3 hours. Section I is 20 multiple choice; Section II is 80 marks of short answers and extended responses on modules 5 to 8.', mock: 'gen', papers: 'https://www.nsw.gov.au/education-and-training/nesa/curriculum/hsc-exam-papers/physics' },
@@ -7302,8 +7303,18 @@ if (typeof module !== 'undefined') module.exports = Badges;
     ...Y8.DECKS,
     ...M.DECKS.map(d => ({ ...d, subject: 'maths', bank: X.BANK[d.id], drills: M.GEN[d.gen] })),
     { ...X.ch12, subject: 'maths', bank: X.BANK.sim },
-    ...E1.DECKS, ...PH.DECKS, ...EN.DECKS,
+    ...E2.DECKS, ...E1.DECKS, ...PH.DECKS, ...EN.DECKS,
   ].map(d => ({ ...d, subject: d.subject || 'maths', bank: typeof d.bank === 'string' ? G.BANK[d.bank] : d.bank }));
+  // Ext 1 and Ext 2 are only for the admin key. Everyone else gets the app without them (subjects, decks,
+  // papers, plans and search all read SUBJ and BUILTIN, so trimming those two lists hides them everywhere).
+  const ADMIN_ONLY = ['y12', 'e1'], SUBJ_ALL = SUBJ.slice(), BUILTIN_ALL = BUILTIN.slice();
+  function applyAccess() {
+    const ok = (sid) => Gate.isAdmin() || !ADMIN_ONLY.includes(sid);
+    SUBJ.splice(0, SUBJ.length, ...SUBJ_ALL.filter(s => ok(s.id)));
+    BUILTIN.splice(0, BUILTIN.length, ...BUILTIN_ALL.filter(d => ok(d.subject)));
+    if (!ok(S.subj)) S.subj = 'home';
+  }
+  applyAccess(); Gate.onOpen(applyAccess);
   const extraQ = (id) => (S.extra[id] ||= { concepts: [], short: [] });
   const allDecks = () => [...BUILTIN, ...S.custom];
   const getDeck = (id) => allDecks().find(d => d.id === id);
@@ -9524,7 +9535,7 @@ Reply with ONLY this JSON:
   renderStats(); renderMistakeCount(); renderTabs(); renderNext(); renderBoard(); renderSubject(); renderWeek(); renderUpSubjects(); renderAiNote(); renderAcct(); renderLeague(); intro();
   AI.init();
   Cloud.init(onUser);
-  Gate.onOpen(() => { if (S.subj === 'home') renderSubject(); $('#adminBtn').hidden = !Gate.isAdmin(); if (Gate.isAdmin() && kget('lockin.keyOps', []).length) ghSave(); });
+  Gate.onOpen(() => { renderTabs(); renderSubject(); $('#adminBtn').hidden = !Gate.isAdmin(); if (Gate.isAdmin() && kget('lockin.keyOps', []).length) ghSave(); });
   Gate.onExpirySoon((d) => toast(`Your key runs out in ${d} day${d === 1 ? '' : 's'}. Ask for a new one.`));
   $('#adminBtn').onclick = openAdmin;
 })();
