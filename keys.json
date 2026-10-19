@@ -1,21 +1,7 @@
 {
   "v": 1,
   "keys": [
-    {"id": "k01", "hash": "217fb2c886771854199f02e9f346a1573630e78f342697ba8941d106b506ee03", "label": "Admin", "admin": true},
-    {"id": "k02", "hash": "3a3b5c532e31e8129e71c1401279f3ce2becc1e259d2a22de6b98d7ea0de1661", "label": "Friend 1"},
-    {"id": "k03", "hash": "f1b4555a2a5de69cf8df25ab413d248979ea269c7172adf81aed66efc17695ce", "label": "Friend 2"},
-    {"id": "k04", "hash": "4a25659b4a472867ee641fc8dbd0d2b3e94bbb75f930de4c3d94a8ff44c631d9", "label": "Friend 3"},
-    {"id": "k05", "hash": "a15268caf66eec096600e155dc6201f87d9002fa4b10fe9f56f50dba9ffc80a3", "label": "Friend 4"},
-    {"id": "k06", "hash": "82fa0d38a6327b8b1853363e215d0a914fdac4bdb6eda7f82f157291d9e56cf9", "label": "Friend 5"},
-    {"id": "k07", "hash": "14acdaa60e9994008505b344efd7cfe2cef305376602c9d04d7407d57985f9f7", "label": "Friend 6"},
-    {"id": "k08", "hash": "5ca40d6089403b8a658bf84e5c2035f91516089142303ebfe760da450ac439ce", "label": "Friend 7"},
-    {"id": "k09", "hash": "e07a8c72b53b8b865124e74c7c6dda5e3ce1665658fd2e9f8a19ea88fb6528ce", "label": "Friend 8"},
-    {"id": "k10", "hash": "c8553cab2825df4ce7af381ef8266ff539f9891de5b0871a1ddd9298a472068c", "label": "Friend 9"},
-    {"id": "k11", "hash": "e1cf67237b5fb399f65e2e206ac513882dff81eea9d59c993d96e36ea1f878ba", "label": "Friend 10"},
-    {"id": "k12", "hash": "27e9d81f98347726a31c7df5aa6062702bdeb43ebadc4cd2a7de79a4574abaea", "label": "Friend 11"},
-    {"id": "k13", "hash": "2ac8a511be8ae246bf75dcd7c07a0896eea8aff63c470d63f81364fd6bfb80d6", "label": "Friend 12"},
-    {"id": "k14", "hash": "08c3a31c34543f62fea87db7276999a859ec3bc63ed5bf941ab50aa03a63c5c6", "label": "Friend 13"},
-    {"id": "k15", "hash": "37906a4b24bcf4cc8e5de4bf3dc3510629c2eef9fa0e1939a4b045fca7922a87", "label": "Friend 14"},
-    {"id": "k16", "hash": "391b0f80acbf6218f3e594aa1c9028f406673c9e51c3690eeb912251fd464942", "label": "Friend 15"}
+    {"id":"k01","hash":"217fb2c886771854199f02e9f346a1573630e78f342697ba8941d106b506ee03","label":"Admin","admin":true},
+    {"id":"k02","hash":"16e356518eeb2d3d067453613d6bfbce045dd8204bab439dfc94f9a086745f0c","label":"Friend","exp":1792532378203}
   ]
 }
