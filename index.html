@@ -591,6 +591,7 @@ footer { padding-block: 26px 44px; color: var(--ink-3); font-size: 14px; border-
 .pv-zoom { display: flex; border: 1px solid var(--rule); border-radius: 8px; overflow: hidden; }
 .pv-zoom button { width: 34px; height: 32px; border: 0; background: var(--sheet); color: var(--ink); font: 700 18px var(--f); cursor: pointer; }
 .pv-zoom button + button { border-left: 1px solid var(--rule); }
+.pv-print { height: 32px; padding: 0 12px; border: 1px solid var(--rule); border-radius: 8px; background: var(--sheet); color: var(--ink); font: 700 13px var(--f); cursor: pointer; }
 .pv-timer { display: flex; align-items: center; gap: 6px; }
 .pv-clock { display: grid; justify-items: end; line-height: 1.05; margin-right: 4px; }
 .pv-clock small { font-size: 11px; color: var(--ink-3); text-transform: none; }
@@ -813,8 +814,8 @@ html.locked body { overflow: hidden; }
 <script src="https://cdn.jsdelivr.net/npm/firebase@10.14.1/firebase-auth-compat.js" integrity="sha384-I1LYojsZ5RM1cOda44Z2h42Qa6YfsQ1XkXxREnhp4ueYBR/4d1pG1K+NZM537Vsj" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/firebase@10.14.1/firebase-firestore-compat.js" integrity="sha384-Ke0FJhH7LyRqDxZ0wt+/OXV38yfQVu7g9VPEEGjYmB4RVOY/ta04uecRhsMwT7V3" crossorigin="anonymous"></script>
 <script>
-const EXAMS = [{"id": "y12", "name": "Maths Extension 2", "date": "2026-10-19T13:50", "when": "Mon 19 Oct, 1:50 pm"}, {"id": "e1", "name": "Maths Extension 1", "date": "2026-10-23T13:50", "when": "Fri 23 Oct, 1:50 pm"}, {"id": "geo", "name": "Geography", "date": "2026-10-26T09:00", "when": "Mon 26 Oct, P1–2"}, {"id": "eng", "name": "English", "date": "2026-10-28T13:40", "when": "Wed 28 Oct, P5–6"}, {"id": "maths", "name": "Maths", "date": "2026-10-29T11:00", "when": "Thu 29 Oct, P3–4"}, {"id": "phys", "name": "Physics", "date": "2026-11-05T09:25", "when": "Thu 5 Nov, 9:25 am"}];
-const KEYS = {"v": 1, "keys": [{"id": "k01", "hash": "217fb2c886771854199f02e9f346a1573630e78f342697ba8941d106b506ee03", "label": "Admin", "admin": true}, {"id": "k02", "hash": "3a3b5c532e31e8129e71c1401279f3ce2becc1e259d2a22de6b98d7ea0de1661", "label": "Friend 1"}, {"id": "k03", "hash": "f1b4555a2a5de69cf8df25ab413d248979ea269c7172adf81aed66efc17695ce", "label": "Friend 2"}, {"id": "k04", "hash": "4a25659b4a472867ee641fc8dbd0d2b3e94bbb75f930de4c3d94a8ff44c631d9", "label": "Friend 3"}, {"id": "k05", "hash": "a15268caf66eec096600e155dc6201f87d9002fa4b10fe9f56f50dba9ffc80a3", "label": "Friend 4"}, {"id": "k06", "hash": "82fa0d38a6327b8b1853363e215d0a914fdac4bdb6eda7f82f157291d9e56cf9", "label": "Friend 5"}, {"id": "k07", "hash": "14acdaa60e9994008505b344efd7cfe2cef305376602c9d04d7407d57985f9f7", "label": "Friend 6"}, {"id": "k08", "hash": "5ca40d6089403b8a658bf84e5c2035f91516089142303ebfe760da450ac439ce", "label": "Friend 7"}, {"id": "k09", "hash": "e07a8c72b53b8b865124e74c7c6dda5e3ce1665658fd2e9f8a19ea88fb6528ce", "label": "Friend 8"}, {"id": "k10", "hash": "c8553cab2825df4ce7af381ef8266ff539f9891de5b0871a1ddd9298a472068c", "label": "Friend 9"}, {"id": "k11", "hash": "e1cf67237b5fb399f65e2e206ac513882dff81eea9d59c993d96e36ea1f878ba", "label": "Friend 10"}, {"id": "k12", "hash": "27e9d81f98347726a31c7df5aa6062702bdeb43ebadc4cd2a7de79a4574abaea", "label": "Friend 11"}, {"id": "k13", "hash": "2ac8a511be8ae246bf75dcd7c07a0896eea8aff63c470d63f81364fd6bfb80d6", "label": "Friend 12"}, {"id": "k14", "hash": "08c3a31c34543f62fea87db7276999a859ec3bc63ed5bf941ab50aa03a63c5c6", "label": "Friend 13"}, {"id": "k15", "hash": "37906a4b24bcf4cc8e5de4bf3dc3510629c2eef9fa0e1939a4b045fca7922a87", "label": "Friend 14"}, {"id": "k16", "hash": "391b0f80acbf6218f3e594aa1c9028f406673c9e51c3690eeb912251fd464942", "label": "Friend 15"}]};
+const EXAMS = [{"id": "e1", "name": "Maths Extension 1", "date": "2026-10-23T13:50", "when": "Fri 23 Oct, 1:50 pm"}, {"id": "geo", "name": "Geography", "date": "2026-10-26T09:00", "when": "Mon 26 Oct, P1–2"}, {"id": "eng", "name": "English", "date": "2026-10-28T13:40", "when": "Wed 28 Oct, P5–6"}, {"id": "maths", "name": "Maths", "date": "2026-10-29T11:00", "when": "Thu 29 Oct, P3–4"}, {"id": "phys", "name": "Physics", "date": "2026-11-05T09:25", "when": "Thu 5 Nov, 9:25 am"}];
+const KEYS = {"v": 1, "keys": [{"id": "k01", "hash": "217fb2c886771854199f02e9f346a1573630e78f342697ba8941d106b506ee03", "label": "Admin", "admin": true}, {"id": "k02", "hash": "16e356518eeb2d3d067453613d6bfbce045dd8204bab439dfc94f9a086745f0c", "label": "Friend", "exp": 1792532378203}, {"id": "k17", "hash": "00fbe6311a865d28ab87cd4ea37b600319b3ff10890a38c0aad48d9979fbe67d", "label": "Friend 16", "exp": 1792532879854}]};
 const BUILD = {"gate": true};
 </script>
 <script>
@@ -1208,6 +1209,7 @@ if (typeof module !== 'undefined') module.exports = Keys;
 const Gate = (() => {
   const SAVED = 'lockin.key', CACHE = 'lockin.keys';
   const RAW = 'https://raw.githubusercontent.com/Jakedapro/Lock-in/main/keys.json';
+  const API = 'https://api.github.com/repos/Jakedapro/Lock-in/contents/keys.json?ref=main'; // never cached, but rate limited: only for unknown keys
   const enabled = typeof BUILD !== 'undefined' && BUILD.gate;
   const get = (k) => { try { return localStorage.getItem(k); } catch (e) { return null; } };
   const set = (k, v) => { try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch (e) { } };
@@ -1257,6 +1259,7 @@ const Gate = (() => {
       if (!Keys.norm(inp.value)) return wrong('Keys look like LOCK-XXXX-XXXX-XXXX.');
       if (!tryKey(inp.value)) {
         note('Checking…'); await refresh(); // a brand-new key is only in the live keys.json
+        if (!tryKey(inp.value) && Keys.status(Keys.find(inp.value, list)) === 'missing') await refresh(true); // saved seconds ago: the site's copy lags behind GitHub
         if (!tryKey(inp.value)) { if (++fails >= 5) { fails = 0; waitUntil = Date.now() + 30000; } return wrong(whyNot(inp.value)); }
       }
       el.classList.remove('shake'); el.classList.add('opening'); note('You\'re in.');
@@ -1268,12 +1271,12 @@ const Gate = (() => {
   function wrong(t) { note(t); el.classList.remove('shake'); void el.offsetWidth; el.classList.add('shake'); }
 
   // Fetch the live keys.json. Same site first (GitHub Pages), raw GitHub for the desktop app.
-  async function refresh() {
-    // The desktop app (file:// or localhost) asks the live website; the website asks itself.
-    const urls = location.protocol === 'https:' ? ['keys.json', RAW] : ['https://jakedapro.github.io/Lock-in/keys.json', RAW];
+  async function refresh(direct) {
+    // The desktop app (file:// or localhost) asks the live website; the website asks itself. `direct` asks GitHub itself.
+    const urls = direct ? [API] : location.protocol === 'https:' ? ['keys.json', RAW] : ['https://jakedapro.github.io/Lock-in/keys.json', RAW];
     for (const u of urls) {
       try {
-        const r = await fetch(u + '?t=' + Date.now(), { cache: 'no-store' }); if (!r.ok) continue;
+        const r = await fetch(u + (u.includes('?') ? '&' : '?') + 't=' + Date.now(), { cache: 'no-store', headers: u === API ? { Accept: 'application/vnd.github.raw+json' } : {} }); if (!r.ok) continue;
         const j = await r.json(); if (!j || !Array.isArray(j.keys)) continue;
         list = j; set(CACHE, JSON.stringify(j)); return true;
       } catch (e) { }
@@ -5024,6 +5027,190 @@ const EN = (() => {
   };
   const ask = (items, level) => toQuestion(forLevel(items, level));
 
+  /* ================= PRACTICE PAPER: EXTRACT SETS =================
+     The practice exam copies the shape of the Year 8 Task 4 paper (20 marks, 60 minutes):
+       Extract 1: three multiple choice (1 mark each) + an emotion question with ONE quote (2 marks)
+       Extract 2: a quote + technique + effect question (3 marks) + a creative character journal entry (5 marks)
+       Extract 3: an extended PETAL response on power, control and corruption (7 marks)
+     Each pool below holds short extracts (quotes kept brief) with questions, marking points and model answers. */
+  const MC = (q, right, wrongs, why) => ({ q, right, wrongs, why });
+  const JOURNAL_CRIT = [
+    'Written as a journal entry in the first person, in the voice of the chosen character (stays in character)',
+    'Shows clear feelings about what happens in the extract, such as pride, frustration, confusion, excitement or unease',
+    'Gives the character’s thoughts about the pigs or the ruling animals being in charge',
+    'Uses descriptive, expressive language, such as senses, imagery and strong verbs, not just a retelling',
+    'Has a distinct voice that suits the character and refers to at least one specific detail from the extract',
+  ];
+  const PETAL_Q = 'How does Orwell warn readers about the dangers of power and control, and how easily we can become corrupted? Write 1 or 2 PETAL paragraphs (Point, Evidence, Technique, Analysis, Link). Use 2 to 4 quotes and techniques, and explore the purpose of each.';
+  const petalCrit = (ev) => [
+    'Point: an opening sentence that answers the question (power and control are dangerous and corrupt easily)',
+    `Evidence 1: an accurate short quote from the extract, such as ${ev[0]}`,
+    'Technique 1: names a technique correctly for that quote, such as irony, euphemism, rhetorical question or repetition',
+    'Analysis 1: explains how the technique affects the other animals or the reader',
+    `Evidence 2 and technique 2: a second quote from the extract, such as ${ev[1]}, with its technique named`,
+    'Purpose: explains why Orwell includes these moments, linking to his warning about power and control',
+    'Link and expression: returns to the question and how easily we become corrupted, in clear, formal paragraphs',
+  ];
+
+  const OPEN = [ // Extract 1: three multiple choice + one emotion question
+    {
+      id: 'ch1rebel', chapter: 'Chapter 1', title: 'Old Major’s call to rebellion',
+      text: '“Man is the only real enemy we have. Remove Man from the scene, and the root cause of hunger and overwork is abolished for ever.”\n“All men are enemies. All animals are comrades.”',
+      mc: [
+        MC('What is Old Major’s main argument in these lines?', 'Humans are the cause of the animals’ suffering, so removing them would end it', ['Animals should work harder to please the humans', 'Humans and animals could share the farm fairly', 'Some animals are better than others'], 'He says Man is the “only real enemy” and the root cause of hunger and overwork.'),
+        MC('Which technique is used in “All men are enemies. All animals are comrades.”?', 'Antithesis: two short, balanced sentences that set humans against animals', ['Onomatopoeia: words that copy a sound', 'Olfactory imagery: an appeal to the sense of smell', 'Personification: giving human feelings to an object'], 'The matching structure sets “men” against “animals” and “enemies” against “comrades”.'),
+        MC('What is the effect of the phrase “abolished for ever”?', 'It makes the animals believe one big change could solve all their problems permanently', ['It warns the animals that their work will never end', 'It shows Old Major is unsure about his plan', 'It suggests the humans will win in the end'], 'The strong, final words create hope and urgency.'),
+      ],
+      emo: {
+        q: 'What emotion does Old Major try to make the animals feel in this extract? Include ONE quote to support your answer.',
+        criteria: ['Names a suitable emotion, such as hatred of humans, hope, determination or solidarity', 'Supports it with ONE short, accurate quote, such as “Man is the only real enemy we have”'],
+        model: 'Old Major wants the animals to feel hatred and distrust towards humans, together with hope that life could be better without them. He calls Man “the only real enemy we have”, which blames one group for all the animals’ suffering and so stirs up anger and a shared purpose.',
+      },
+    },
+    {
+      id: 'ch5dogs', chapter: 'Chapter 5', title: 'Snowball is driven out',
+      text: '“Nine enormous dogs wearing brass-studded collars came bounding into the barn. They dashed straight for Snowball, who only sprang from his place just in time to escape their snapping jaws.”\n“In a moment he was out of the door and they were after him. Too amazed and frightened to speak, all the animals crowded through the door to watch the chase.”',
+      mc: [
+        MC('What is happening in this extract?', 'Napoleon uses force to get rid of his rival', ['Snowball attacks the other animals', 'The animals vote for Napoleon’s plan', 'The dogs defend the farm from Jones'], 'Napoleon’s dogs chase Snowball off the farm, so he can rule without opposition.'),
+        MC('What technique is used in the phrase “snapping jaws”?', 'Visual imagery that makes the dogs seem savage and dangerous', ['A rhetorical question', 'Olfactory imagery', 'A simile comparing the dogs to soldiers'], 'The two words let the reader picture the attack.'),
+        MC('What is the effect of “Too amazed and frightened to speak”?', 'It shows the animals are silenced by fear and cannot challenge Napoleon', ['It shows the animals are proud of Napoleon', 'It shows the animals have no interest in politics', 'It shows the animals are planning a reply'], 'Fear takes away their voice, which is how tyrants keep control.'),
+      ],
+      emo: {
+        q: 'What emotion does Orwell want the reader to feel as the dogs attack Snowball? Include ONE quote to support your answer.',
+        criteria: ['Names a suitable emotion, such as shock, fear, outrage or alarm', 'Supports it with ONE short, accurate quote, such as “nine enormous dogs” or “snapping jaws”'],
+        model: 'Orwell wants the reader to feel shock and fear. The attack is sudden and brutal, and the description of “nine enormous dogs” rushing at one animal makes the reader feel how unfair and frightening Napoleon’s power has become.',
+      },
+    },
+    {
+      id: 'ch7boxer', chapter: 'Chapter 7', title: 'Boxer responds to the executions',
+      text: '“I do not understand it. I would not have believed that such things could happen on our farm. It must be due to some fault in ourselves. The solution, as I see it, is to work harder. From now onwards I shall get up a full hour earlier in the mornings.”',
+      mc: [
+        MC('What is the main idea of Boxer’s speech?', 'He blames himself and the animals instead of questioning Napoleon', ['He plans to stand up to Napoleon', 'He believes the executions were fair', 'He wants to leave the farm'], 'Boxer’s answer to every problem is to work harder.'),
+        MC('What technique is used when Boxer says “It must be due to some fault in ourselves”?', 'Dramatic irony: the reader can see the fault lies with Napoleon, but Boxer cannot', ['Hyperbole: an extreme exaggeration', 'Onomatopoeia: a word that copies a sound', 'Alliteration: repeated starting sounds'], 'We know more than Boxer does, which makes his loyalty painful to read.'),
+        MC('What is the effect of “I would not have believed that such things could happen on our farm”?', 'It shows Boxer’s loyal, trusting nature and makes the reader pity him', ['It shows Boxer is planning a rebellion', 'It shows Boxer agrees with the killings', 'It shows Boxer has stopped caring about the farm'], 'His disbelief shows how much he trusts the leadership.'),
+      ],
+      emo: {
+        q: 'What emotion does Orwell want the reader to feel towards Boxer in this extract? Include ONE quote to support your answer.',
+        criteria: ['Names a suitable emotion, such as sympathy, pity or frustration', 'Supports it with ONE short, accurate quote, such as “The solution, as I see it, is to work harder”'],
+        model: 'Orwell wants the reader to feel sympathy, mixed with frustration. Boxer is so loyal that he says “The solution, as I see it, is to work harder”, even though the real fault lies with Napoleon, so the reader pities a good animal who is being used.',
+      },
+    },
+    {
+      id: 'ch9van', chapter: 'Chapter 9', title: 'Boxer is taken away',
+      text: '[Boxer has collapsed, and a van has arrived. The animals believe he is being taken to hospital.]\n“Fools! Fools! Do you not see what is written on the side of that van?”\n“Get out quickly! They’re taking you to your death!”',
+      mc: [
+        MC('What is happening in this extract?', 'The animals realise too late that Boxer is being sent to be killed', ['Boxer is being rewarded for his work', 'The animals are celebrating a victory', 'Benjamin is persuading the animals to stay calm'], 'The writing on the van reveals the truth that the pigs have hidden.'),
+        MC('What technique is used in “Do you not see what is written on the side of that van?”', 'Rhetorical question', ['Juxtaposition', 'Alliteration', 'Onomatopoeia'], 'Benjamin does not want an answer: he is shocked that the others missed the obvious.'),
+        MC('What is the effect of “They’re taking you to your death!”?', 'It reveals the pigs’ betrayal of a loyal worker and creates shock and urgency', ['It shows the animals are happy for Boxer', 'It shows Benjamin dislikes Boxer', 'It shows the van is a harmless trip'], 'The blunt word “death” and the exclamation mark create panic.'),
+      ],
+      emo: {
+        q: 'What emotion does Orwell want the reader to feel as Boxer is taken away? Include ONE quote to support your answer.',
+        criteria: ['Names a suitable emotion, such as horror, grief, anger or outrage', 'Supports it with ONE short, accurate quote, such as “They’re taking you to your death!”'],
+        model: 'Orwell wants the reader to feel horror and anger. Benjamin’s cry, “They’re taking you to your death!”, exposes how the pigs sell off the animal who worked hardest for them, so the reader feels grief for Boxer and outrage at the pigs.',
+      },
+    },
+  ];
+
+  const MID = [ // Extract 2: one quote + technique + effect question (3 marks) and one creative journal entry (5 marks)
+    {
+      id: 'ch2milk', chapter: 'Chapter 2', title: 'Napoleon and the missing milk',
+      text: '“Never mind the milk, comrades!” cried Napoleon, placing himself in front of the buckets. “That will be attended to. The harvest is more important. Comrade Snowball will lead the way. I shall follow in a few minutes. Forward, comrades! The hay is waiting.”\n[When the animals came back that evening, the milk had disappeared.]',
+      tech: {
+        q: 'How does Orwell hint in this extract that Napoleon cannot be trusted? Include ONE quote, a technique and an explanation of its effect.',
+        criteria: ['Includes ONE relevant short quote, such as “Never mind the milk, comrades!”', 'Names a technique, such as imperative language, direct address (“comrades”) or foreshadowing', 'Explains the effect: Napoleon brushes off the animals’ concern and takes charge, hinting that the pigs will keep the milk for themselves'],
+        model: 'Orwell uses imperative language when Napoleon commands “Never mind the milk, comrades!” The order cuts off the animals’ question before it can be asked, while the friendly word “comrades” makes the dismissal sound warm. This foreshadows the pigs’ greed, because when the milk then vanishes the reader realises Napoleon was distracting the animals from what he planned to do.',
+      },
+      journal: {
+        q: 'Write a short journal entry (about 100 to 150 words) from the perspective of Clover, the mare, on the evening the milk disappears. Show her feelings about what has happened, her thoughts about Napoleon and the pigs taking charge, and use descriptive, expressive language that sounds like Clover.',
+        model: 'Tuesday evening. The buckets stood empty in the dairy, and I could not stop staring at them. Napoleon said to forget the milk, and I did what I was told, bent my back and gathered the hay until my legs trembled. But now there is a hollow feeling under my ribs. Who would take it? The pigs are clever, and I want to trust them, yet I saw how quickly Napoleon stood in front of those pails, as broad and solid as a door. Perhaps I am being foolish. Still, tonight the moon looks cold, and I cannot shake the feeling that something sweet has slipped away from all of us.',
+      },
+    },
+    {
+      id: 'ch3pigs', chapter: 'Chapter 3', title: 'The pigs take the lead',
+      text: '“Nobody stole, nobody grumbled over his rations, the quarrelling and biting and jealousy which had been normal features of life in the old days had almost disappeared. Nobody shirked—or almost nobody.”\n“The pigs did not actually work, but directed and supervised the others. With their superior knowledge it was natural that they should assume the leadership.”',
+      tech: {
+        q: 'How does Orwell show in this extract that the pigs are becoming a ruling class? Include ONE quote, a technique and an explanation of its effect.',
+        criteria: ['Includes ONE relevant short quote, such as “directed and supervised the others”', 'Names a technique, such as contrast, irony or a matter-of-fact tone', 'Explains the effect: the pigs give orders without working, so they are set apart from the others, foreshadowing their privilege'],
+        model: 'Orwell uses contrast: the other animals work hard, but the pigs “did not actually work, but directed and supervised the others”. The calm, matter-of-fact tone of “it was natural” makes the pigs’ takeover sound reasonable, which is ironic because it is exactly how a ruling class begins. The effect is to foreshadow that the pigs will soon enjoy privileges while everyone else labours.',
+      },
+      journal: {
+        q: 'Write a short journal entry (about 100 to 150 words) from the perspective of Boxer, reflecting on a busy day of work while the pigs direct and supervise. Show his feelings about the work, his thoughts about the pigs leading, and use descriptive, expressive language that sounds like Boxer.',
+        model: 'Evening, after the harvest. My shoulders ache and my hooves feel like stones, but it is a good ache, the kind that means the farm is ours. All day the pigs walked among us with their clever heads together, telling us where to push and where to pull. I do not understand all their words, yet they know so much, so it is right that they should lead. I wish I could learn more than four letters. Perhaps tomorrow. I will wake an hour earlier, and the sun will find me already at the plough. If the pigs do the thinking, I will do the pulling.',
+      },
+    },
+    {
+      id: 'ch5vote', chapter: 'Chapter 5', title: 'The windmill debate',
+      text: 'Snowball’s supporters chanted “Vote for Snowball and the three-day week”, while Napoleon’s answered “Vote for Napoleon and the full manger”.\n“Benjamin was the only animal who did not side with either faction. He refused to believe either that food would become more plentiful or that the windmill would save work. Windmill or no windmill, he said, life would go on as it had always gone on—that is, badly.”',
+      tech: {
+        q: 'How does Orwell show Benjamin’s attitude to the leaders’ promises in this extract? Include ONE quote, a technique and an explanation of its effect.',
+        criteria: ['Includes ONE relevant short quote, such as “that is, badly”', 'Names a technique, such as understatement, a cynical tone or an abrupt anti-climax', 'Explains the effect: Benjamin deflates the promises and shows that he expects life to stay hard whoever rules'],
+        model: 'Orwell uses a blunt, cynical tone when Benjamin says life will go on as it always has, “that is, badly”. The short, dry add-on deflates the exciting slogans of both leaders, so their promises sound empty. The effect is to make the reader doubt the leaders and suspect that Benjamin, the oldest and wisest animal, is right.',
+      },
+      journal: {
+        q: 'Write a short journal entry (about 100 to 150 words) from the perspective of Muriel, the goat, after the noisy debate about the windmill. Show her feelings about the arguing, her thoughts about the pigs fighting for control, and use descriptive, expressive language that sounds like Muriel.',
+        model: 'Late night. I have read both slogans so many times that they dance behind my eyes. “Three-day week.” “Full manger.” They sound so sweet. Yet when I watched Snowball and Napoleon snarl at each other across the barn, I felt like a small, cold stone between two rivers. Why do the pigs only agree on being in charge? Benjamin only shrugged at it all, and for once I wonder whether his shrug is wiser than all my reading. I can read every word on the wall, but tonight I cannot tell which words are true.',
+      },
+    },
+  ];
+
+  const CLOSE = [ // Extract 3: 7-mark extended response (PETAL)
+    {
+      id: 'ch3apples', chapter: 'Chapter 3', title: 'The milk and apples',
+      text: '“The mystery of where the milk went to was soon solved. It was mixed every day into the pigs’ mash.” The apples were ripening, and the animals assumed they would be shared out equally. Instead the order went out that all the windfalls were to be collected for the use of the pigs.\nSquealer explained: “You do not imagine, I hope, that we pigs are doing this in a spirit of selfishness and privilege? Many of us actually dislike milk and apples. I dislike them myself. Our sole object in taking these things is to preserve our health.”\n“Do you know what would happen if we pigs failed in our duty? Jones would come back!”',
+      petal: {
+        criteria: petalCrit(['“a spirit of selfishness and privilege”', '“Jones would come back!”']),
+        model: 'Orwell warns that people with power quickly begin to serve themselves and then hide it with clever words. Squealer asks, “You do not imagine, I hope, that we pigs are doing this in a spirit of selfishness and privilege?” This rhetorical question names the very thing the pigs are guilty of and then dismisses it, which makes the animals feel ashamed to doubt their leaders. It shows how persuasive language can disguise greed as a sacrifice, and Orwell’s purpose is to warn readers to question leaders who tell them not to worry.\n\nOrwell also shows that fear is used to keep power. Squealer shouts, “Jones would come back!”, an emotive threat that links any criticism of the pigs with the return of the cruel farmer. The exclamation mark makes the danger sound immediate, so the animals give up the milk and apples without argument. This shows how easily the pigs are corrupted, since in their first act of privilege they already lie and frighten others to protect themselves. Therefore, Orwell warns that unchecked power quickly corrupts and that those who control language can control a whole community.',
+      },
+    },
+    {
+      id: 'ch78commands', chapter: 'Chapters 7 and 8', title: 'The Commandments are altered',
+      text: 'After the executions, the animals look again at the Sixth Commandment. “Somehow or other, the last two words had slipped out of the animals’ memory.” The Commandment now reads: “No animal shall kill any other animal without cause.”\nLater, Muriel notices another Commandment has been remembered wrong. It does not say “No animal shall drink alcohol”. It says: “No animal shall drink alcohol to excess.”',
+      petal: {
+        criteria: petalCrit(['“without cause”', '“to excess”']),
+        model: 'Orwell warns that those in power can change the rules to suit themselves, and that the powerless may not even notice. The pigs add the words “without cause” to the Sixth Commandment after the executions. This small addition is a form of euphemism, because it makes the killing sound lawful and reasonable. It shows that the pigs have become corrupted, since they twist the law instead of obeying it, and Orwell’s purpose is to show how a ruling group can excuse any cruelty by rewriting the rules.\n\nThe same pattern appears when the Commandment becomes “No animal shall drink alcohol to excess”. The phrase “to excess” gives the pigs permission to drink whenever they like, while it sounds moderate and sensible. The animals accept the change because they cannot remember the original, which shows how easily power is kept by controlling memory and truth. In this way, Orwell warns readers that when rules can be quietly altered, equality is lost one word at a time.',
+      },
+    },
+    {
+      id: 'ch9figures', chapter: 'Chapter 9', title: 'Squealer and the figures',
+      text: 'When food becomes scarce, Squealer always speaks of a “readjustment” of rations, never a “reduction”.\n“Squealer … read out lists of figures proving that the production of every class of foodstuff had increased by two hundred per cent, three hundred per cent, or five hundred per cent, as the case might be.”\n“The animals saw no reason why they should not believe him, especially as they could no longer remember very clearly what conditions had been like before the Rebellion.”',
+      petal: {
+        criteria: petalCrit(['“readjustment”', '“three hundred per cent, or five hundred per cent”']),
+        model: 'Orwell warns that leaders can control people by controlling language. Squealer calls a cut in food a “readjustment”, never a “reduction”. This euphemism makes something painful sound technical and harmless, so the hungry animals do not complain. It shows how the pigs now depend on words to hide the truth, and Orwell’s purpose is to alert readers to the way governments can soften harsh facts.\n\nOrwell also shows how statistics can be used as a weapon. Squealer reads out figures of increases of “three hundred per cent, or five hundred per cent”, and the exaggerated, repeated numbers overwhelm animals who cannot check them. The animals “could no longer remember very clearly” the past, which shows how easily people can be fooled when their memory is weakened. Therefore, Orwell warns that corrupt power survives by manipulating information, and that people must question the facts they are given.',
+      },
+    },
+    {
+      id: 'ch10equal', chapter: 'Chapter 10', title: 'All animals are equal',
+      text: 'The Seven Commandments have been replaced by a single Commandment on the barn wall:\n“ALL ANIMALS ARE EQUAL BUT SOME ANIMALS ARE MORE EQUAL THAN OTHERS”\nThe sheep who once bleated “Four legs good, two legs bad” now bleat “Four legs good, two legs better!” as the pigs walk about on two legs.',
+      petal: {
+        criteria: petalCrit(['“MORE EQUAL THAN OTHERS”', '“two legs better!”']),
+        model: 'Orwell warns that power can corrupt a revolution until it becomes the thing it fought against. The final Commandment, “ALL ANIMALS ARE EQUAL BUT SOME ANIMALS ARE MORE EQUAL THAN OTHERS”, is a paradox, because equality cannot come in degrees. The contradiction exposes the pigs’ hypocrisy, since they now openly treat themselves as superior. Orwell’s purpose is to show that the promise of equality can be betrayed by the leaders who made it.\n\nThe slogan changes from “Four legs good, two legs bad” to “Four legs good, two legs better!”, and the change of one word, “bad” to “better”, shows how completely the pigs have corrupted the revolution. The sheep chant the new version as easily as the old one, which shows how repetition can silence independent thought. Therefore, Orwell warns that a group with unchecked power will rewrite its own ideals, and that people who stop thinking for themselves make it easy for them.',
+      },
+    },
+  ];
+
+  /* The assembled paper: plain data (no DOM) so the app and the tests can both use it.
+     Extract 1 (Q1 to Q4), Extract 2 (Q5, Q6), Extract 3 (Q7): 3 + 2 + 3 + 5 + 7 = 20 marks. */
+  const shortPart = (q, marks, criteria, model) => ({ label: '', q, type: 'short', marks, criteria, model, steps: [] });
+  const paperItem = (kind, tag, level, part) => ({ kind, tags: [tag], level, parts: [part] });
+  function buildPaper() {
+    const a = pick(OPEN), b = pick(MID), c = pick(CLOSE);
+    const mc = a.mc.map(m => paperItem('mc', 'P1', 'F', CH('', m.q, m.right, m.wrongs, [m.why])));
+    const groups = [
+      { n: 1, set: a, items: [...mc, paperItem('emotion', 'H5', 'S', shortPart(a.emo.q, 2, a.emo.criteria, a.emo.model))] },
+      { n: 2, set: b, items: [paperItem('technique', 'K4', 'C', shortPart(b.tech.q, 3, b.tech.criteria, b.tech.model)), paperItem('creative', 'W8', 'C', shortPart(b.journal.q, 5, JOURNAL_CRIT, b.journal.model))] },
+      { n: 3, set: c, items: [paperItem('petal', 'W2', 'C', shortPart(PETAL_Q, 7, c.petal.criteria, c.petal.model))] },
+    ].map(g => ({ n: g.n, id: g.set.id, label: `Extract ${g.n}: ${g.set.chapter}`, title: g.set.title, text: g.set.text, items: g.items }));
+    const marks = groups.reduce((t, g) => t + g.items.reduce((s, it) => s + it.parts.reduce((x, p) => x + p.marks, 0), 0), 0);
+    return { minutes: 60, marks, groups };
+  }
+  // Every extract question is also available as a standalone short answer in the Short answers deck.
+  const paperShorts = () => [...OPEN, ...MID, ...CLOSE].flatMap(s => [
+    s.emo && { q: s.emo.q, passage: s.text, marks: 2, tags: ['W1'], criteria: s.emo.criteria, model: s.emo.model },
+    s.tech && { q: s.tech.q, passage: s.text, marks: 3, tags: ['W1'], criteria: s.tech.criteria, model: s.tech.model },
+    s.journal && { q: s.journal.q, passage: s.text, marks: 5, tags: ['W8'], criteria: JOURNAL_CRIT, model: s.journal.model },
+    s.petal && { q: PETAL_Q, passage: s.text, marks: 7, tags: ['W2'], criteria: s.petal.criteria, model: s.petal.model },
+  ].filter(Boolean));
+
   /* ================= TECHNIQUES TOOLKIT ================= */
   // [section, term, definition, typical effect, level]
   const DEFS = [
@@ -5252,11 +5439,11 @@ const EN = (() => {
     ['Mollie', 'A vain white mare who loves sugar and ribbons and runs away to live with humans.', 'The middle and upper classes who fled the revolution'],
     ['Moses', 'Jones’s tame raven, who tells stories of Sugarcandy Mountain, a paradise for animals after death.', 'The Church and religion'],
     ['Mr Jones', 'The drunken, careless owner of Manor Farm who is driven out in the Rebellion.', 'Tsar Nicholas II'],
-    ['The dogs', 'Nine puppies that Napoleon raises in secret. They grow into fierce dogs that protect him and attack his enemies.', 'The secret police'],
+    ['The dogs', 'Nine puppies that Napoleon raises in secret. They grow into fierce dogs that protect him and attack his enemies.', 'The secret police (such as the NKVD), who enforce rule through fear'],
     ['The sheep', 'Animals that cannot learn much but bleat slogans on cue, drowning out debate.', 'The easily led masses who repeat slogans'],
     ['Minimus', 'A pig who writes songs and poems, including the new anthem and a poem praising Napoleon.', 'Propaganda poets and artists who glorified Stalin'],
     ['Mr Frederick', 'The tough owner of Pinchfield, a neighbouring farm. He cheats Napoleon with forged banknotes and then attacks the farm.', 'Adolf Hitler and Nazi Germany'],
-    ['Mr Pilkington', 'The easy-going owner of Foxwood, a neighbouring farm. He plays cards with the pigs at the end.', 'Britain and the Western powers'],
+    ['Mr Pilkington', 'The easy-going owner of Foxwood, a neighbouring farm. He plays cards with the pigs at the end.', 'Western capitalist democracies, who deal with Napoleon for profit'],
     ['Mr Whymper', 'A human solicitor who acts as Napoleon’s go-between for trade with the outside world.', 'Westerners who did business with the Soviet Union'],
   ];
   const MAIN_CHARS = CHARS.slice(0, 11);
@@ -5846,7 +6033,7 @@ const EN = (() => {
         '1 mark: one clear point, often one sentence (for example, naming a technique or a character).',
         '2–3 marks: a technique plus a short quote or a specific moment plus its effect. Think of it as a mini-PETAL in two to four sentences.',
         '4 marks: two techniques or two points, each with evidence and effect.',
-        '8 marks: a full extended response, written as one or two PETAL paragraphs.',
+        '7 marks: a full extended response, written as one or two PETAL paragraphs.',
         'If the question gives you an extract, your evidence must come from that extract.',
       ], ex: ['Unpacking a question: “How does Orwell use Squealer to show the power of language? (3 marks)”', 'How does Orwell use: I must name a technique and explain its effect.', 'Squealer: my evidence must be something Squealer says or does.', 'Power of language: my explanation must show how words control the animals.', '3 marks: technique, evidence and effect, in about three or four sentences.'] },
       { code: 'W2', name: 'PETAL explained', notes: [
@@ -5856,7 +6043,7 @@ const EN = (() => {
         'A is for Analysis: explain how the technique and evidence create meaning. This is the most important part. Starter: “This reveals…”, “This suggests…”, “The word … highlights…”',
         'L is for Link: tie back to the question and Orwell’s message. Starter: “Therefore, Orwell warns…”, “In this way, Orwell criticises…”',
         'You can combine E and T in one sentence: “Orwell uses euphemism when Squealer calls a cut in rations a “readjustment”.”',
-        'For an 8-mark answer, write one PETAL paragraph with two pieces of evidence, or two PETAL paragraphs with one main example each.',
+        'For an 7-mark answer, write one PETAL paragraph with two pieces of evidence, or two PETAL paragraphs with one main example each.',
       ] },
       { code: 'W3', name: 'Strong analysis vocabulary', notes: [
         'Avoid repeating “shows”. Use precise verbs: reveals, highlights, emphasises, suggests, conveys, exposes, criticises, warns, mocks, symbolises, foreshadows.',
@@ -5881,6 +6068,16 @@ const EN = (() => {
         'Multiple choice: cross out answers you know are wrong, and be careful with “not” and “best”.',
         'Always link back to Orwell’s message: what is he warning us about?',
       ] },
+      { code: 'W8', name: 'Creative journal entry (5 marks)', notes: [
+        'The task: write a short journal entry in the voice of a character from the novel (not Orwell, and not a pig unless the question says so), reflecting on events from the extract.',
+        'Write in the first person (“I”), and keep the date or time of day short at the top, such as “Tuesday evening.”',
+        'Show feelings clearly: pride, frustration, confusion, excitement or unease. Name the feeling through what the character notices, not only through the label.',
+        'Include the character’s thoughts about the pigs or the ruling animals: do they trust them, fear them, admire them or doubt them?',
+        'Use descriptive, expressive language: sights, sounds, touch, strong verbs and a simile or metaphor or two.',
+        'Capture the character’s voice. Boxer is loyal and simple, Clover is gentle and worried, Benjamin is dry and cynical, Muriel is thoughtful and curious.',
+        'Refer to at least one real detail from the extract, so the entry belongs to the story.',
+        'Marking checklist: first person and in character; clear feelings; thoughts about the pigs; descriptive, expressive language; a distinct voice with a detail from the extract. About 100 to 150 words is enough.',
+      ], ex: ['Model opening (Boxer): Evening, after the harvest. My shoulders ache and my hooves feel like stones, but it is a good ache, the kind that means the farm is ours.', 'Feelings: the aching shoulders and the pride show Boxer’s loyalty without naming it.', 'Pigs: “If the pigs do the thinking, I will do the pulling” shows his trust in the ruling animals.'] },
     ],
     cards: [
       ['What does PETAL stand for?', 'Point, Evidence, Technique, Analysis, Link.'],
@@ -5894,7 +6091,7 @@ const EN = (() => {
       ['Link sentence starters', '“Therefore, Orwell warns…”, “In this way, Orwell criticises…”'],
       ['What does a 1-mark question need?', 'One clear, correct point, often a single sentence.'],
       ['What does a 2–3 mark question need?', 'A technique, a short quote or specific moment, and its effect.'],
-      ['What does an 8-mark question need?', 'One or two full PETAL paragraphs.'],
+      ['What does an 7-mark question need?', 'One or two full PETAL paragraphs.'],
       ['What does “identify” mean?', 'Name it. A short answer is fine.'],
       ['What does “explain” mean?', 'Say how or why, giving reasons.'],
       ['What does “How does Orwell…” want?', 'A technique and how it creates meaning, not just what happens.'],
@@ -5903,6 +6100,8 @@ const EN = (() => {
       ['Do I need to memorise quotes?', 'No. Use quotes from the extract, and describe moments in your own words for the extended response.'],
       ['How long is the exam?', '60 minutes for 20 marks: about three minutes per mark.'],
       ['How should you read an unseen extract?', 'Twice: first for meaning, then with a pen, underlining strong words and techniques.'],
+      ['What does a creative journal entry need?', 'First person, in character; clear feelings; thoughts about the pigs; descriptive, expressive language; a distinct voice with a detail from the extract.'],
+      ['What do the 2 and 3 mark extract questions need?', 'ONE short quote, the technique named, and an explanation of its effect.'],
       ['Biggest mistake in analysis', 'Retelling the plot or just naming a technique without explaining its effect.'],
       ['Feature-spotting', 'Listing techniques with no explanation. It earns very few marks.'],
       ['How do you plan an extended response quickly?', 'Write P, E, T, A, L down the margin and jot a few words next to each.'],
@@ -5911,7 +6110,7 @@ const EN = (() => {
       ['In PETAL, what does the A stand for?', ['Answer', 'Analysis', 'Argument', 'Audience'], 1, ''],
       ['Which part of PETAL is most important for high marks?', ['Point', 'Evidence', 'Analysis', 'Link'], 2, 'Analysis is where you explain how meaning is created.'],
       ['A 1-mark question usually needs…', ['A full PETAL paragraph', 'One clear point', 'Three quotes', 'An essay'], 1, ''],
-      ['An 8-mark question needs…', ['One word', 'One or two PETAL paragraphs', 'Only a quote', 'A list of techniques'], 1, ''],
+      ['An 7-mark question needs…', ['One word', 'One or two PETAL paragraphs', 'Only a quote', 'A list of techniques'], 1, ''],
       ['Which is the strongest verb for analysis?', ['shows', 'says', 'highlights', 'has'], 2, ''],
       ['Which is the best Point for “How does Orwell present Squealer?”', ['Squealer is a pig.', 'Orwell presents Squealer as a cunning manipulator who uses language to control the animals.', 'Squealer talks a lot in the book.', 'I like Squealer.'], 1, ''],
       ['What should a Link do?', ['Introduce a new quote', 'Tie back to the question and Orwell’s message', 'Retell the plot', 'List more techniques'], 1, ''],
@@ -5933,6 +6132,7 @@ const EN = (() => {
       { q: 'How does Orwell show that the revolution has been betrayed by the end of the novel?', marks: 8, tags: ['W6'], criteria: ['Point: a clear opening sentence that directly answers the question', 'Evidence: the final scene where pigs and men cannot be told apart', 'Evidence: a second example, such as the single commandment, the name Manor Farm, or the windmill grinding corn for profit', 'Technique: names a technique, such as cyclical structure, situational irony, repetition or symbolism', 'Analysis: explains how the evidence shows the pigs have become like the humans', 'Analysis: compares the ending with Old Major’s dream or the original Commandments', 'Link: ties back to Orwell’s warning about revolutions and power', 'Expression: clear, well-structured PETAL paragraph(s) without plot retelling'], model: 'Orwell shows that by the end, the revolution has been completely betrayed, as the pigs become the masters they once overthrew. The Seven Commandments are replaced by a single rule, “All animals are equal but some animals are more equal than others”, a piece of verbal irony that openly contradicts Old Major’s dream of equality. In the final scene, the animals look “from pig to man, and from man to pig” and cannot tell which is which. Orwell uses a cyclical structure: the farm is renamed Manor Farm, and the pigs walk on two legs and carry whips, just as Jones once did. This situational irony emphasises that the animals’ suffering and sacrifice have changed nothing. Therefore, Orwell warns that revolutions can be corrupted by their leaders until one tyranny is simply replaced by another.' },
     ],
   });
+  afwrite.short.push(...paperShorts());
   afwrite.bank = [
     function bestSentence(level) { return ask(WRITE_Q, level); },
     function whatsMissing(level) {
@@ -5946,7 +6146,7 @@ const EN = (() => {
         ['F', 'What does PETAL stand for?', 'Point, Evidence, Technique, Analysis, Link', ['Plot, Example, Theme, Answer, List', 'Point, Explain, Tell, Argue, Learn', 'Paragraph, Evidence, Text, Author, Language']],
         ['S', 'A question is worth 3 marks and asks “How does Orwell…?” What should your answer include?', 'A technique, a short quote or moment, and its effect', ['Just the name of a technique', 'A retelling of the chapter', 'Your personal opinion of the characters']],
         ['S', 'The question includes an extract. Where should your evidence come from?', 'The extract', ['Any other chapter', 'The film version', 'Your own experience']],
-        ['C', 'A question is worth 8 marks. What should your answer be?', 'One or two well-developed PETAL paragraphs', ['One sentence', 'A list of techniques', 'A summary of the whole novel']],
+        ['C', 'A question is worth 7 marks. What should your answer be?', 'One or two well-developed PETAL paragraphs', ['One sentence', 'A list of techniques', 'A summary of the whole novel']],
         ['C', 'You have 60 minutes for 20 marks. About how long should you spend on a 4-mark question?', 'About 12 minutes', ['About 1 minute', 'About 30 minutes', 'About 45 minutes']],
       ];
       const m = items.filter(x => x[0] === level), [L, q, right, wrongs] = pick(m.length ? m : items);
@@ -5954,7 +6154,7 @@ const EN = (() => {
     },
   ];
 
-  return { DECKS: [afplot, afthemes, aftech, afwrite, tech] };
+  return { DECKS: [afplot, afthemes, aftech, afwrite, tech], buildPaper, PAPER_SETS: { OPEN, MID, CLOSE }, JOURNAL_CRIT };
 })();
 if (typeof module !== 'undefined') module.exports = EN;
 
@@ -7093,9 +7293,8 @@ if (typeof module !== 'undefined') module.exports = Badges;
   const SUBJ = [
     { id: 'geo', name: 'Geography', hue: 'green', exam: examDate('geo'), when: examWhen('geo'), format: '45 minutes. 30 multiple choice (25 on geographical tools & skills, 5 on Water in the World) + 3 short answers.', mock: 'geo' },
     { id: 'maths', name: 'Maths', hue: 'gold', exam: examDate('maths'), when: examWhen('maths'), format: 'The exam covers chapters 8, 9, 10 and 12, with multi-part questions like the Test Yourself pages. Ch 3 and Ch 7 are extra practice.', mock: 'maths' },
-    { id: 'y12', name: 'Maths Extension 2', tab: 'Ext 2', hue: 'lilac', exam: examDate('y12'), when: examWhen('y12'), format: 'HSC paper: 3 hours. Section I is 10 multiple choice; Section II is 90 marks across proof, complex numbers, induction, integration, vectors and mechanics.', mock: 'gen', papers: 'https://www.nsw.gov.au/education-and-training/nesa/curriculum/hsc-exam-papers/mathematics-extension-2' },
     { id: 'e1', name: 'Maths Extension 1', tab: 'Ext 1', hue: 'cyan', exam: examDate('e1'), when: examWhen('e1'), format: 'HSC paper: 2 hours. Section I is 10 multiple choice; Section II is 60 marks of multi-part questions.', mock: 'gen', papers: 'https://www.nsw.gov.au/education-and-training/nesa/curriculum/hsc-exam-papers/mathematics-extension-1' },
-    { id: 'eng', name: 'English', hue: 'pink', exam: examDate('eng'), when: examWhen('eng'), format: 'Task 4: Animal Farm. 60 minutes, 20 marks. Section 1 is multiple choice and short answers on unseen extracts; Section 2 is one extended response in 1–2 PETAL paragraphs. No quotes to memorise. Writing feedback checks your PETAL paragraphs.', mock: 'eng' },
+    { id: 'eng', name: 'English', hue: 'pink', exam: examDate('eng'), when: examWhen('eng'), format: 'Task 4: Animal Farm. 60 minutes, 20 marks, on three extracts from the novel. Extract 1: 3 multiple choice (1 mark each) and a 2 mark emotion question with ONE quote. Extract 2: a 3 mark question (ONE quote, technique and effect) and a 5 mark creative journal entry from another character. Extract 3: a 7 mark extended response in 1–2 PETAL paragraphs on power and corruption. No quotes to memorise. Writing feedback checks your PETAL paragraphs.', mock: 'eng' },
     { id: 'phys', name: 'Physics', hue: 'coral', exam: examDate('phys'), when: examWhen('phys'), format: 'HSC paper: 3 hours. Section I is 20 multiple choice; Section II is 80 marks of short answers and extended responses on modules 5 to 8.', mock: 'gen', papers: 'https://www.nsw.gov.au/education-and-training/nesa/curriculum/hsc-exam-papers/physics' },
   ];
   const BUILTIN = [
@@ -7103,7 +7302,7 @@ if (typeof module !== 'undefined') module.exports = Badges;
     ...Y8.DECKS,
     ...M.DECKS.map(d => ({ ...d, subject: 'maths', bank: X.BANK[d.id], drills: M.GEN[d.gen] })),
     { ...X.ch12, subject: 'maths', bank: X.BANK.sim },
-    ...E2.DECKS, ...E1.DECKS, ...PH.DECKS, ...EN.DECKS,
+    ...E1.DECKS, ...PH.DECKS, ...EN.DECKS,
   ].map(d => ({ ...d, subject: d.subject || 'maths', bank: typeof d.bank === 'string' ? G.BANK[d.bank] : d.bank }));
   const extraQ = (id) => (S.extra[id] ||= { concepts: [], short: [] });
   const allDecks = () => [...BUILTIN, ...S.custom];
@@ -7676,7 +7875,7 @@ if (typeof module !== 'undefined') module.exports = Badges;
     const ans = p.type === 'choice' ? p.choices[given] : given;
     const prompt = `You are a friendly, encouraging tutor for ${whoFor(getDeck(q.deckId)?.subject)}. They got an exam question wrong. In under 120 words, explain the most likely mistake in their thinking and how to get the right answer. Use simple language and show the key working. No greeting. Formatting: use **double asterisks** for key words, write all maths in LaTeX between single $ signs (e.g. $\\frac{3}{4}$, $x^2$).
 
-${q.passage ? `Text: """${q.passage}"""\n` : ''}Question: ${q.stem || ''} ${p.q}
+${q.passage || q.extractText ? `Text: """${q.passage || q.extractText}"""\n` : ''}Question: ${q.stem || ''} ${p.q}
 Correct answer: ${p.show}
 Worked solution: ${(p.steps || []).join(' | ')}
 Student's answer: ${ans}`;
@@ -7701,7 +7900,7 @@ Student's answer: ${ans}`;
     const crit = p.criteria.length ? p.criteria.map((c, i) => `${i + 1}. ${c}`).join('\n') : '(use the model answer)';
     const prompt = `You are a fair but strict NSW teacher marking a short-answer exam question written by ${whoFor(getDeck(q.deckId)?.subject)}.
 
-${q.passage ? `Text the question is about:\n"""${q.passage}"""\n\n` : ''}Question (${p.marks} marks): ${q.stem ? q.stem + ' ' : ''}${p.q}
+${q.passage || q.extractText ? `Text the question is about:\n"""${q.passage || q.extractText}"""\n\n` : ''}Question (${p.marks} marks): ${q.stem ? q.stem + ' ' : ''}${p.q}
 Marking criteria (about one mark each):
 ${crit}
 Model answer: ${p.model || '(none)'}
@@ -7919,19 +8118,26 @@ Write 8 mcq (answer = index 0-3 of the correct option, vary its position) and 2 
     md.forEach(d => { const c = conceptsOf(d); if (c.length) blocks.push(mcqQ(pick(c), d)); });
     return { sid, title: 'Maths practice exam', minutes: 60, blocks: shuffle(blocks), acc: 'c-gold', intro: 'Two multi-part questions from each chapter (8, 9, 10, 12) plus quick multiple choice. 60 minutes. Calculator allowed.' };
   }
-  // Year 8 English Task 4: Section 1 (multiple choice + short answers on extracts), Section 2 (one 8-mark PETAL response). 20 marks, 60 minutes.
+  // Year 8 English Task 4 (20 marks, 60 minutes): three extracts with their questions grouped underneath.
+  // The extract sets and questions live in english.js (EN.buildPaper); this turns them into exam blocks.
   function buildEngMock() {
-    const af = decksOf('eng').filter(d => /^af/.test(d.id)), all = af.length ? af : decksOf('eng');
-    const shorts = all.flatMap(d => shortOf(d).map(s => [s, d]));
-    const big = shuffle(shorts.filter(([s]) => s.marks >= 6))[0];
-    const blocks = [], marks = (q) => q.parts.reduce((a, p) => a + (p.marks || 1), 0);
-    let total = 0; const add = (q) => { if (q && total + marks(q) <= 12) { blocks.push(q); total += marks(q); } };
-    shuffle(all.flatMap(d => conceptsOf(d).map(c => [c, d]))).slice(0, 4).forEach(([c, d]) => add(mcqQ(c, d)));
-    shuffle(all.filter(d => d.bank)).slice(0, 2).forEach(d => add(bankQ(pick(d.bank), d, 'S')));
-    for (const [s, d] of shuffle(shorts.filter(([s]) => s.marks <= 4 && s.passage))) { if (total >= 12) break; add(shortQ(s, d)); }
-    for (const [s, d] of shuffle(shorts.filter(([s]) => s.marks <= 4))) { if (total >= 12) break; add(shortQ(s, d)); }
-    if (big) blocks.push(shortQ(big[0], big[1]));
-    return { sid: 'eng', title: 'English practice exam: Animal Farm', minutes: 60, blocks, acc: 'c-pink', intro: 'Like Task 4. Section 1: multiple choice and short answers, some on extracts from the novel. Section 2 (the last question): one extended response in 1–2 PETAL paragraphs. 60 minutes. No need to memorise quotes: use the extracts and moments you remember.' };
+    const paper = EN.buildPaper(), blocks = [];
+    const deckFor = { mc: 'afplot', emotion: 'afthemes', technique: 'aftech', creative: 'afwrite', petal: 'afwrite' };
+    paper.groups.forEach(g => {
+      const first = blocks.length + 1, last = first + g.items.length - 1;
+      g.items.forEach((it, i) => {
+        const d = getDeck(deckFor[it.kind]) || { id: 'afwrite', title: 'Animal Farm' };
+        blocks.push({ stem: '', gen: null, level: it.level, tags: it.tags, parts: it.parts, deckId: d.id, deckTitle: d.title, kind: it.kind, extractText: g.text,
+          extract: i === 0 ? { label: g.label, title: g.title, text: g.text, qs: first === last ? `Question ${first}` : `Questions ${first} to ${last}` } : null });
+      });
+    });
+    return { sid: 'eng', title: 'English practice exam: Animal Farm', minutes: paper.minutes, blocks, acc: 'c-pink', intro: 'Modelled on Task 4: three extracts from Animal Farm, with the questions for each underneath. Extract 1: three multiple choice (1 mark each) and a 2 mark emotion question with ONE quote. Extract 2: a 3 mark question (ONE quote, a technique and its effect) and a 5 mark creative journal entry from another character. Extract 3: a 7 mark extended response in 1 or 2 PETAL paragraphs about power, control and corruption. 20 marks, 60 minutes. The extracts change each time.' };
+  }
+  // Heading and text of an extract, shown once above the questions that use it.
+  function extractHead(x) {
+    const h = document.createElement('div'); h.className = 'extract-head';
+    h.innerHTML = `<div class="eyebrow">Read ${esc(x.label.split(':')[0])} and answer ${esc(x.qs)}</div><div class="qstem"><b>${esc(x.label)}</b>: ${esc(x.title)}</div><div class="passage">${String(x.text).split('\n').map(l => fm(l) || '&nbsp;').join('<br>')}</div>`;
+    return h;
   }
   function openMock(sid) {
     const ex = buildMock(sid);
@@ -7941,7 +8147,7 @@ Write 8 mcq (answer = index 0-3 of the correct option, vary its position) and 2 
     body.innerHTML = `<div class="note" style="margin-bottom:16px;max-width:820px">${esc(ex.intro)} Answers are marked when you finish. <b>${total} marks total.</b></div><div id="paper"></div>
       <div class="qnav"><button class="btn btn-hot" type="button" id="finish">Finish & mark my exam</button></div>`;
     const paper = $('#paper', body);
-    let n = 0; ex.blocks.forEach(q => { n++; paper.appendChild(renderCard(q, { mode: 'exam', num: n })); });
+    let n = 0; ex.blocks.forEach(q => { n++; if (q.extract) paper.appendChild(extractHead(q.extract)); paper.appendChild(renderCard(q, { mode: 'exam', num: n })); });
     $('#finish', body).onclick = () => finishExam(body);
     const tick = () => { const left = Math.max(0, cur.end - Date.now()); const m = Math.floor(left / 6e4), s = Math.floor(left % 6e4 / 1e3); const t = $('#timer'); if (!t) return; t.textContent = `${m}:${pad(s)}`; t.classList.toggle('low', left < 5 * 6e4); if (left <= 0 && !cur.done) { toast('Time\'s up! Marking your exam.'); finishExam(body); } };
     cur.timer = setInterval(tick, 1000); tick();
@@ -8651,13 +8857,14 @@ Aim for 2-5 sections with 3-6 notes each, 10-20 flashcards (key terms, people, d
     const el = document.createElement('div'); el.className = 'pv'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-label', title || 'Paper'); el.tabIndex = -1;
     el.innerHTML = `<header class="pv-head"><button class="back" type="button" aria-label="Close"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg></button>
       <b class="pv-title">${esc(title || 'Paper')}</b><span class="pv-pg" aria-live="polite"></span>
-      <span class="pv-zoom"><button type="button" data-z="-1" aria-label="Zoom out">−</button><button type="button" data-z="1" aria-label="Zoom in">+</button></span>
+      <span class="pv-zoom"><button type="button" data-z="-1" aria-label="Zoom out">−</button><button type="button" data-z="1" aria-label="Zoom in">+</button></span>${window.lockinDesktop?.printPdf ? '<button type="button" class="pv-print" aria-label="Print this paper">Print</button>' : ''}
       <span class="pv-timer"></span></header>
       <div class="pv-body"><div class="pv-pages"><p class="pv-loading">Opening the paper…</p></div><aside class="pv-help" hidden></aside></div>`;
     document.body.appendChild(el); el.focus();
     const pagesEl = $('.pv-pages', el), help = $('.pv-help', el); let zoom = 1, doc = null, obs = null, tick = null;
     const close = () => { clearInterval(tick); obs?.disconnect(); doc?.destroy(); el.remove(); };
     $('.back', el).onclick = close;
+    const pb = $('.pv-print', el); if (pb) pb.onclick = async () => { pb.disabled = true; pb.textContent = 'Opening…'; let r = null; try { r = await window.lockinDesktop.printPdf(file); } catch (e) { } pb.textContent = r && r.ok ? 'Opened: press ⌘P' : 'Couldn\'t open'; setTimeout(() => { pb.textContent = 'Print'; pb.disabled = false; }, 4000); };
     el.addEventListener('keydown', e => { if (e.key === 'Escape') { e.stopPropagation(); if (!help.hidden) help.hidden = true; else close(); } });
     // timer
     const drawTimer = () => {
@@ -9085,7 +9292,7 @@ Aim for 2-5 sections with 3-6 notes each, 10-20 flashcards (key terms, people, d
   async function aiWriting(D, btn, box) {
     btn.disabled = true; box.innerHTML = '<div class="fb info"><b>Marking…</b><div class="note">Claude is reading it like an HSC marker would. This takes up to a minute.</div></div>';
     const outOf = D.kind === 'short' ? D.marks : D.kind === 'petal' ? 8 : 20;
-    const what = { essay: 'an English analytical essay', paragraph: 'one analytical body paragraph', petal: 'an extended response of one or two PETAL paragraphs (Point, Evidence, Technique, Analysis, Link) about George Orwell\'s Animal Farm, worth 8 marks', short: `an English short-answer response worth ${D.marks} marks`, creative: 'a piece of imaginative/creative writing' }[D.kind];
+    const what = { essay: 'an English analytical essay', paragraph: 'one analytical body paragraph', petal: 'an extended response of one or two PETAL paragraphs (Point, Evidence, Technique, Analysis, Link) about George Orwell\'s Animal Farm, worth 7 marks', short: `an English short-answer response worth ${D.marks} marks`, creative: 'a piece of imaginative/creative writing' }[D.kind];
     const crit = D.kind === 'creative'
       ? 'how well it fulfils the prompt; control of voice, perspective and structure; deliberate use of language and literary devices for effect; originality and emotional impact; control of grammar, punctuation and expression'
       : D.kind === 'petal' ? 'a clear Point that answers the question; well-chosen Evidence (a quote or specific moment); the correct Technique named; Analysis that explains how the technique creates meaning and links to Orwell\'s ideas; a Link back to the question; clear, formal expression'
@@ -9200,8 +9407,13 @@ Reply with ONLY this JSON:
   function openAdmin() {
     adm = { ...adm, fresh: false, made: null, err: '' }; cur = { kind: 'admin', tab: null }; ovFrame('Admin', 'c-lilac', null); drawAdmin(); showOv();
     Gate.refresh().then(ok => { adm.fresh = ok; if (cur?.kind === 'admin') drawAdmin(); });
+    ghSave();
   }
-  async function ghSave() {
+  // Unsaved key changes are never left sitting: retry when the app opens and whenever it comes back to the front.
+  const retrySave = () => { if (Gate.isAdmin() && ops().length && kget('lockin.ghToken', '')) ghSave(); };
+  Gate.onOpen(() => setTimeout(retrySave, 1500));
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') retrySave(); });
+  async function ghSave(tries = 3) {
     const tok = kget('lockin.ghToken', ''), pend = ops(); if (!tok || !pend.length || adm.saving) return;
     adm.saving = true; adm.err = ''; if (cur?.kind === 'admin') drawAdmin();
     const url = `https://api.github.com/repos/${REPO}/contents/keys.json`, h = { Authorization: 'Bearer ' + tok, Accept: 'application/vnd.github+json' };
@@ -9214,6 +9426,7 @@ Reply with ONLY this JSON:
       kset('lockin.keyOps', ops().slice(pend.length)); Gate.setList(next); adm.fresh = true;
       toast('Saved. Changes reach everyone in about a minute.');
     } catch (e) {
+      if ((e === 409 || e === 422) && tries > 1) { adm.saving = false; return ghSave(tries - 1); } // someone saved in between: fetch it again and re-apply
       adm.err = e === 401 ? 'GitHub said the token is wrong or has expired. Make a new one below.' : e === 403 || e === 404 ? 'GitHub refused: the token can\'t write to the repo, or the account is still suspended. Your changes are kept on this device.' : e === 409 || e === 422 ? 'keys.json changed while saving. Tap Save again.' : 'Couldn\'t reach GitHub. Your changes are kept on this device and will save when you\'re back online.';
     }
     adm.saving = false; if (cur?.kind === 'admin') drawAdmin();

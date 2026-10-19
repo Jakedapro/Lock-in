@@ -20,6 +20,190 @@ const EN = (() => {
   };
   const ask = (items, level) => toQuestion(forLevel(items, level));
 
+  /* ================= PRACTICE PAPER: EXTRACT SETS =================
+     The practice exam copies the shape of the Year 8 Task 4 paper (20 marks, 60 minutes):
+       Extract 1: three multiple choice (1 mark each) + an emotion question with ONE quote (2 marks)
+       Extract 2: a quote + technique + effect question (3 marks) + a creative character journal entry (5 marks)
+       Extract 3: an extended PETAL response on power, control and corruption (7 marks)
+     Each pool below holds short extracts (quotes kept brief) with questions, marking points and model answers. */
+  const MC = (q, right, wrongs, why) => ({ q, right, wrongs, why });
+  const JOURNAL_CRIT = [
+    'Written as a journal entry in the first person, in the voice of the chosen character (stays in character)',
+    'Shows clear feelings about what happens in the extract, such as pride, frustration, confusion, excitement or unease',
+    'Gives the character’s thoughts about the pigs or the ruling animals being in charge',
+    'Uses descriptive, expressive language, such as senses, imagery and strong verbs, not just a retelling',
+    'Has a distinct voice that suits the character and refers to at least one specific detail from the extract',
+  ];
+  const PETAL_Q = 'How does Orwell warn readers about the dangers of power and control, and how easily we can become corrupted? Write 1 or 2 PETAL paragraphs (Point, Evidence, Technique, Analysis, Link). Use 2 to 4 quotes and techniques, and explore the purpose of each.';
+  const petalCrit = (ev) => [
+    'Point: an opening sentence that answers the question (power and control are dangerous and corrupt easily)',
+    `Evidence 1: an accurate short quote from the extract, such as ${ev[0]}`,
+    'Technique 1: names a technique correctly for that quote, such as irony, euphemism, rhetorical question or repetition',
+    'Analysis 1: explains how the technique affects the other animals or the reader',
+    `Evidence 2 and technique 2: a second quote from the extract, such as ${ev[1]}, with its technique named`,
+    'Purpose: explains why Orwell includes these moments, linking to his warning about power and control',
+    'Link and expression: returns to the question and how easily we become corrupted, in clear, formal paragraphs',
+  ];
+
+  const OPEN = [ // Extract 1: three multiple choice + one emotion question
+    {
+      id: 'ch1rebel', chapter: 'Chapter 1', title: 'Old Major’s call to rebellion',
+      text: '“Man is the only real enemy we have. Remove Man from the scene, and the root cause of hunger and overwork is abolished for ever.”\n“All men are enemies. All animals are comrades.”',
+      mc: [
+        MC('What is Old Major’s main argument in these lines?', 'Humans are the cause of the animals’ suffering, so removing them would end it', ['Animals should work harder to please the humans', 'Humans and animals could share the farm fairly', 'Some animals are better than others'], 'He says Man is the “only real enemy” and the root cause of hunger and overwork.'),
+        MC('Which technique is used in “All men are enemies. All animals are comrades.”?', 'Antithesis: two short, balanced sentences that set humans against animals', ['Onomatopoeia: words that copy a sound', 'Olfactory imagery: an appeal to the sense of smell', 'Personification: giving human feelings to an object'], 'The matching structure sets “men” against “animals” and “enemies” against “comrades”.'),
+        MC('What is the effect of the phrase “abolished for ever”?', 'It makes the animals believe one big change could solve all their problems permanently', ['It warns the animals that their work will never end', 'It shows Old Major is unsure about his plan', 'It suggests the humans will win in the end'], 'The strong, final words create hope and urgency.'),
+      ],
+      emo: {
+        q: 'What emotion does Old Major try to make the animals feel in this extract? Include ONE quote to support your answer.',
+        criteria: ['Names a suitable emotion, such as hatred of humans, hope, determination or solidarity', 'Supports it with ONE short, accurate quote, such as “Man is the only real enemy we have”'],
+        model: 'Old Major wants the animals to feel hatred and distrust towards humans, together with hope that life could be better without them. He calls Man “the only real enemy we have”, which blames one group for all the animals’ suffering and so stirs up anger and a shared purpose.',
+      },
+    },
+    {
+      id: 'ch5dogs', chapter: 'Chapter 5', title: 'Snowball is driven out',
+      text: '“Nine enormous dogs wearing brass-studded collars came bounding into the barn. They dashed straight for Snowball, who only sprang from his place just in time to escape their snapping jaws.”\n“In a moment he was out of the door and they were after him. Too amazed and frightened to speak, all the animals crowded through the door to watch the chase.”',
+      mc: [
+        MC('What is happening in this extract?', 'Napoleon uses force to get rid of his rival', ['Snowball attacks the other animals', 'The animals vote for Napoleon’s plan', 'The dogs defend the farm from Jones'], 'Napoleon’s dogs chase Snowball off the farm, so he can rule without opposition.'),
+        MC('What technique is used in the phrase “snapping jaws”?', 'Visual imagery that makes the dogs seem savage and dangerous', ['A rhetorical question', 'Olfactory imagery', 'A simile comparing the dogs to soldiers'], 'The two words let the reader picture the attack.'),
+        MC('What is the effect of “Too amazed and frightened to speak”?', 'It shows the animals are silenced by fear and cannot challenge Napoleon', ['It shows the animals are proud of Napoleon', 'It shows the animals have no interest in politics', 'It shows the animals are planning a reply'], 'Fear takes away their voice, which is how tyrants keep control.'),
+      ],
+      emo: {
+        q: 'What emotion does Orwell want the reader to feel as the dogs attack Snowball? Include ONE quote to support your answer.',
+        criteria: ['Names a suitable emotion, such as shock, fear, outrage or alarm', 'Supports it with ONE short, accurate quote, such as “nine enormous dogs” or “snapping jaws”'],
+        model: 'Orwell wants the reader to feel shock and fear. The attack is sudden and brutal, and the description of “nine enormous dogs” rushing at one animal makes the reader feel how unfair and frightening Napoleon’s power has become.',
+      },
+    },
+    {
+      id: 'ch7boxer', chapter: 'Chapter 7', title: 'Boxer responds to the executions',
+      text: '“I do not understand it. I would not have believed that such things could happen on our farm. It must be due to some fault in ourselves. The solution, as I see it, is to work harder. From now onwards I shall get up a full hour earlier in the mornings.”',
+      mc: [
+        MC('What is the main idea of Boxer’s speech?', 'He blames himself and the animals instead of questioning Napoleon', ['He plans to stand up to Napoleon', 'He believes the executions were fair', 'He wants to leave the farm'], 'Boxer’s answer to every problem is to work harder.'),
+        MC('What technique is used when Boxer says “It must be due to some fault in ourselves”?', 'Dramatic irony: the reader can see the fault lies with Napoleon, but Boxer cannot', ['Hyperbole: an extreme exaggeration', 'Onomatopoeia: a word that copies a sound', 'Alliteration: repeated starting sounds'], 'We know more than Boxer does, which makes his loyalty painful to read.'),
+        MC('What is the effect of “I would not have believed that such things could happen on our farm”?', 'It shows Boxer’s loyal, trusting nature and makes the reader pity him', ['It shows Boxer is planning a rebellion', 'It shows Boxer agrees with the killings', 'It shows Boxer has stopped caring about the farm'], 'His disbelief shows how much he trusts the leadership.'),
+      ],
+      emo: {
+        q: 'What emotion does Orwell want the reader to feel towards Boxer in this extract? Include ONE quote to support your answer.',
+        criteria: ['Names a suitable emotion, such as sympathy, pity or frustration', 'Supports it with ONE short, accurate quote, such as “The solution, as I see it, is to work harder”'],
+        model: 'Orwell wants the reader to feel sympathy, mixed with frustration. Boxer is so loyal that he says “The solution, as I see it, is to work harder”, even though the real fault lies with Napoleon, so the reader pities a good animal who is being used.',
+      },
+    },
+    {
+      id: 'ch9van', chapter: 'Chapter 9', title: 'Boxer is taken away',
+      text: '[Boxer has collapsed, and a van has arrived. The animals believe he is being taken to hospital.]\n“Fools! Fools! Do you not see what is written on the side of that van?”\n“Get out quickly! They’re taking you to your death!”',
+      mc: [
+        MC('What is happening in this extract?', 'The animals realise too late that Boxer is being sent to be killed', ['Boxer is being rewarded for his work', 'The animals are celebrating a victory', 'Benjamin is persuading the animals to stay calm'], 'The writing on the van reveals the truth that the pigs have hidden.'),
+        MC('What technique is used in “Do you not see what is written on the side of that van?”', 'Rhetorical question', ['Juxtaposition', 'Alliteration', 'Onomatopoeia'], 'Benjamin does not want an answer: he is shocked that the others missed the obvious.'),
+        MC('What is the effect of “They’re taking you to your death!”?', 'It reveals the pigs’ betrayal of a loyal worker and creates shock and urgency', ['It shows the animals are happy for Boxer', 'It shows Benjamin dislikes Boxer', 'It shows the van is a harmless trip'], 'The blunt word “death” and the exclamation mark create panic.'),
+      ],
+      emo: {
+        q: 'What emotion does Orwell want the reader to feel as Boxer is taken away? Include ONE quote to support your answer.',
+        criteria: ['Names a suitable emotion, such as horror, grief, anger or outrage', 'Supports it with ONE short, accurate quote, such as “They’re taking you to your death!”'],
+        model: 'Orwell wants the reader to feel horror and anger. Benjamin’s cry, “They’re taking you to your death!”, exposes how the pigs sell off the animal who worked hardest for them, so the reader feels grief for Boxer and outrage at the pigs.',
+      },
+    },
+  ];
+
+  const MID = [ // Extract 2: one quote + technique + effect question (3 marks) and one creative journal entry (5 marks)
+    {
+      id: 'ch2milk', chapter: 'Chapter 2', title: 'Napoleon and the missing milk',
+      text: '“Never mind the milk, comrades!” cried Napoleon, placing himself in front of the buckets. “That will be attended to. The harvest is more important. Comrade Snowball will lead the way. I shall follow in a few minutes. Forward, comrades! The hay is waiting.”\n[When the animals came back that evening, the milk had disappeared.]',
+      tech: {
+        q: 'How does Orwell hint in this extract that Napoleon cannot be trusted? Include ONE quote, a technique and an explanation of its effect.',
+        criteria: ['Includes ONE relevant short quote, such as “Never mind the milk, comrades!”', 'Names a technique, such as imperative language, direct address (“comrades”) or foreshadowing', 'Explains the effect: Napoleon brushes off the animals’ concern and takes charge, hinting that the pigs will keep the milk for themselves'],
+        model: 'Orwell uses imperative language when Napoleon commands “Never mind the milk, comrades!” The order cuts off the animals’ question before it can be asked, while the friendly word “comrades” makes the dismissal sound warm. This foreshadows the pigs’ greed, because when the milk then vanishes the reader realises Napoleon was distracting the animals from what he planned to do.',
+      },
+      journal: {
+        q: 'Write a short journal entry (about 100 to 150 words) from the perspective of Clover, the mare, on the evening the milk disappears. Show her feelings about what has happened, her thoughts about Napoleon and the pigs taking charge, and use descriptive, expressive language that sounds like Clover.',
+        model: 'Tuesday evening. The buckets stood empty in the dairy, and I could not stop staring at them. Napoleon said to forget the milk, and I did what I was told, bent my back and gathered the hay until my legs trembled. But now there is a hollow feeling under my ribs. Who would take it? The pigs are clever, and I want to trust them, yet I saw how quickly Napoleon stood in front of those pails, as broad and solid as a door. Perhaps I am being foolish. Still, tonight the moon looks cold, and I cannot shake the feeling that something sweet has slipped away from all of us.',
+      },
+    },
+    {
+      id: 'ch3pigs', chapter: 'Chapter 3', title: 'The pigs take the lead',
+      text: '“Nobody stole, nobody grumbled over his rations, the quarrelling and biting and jealousy which had been normal features of life in the old days had almost disappeared. Nobody shirked—or almost nobody.”\n“The pigs did not actually work, but directed and supervised the others. With their superior knowledge it was natural that they should assume the leadership.”',
+      tech: {
+        q: 'How does Orwell show in this extract that the pigs are becoming a ruling class? Include ONE quote, a technique and an explanation of its effect.',
+        criteria: ['Includes ONE relevant short quote, such as “directed and supervised the others”', 'Names a technique, such as contrast, irony or a matter-of-fact tone', 'Explains the effect: the pigs give orders without working, so they are set apart from the others, foreshadowing their privilege'],
+        model: 'Orwell uses contrast: the other animals work hard, but the pigs “did not actually work, but directed and supervised the others”. The calm, matter-of-fact tone of “it was natural” makes the pigs’ takeover sound reasonable, which is ironic because it is exactly how a ruling class begins. The effect is to foreshadow that the pigs will soon enjoy privileges while everyone else labours.',
+      },
+      journal: {
+        q: 'Write a short journal entry (about 100 to 150 words) from the perspective of Boxer, reflecting on a busy day of work while the pigs direct and supervise. Show his feelings about the work, his thoughts about the pigs leading, and use descriptive, expressive language that sounds like Boxer.',
+        model: 'Evening, after the harvest. My shoulders ache and my hooves feel like stones, but it is a good ache, the kind that means the farm is ours. All day the pigs walked among us with their clever heads together, telling us where to push and where to pull. I do not understand all their words, yet they know so much, so it is right that they should lead. I wish I could learn more than four letters. Perhaps tomorrow. I will wake an hour earlier, and the sun will find me already at the plough. If the pigs do the thinking, I will do the pulling.',
+      },
+    },
+    {
+      id: 'ch5vote', chapter: 'Chapter 5', title: 'The windmill debate',
+      text: 'Snowball’s supporters chanted “Vote for Snowball and the three-day week”, while Napoleon’s answered “Vote for Napoleon and the full manger”.\n“Benjamin was the only animal who did not side with either faction. He refused to believe either that food would become more plentiful or that the windmill would save work. Windmill or no windmill, he said, life would go on as it had always gone on—that is, badly.”',
+      tech: {
+        q: 'How does Orwell show Benjamin’s attitude to the leaders’ promises in this extract? Include ONE quote, a technique and an explanation of its effect.',
+        criteria: ['Includes ONE relevant short quote, such as “that is, badly”', 'Names a technique, such as understatement, a cynical tone or an abrupt anti-climax', 'Explains the effect: Benjamin deflates the promises and shows that he expects life to stay hard whoever rules'],
+        model: 'Orwell uses a blunt, cynical tone when Benjamin says life will go on as it always has, “that is, badly”. The short, dry add-on deflates the exciting slogans of both leaders, so their promises sound empty. The effect is to make the reader doubt the leaders and suspect that Benjamin, the oldest and wisest animal, is right.',
+      },
+      journal: {
+        q: 'Write a short journal entry (about 100 to 150 words) from the perspective of Muriel, the goat, after the noisy debate about the windmill. Show her feelings about the arguing, her thoughts about the pigs fighting for control, and use descriptive, expressive language that sounds like Muriel.',
+        model: 'Late night. I have read both slogans so many times that they dance behind my eyes. “Three-day week.” “Full manger.” They sound so sweet. Yet when I watched Snowball and Napoleon snarl at each other across the barn, I felt like a small, cold stone between two rivers. Why do the pigs only agree on being in charge? Benjamin only shrugged at it all, and for once I wonder whether his shrug is wiser than all my reading. I can read every word on the wall, but tonight I cannot tell which words are true.',
+      },
+    },
+  ];
+
+  const CLOSE = [ // Extract 3: 7-mark extended response (PETAL)
+    {
+      id: 'ch3apples', chapter: 'Chapter 3', title: 'The milk and apples',
+      text: '“The mystery of where the milk went to was soon solved. It was mixed every day into the pigs’ mash.” The apples were ripening, and the animals assumed they would be shared out equally. Instead the order went out that all the windfalls were to be collected for the use of the pigs.\nSquealer explained: “You do not imagine, I hope, that we pigs are doing this in a spirit of selfishness and privilege? Many of us actually dislike milk and apples. I dislike them myself. Our sole object in taking these things is to preserve our health.”\n“Do you know what would happen if we pigs failed in our duty? Jones would come back!”',
+      petal: {
+        criteria: petalCrit(['“a spirit of selfishness and privilege”', '“Jones would come back!”']),
+        model: 'Orwell warns that people with power quickly begin to serve themselves and then hide it with clever words. Squealer asks, “You do not imagine, I hope, that we pigs are doing this in a spirit of selfishness and privilege?” This rhetorical question names the very thing the pigs are guilty of and then dismisses it, which makes the animals feel ashamed to doubt their leaders. It shows how persuasive language can disguise greed as a sacrifice, and Orwell’s purpose is to warn readers to question leaders who tell them not to worry.\n\nOrwell also shows that fear is used to keep power. Squealer shouts, “Jones would come back!”, an emotive threat that links any criticism of the pigs with the return of the cruel farmer. The exclamation mark makes the danger sound immediate, so the animals give up the milk and apples without argument. This shows how easily the pigs are corrupted, since in their first act of privilege they already lie and frighten others to protect themselves. Therefore, Orwell warns that unchecked power quickly corrupts and that those who control language can control a whole community.',
+      },
+    },
+    {
+      id: 'ch78commands', chapter: 'Chapters 7 and 8', title: 'The Commandments are altered',
+      text: 'After the executions, the animals look again at the Sixth Commandment. “Somehow or other, the last two words had slipped out of the animals’ memory.” The Commandment now reads: “No animal shall kill any other animal without cause.”\nLater, Muriel notices another Commandment has been remembered wrong. It does not say “No animal shall drink alcohol”. It says: “No animal shall drink alcohol to excess.”',
+      petal: {
+        criteria: petalCrit(['“without cause”', '“to excess”']),
+        model: 'Orwell warns that those in power can change the rules to suit themselves, and that the powerless may not even notice. The pigs add the words “without cause” to the Sixth Commandment after the executions. This small addition is a form of euphemism, because it makes the killing sound lawful and reasonable. It shows that the pigs have become corrupted, since they twist the law instead of obeying it, and Orwell’s purpose is to show how a ruling group can excuse any cruelty by rewriting the rules.\n\nThe same pattern appears when the Commandment becomes “No animal shall drink alcohol to excess”. The phrase “to excess” gives the pigs permission to drink whenever they like, while it sounds moderate and sensible. The animals accept the change because they cannot remember the original, which shows how easily power is kept by controlling memory and truth. In this way, Orwell warns readers that when rules can be quietly altered, equality is lost one word at a time.',
+      },
+    },
+    {
+      id: 'ch9figures', chapter: 'Chapter 9', title: 'Squealer and the figures',
+      text: 'When food becomes scarce, Squealer always speaks of a “readjustment” of rations, never a “reduction”.\n“Squealer … read out lists of figures proving that the production of every class of foodstuff had increased by two hundred per cent, three hundred per cent, or five hundred per cent, as the case might be.”\n“The animals saw no reason why they should not believe him, especially as they could no longer remember very clearly what conditions had been like before the Rebellion.”',
+      petal: {
+        criteria: petalCrit(['“readjustment”', '“three hundred per cent, or five hundred per cent”']),
+        model: 'Orwell warns that leaders can control people by controlling language. Squealer calls a cut in food a “readjustment”, never a “reduction”. This euphemism makes something painful sound technical and harmless, so the hungry animals do not complain. It shows how the pigs now depend on words to hide the truth, and Orwell’s purpose is to alert readers to the way governments can soften harsh facts.\n\nOrwell also shows how statistics can be used as a weapon. Squealer reads out figures of increases of “three hundred per cent, or five hundred per cent”, and the exaggerated, repeated numbers overwhelm animals who cannot check them. The animals “could no longer remember very clearly” the past, which shows how easily people can be fooled when their memory is weakened. Therefore, Orwell warns that corrupt power survives by manipulating information, and that people must question the facts they are given.',
+      },
+    },
+    {
+      id: 'ch10equal', chapter: 'Chapter 10', title: 'All animals are equal',
+      text: 'The Seven Commandments have been replaced by a single Commandment on the barn wall:\n“ALL ANIMALS ARE EQUAL BUT SOME ANIMALS ARE MORE EQUAL THAN OTHERS”\nThe sheep who once bleated “Four legs good, two legs bad” now bleat “Four legs good, two legs better!” as the pigs walk about on two legs.',
+      petal: {
+        criteria: petalCrit(['“MORE EQUAL THAN OTHERS”', '“two legs better!”']),
+        model: 'Orwell warns that power can corrupt a revolution until it becomes the thing it fought against. The final Commandment, “ALL ANIMALS ARE EQUAL BUT SOME ANIMALS ARE MORE EQUAL THAN OTHERS”, is a paradox, because equality cannot come in degrees. The contradiction exposes the pigs’ hypocrisy, since they now openly treat themselves as superior. Orwell’s purpose is to show that the promise of equality can be betrayed by the leaders who made it.\n\nThe slogan changes from “Four legs good, two legs bad” to “Four legs good, two legs better!”, and the change of one word, “bad” to “better”, shows how completely the pigs have corrupted the revolution. The sheep chant the new version as easily as the old one, which shows how repetition can silence independent thought. Therefore, Orwell warns that a group with unchecked power will rewrite its own ideals, and that people who stop thinking for themselves make it easy for them.',
+      },
+    },
+  ];
+
+  /* The assembled paper: plain data (no DOM) so the app and the tests can both use it.
+     Extract 1 (Q1 to Q4), Extract 2 (Q5, Q6), Extract 3 (Q7): 3 + 2 + 3 + 5 + 7 = 20 marks. */
+  const shortPart = (q, marks, criteria, model) => ({ label: '', q, type: 'short', marks, criteria, model, steps: [] });
+  const paperItem = (kind, tag, level, part) => ({ kind, tags: [tag], level, parts: [part] });
+  function buildPaper() {
+    const a = pick(OPEN), b = pick(MID), c = pick(CLOSE);
+    const mc = a.mc.map(m => paperItem('mc', 'P1', 'F', CH('', m.q, m.right, m.wrongs, [m.why])));
+    const groups = [
+      { n: 1, set: a, items: [...mc, paperItem('emotion', 'H5', 'S', shortPart(a.emo.q, 2, a.emo.criteria, a.emo.model))] },
+      { n: 2, set: b, items: [paperItem('technique', 'K4', 'C', shortPart(b.tech.q, 3, b.tech.criteria, b.tech.model)), paperItem('creative', 'W8', 'C', shortPart(b.journal.q, 5, JOURNAL_CRIT, b.journal.model))] },
+      { n: 3, set: c, items: [paperItem('petal', 'W2', 'C', shortPart(PETAL_Q, 7, c.petal.criteria, c.petal.model))] },
+    ].map(g => ({ n: g.n, id: g.set.id, label: `Extract ${g.n}: ${g.set.chapter}`, title: g.set.title, text: g.set.text, items: g.items }));
+    const marks = groups.reduce((t, g) => t + g.items.reduce((s, it) => s + it.parts.reduce((x, p) => x + p.marks, 0), 0), 0);
+    return { minutes: 60, marks, groups };
+  }
+  // Every extract question is also available as a standalone short answer in the Short answers deck.
+  const paperShorts = () => [...OPEN, ...MID, ...CLOSE].flatMap(s => [
+    s.emo && { q: s.emo.q, passage: s.text, marks: 2, tags: ['W1'], criteria: s.emo.criteria, model: s.emo.model },
+    s.tech && { q: s.tech.q, passage: s.text, marks: 3, tags: ['W1'], criteria: s.tech.criteria, model: s.tech.model },
+    s.journal && { q: s.journal.q, passage: s.text, marks: 5, tags: ['W8'], criteria: JOURNAL_CRIT, model: s.journal.model },
+    s.petal && { q: PETAL_Q, passage: s.text, marks: 7, tags: ['W2'], criteria: s.petal.criteria, model: s.petal.model },
+  ].filter(Boolean));
+
   /* ================= TECHNIQUES TOOLKIT ================= */
   // [section, term, definition, typical effect, level]
   const DEFS = [
@@ -248,11 +432,11 @@ const EN = (() => {
     ['Mollie', 'A vain white mare who loves sugar and ribbons and runs away to live with humans.', 'The middle and upper classes who fled the revolution'],
     ['Moses', 'Jones’s tame raven, who tells stories of Sugarcandy Mountain, a paradise for animals after death.', 'The Church and religion'],
     ['Mr Jones', 'The drunken, careless owner of Manor Farm who is driven out in the Rebellion.', 'Tsar Nicholas II'],
-    ['The dogs', 'Nine puppies that Napoleon raises in secret. They grow into fierce dogs that protect him and attack his enemies.', 'The secret police'],
+    ['The dogs', 'Nine puppies that Napoleon raises in secret. They grow into fierce dogs that protect him and attack his enemies.', 'The secret police (such as the NKVD), who enforce rule through fear'],
     ['The sheep', 'Animals that cannot learn much but bleat slogans on cue, drowning out debate.', 'The easily led masses who repeat slogans'],
     ['Minimus', 'A pig who writes songs and poems, including the new anthem and a poem praising Napoleon.', 'Propaganda poets and artists who glorified Stalin'],
     ['Mr Frederick', 'The tough owner of Pinchfield, a neighbouring farm. He cheats Napoleon with forged banknotes and then attacks the farm.', 'Adolf Hitler and Nazi Germany'],
-    ['Mr Pilkington', 'The easy-going owner of Foxwood, a neighbouring farm. He plays cards with the pigs at the end.', 'Britain and the Western powers'],
+    ['Mr Pilkington', 'The easy-going owner of Foxwood, a neighbouring farm. He plays cards with the pigs at the end.', 'Western capitalist democracies, who deal with Napoleon for profit'],
     ['Mr Whymper', 'A human solicitor who acts as Napoleon’s go-between for trade with the outside world.', 'Westerners who did business with the Soviet Union'],
   ];
   const MAIN_CHARS = CHARS.slice(0, 11);
@@ -842,7 +1026,7 @@ const EN = (() => {
         '1 mark: one clear point, often one sentence (for example, naming a technique or a character).',
         '2–3 marks: a technique plus a short quote or a specific moment plus its effect. Think of it as a mini-PETAL in two to four sentences.',
         '4 marks: two techniques or two points, each with evidence and effect.',
-        '8 marks: a full extended response, written as one or two PETAL paragraphs.',
+        '7 marks: a full extended response, written as one or two PETAL paragraphs.',
         'If the question gives you an extract, your evidence must come from that extract.',
       ], ex: ['Unpacking a question: “How does Orwell use Squealer to show the power of language? (3 marks)”', 'How does Orwell use: I must name a technique and explain its effect.', 'Squealer: my evidence must be something Squealer says or does.', 'Power of language: my explanation must show how words control the animals.', '3 marks: technique, evidence and effect, in about three or four sentences.'] },
       { code: 'W2', name: 'PETAL explained', notes: [
@@ -852,7 +1036,7 @@ const EN = (() => {
         'A is for Analysis: explain how the technique and evidence create meaning. This is the most important part. Starter: “This reveals…”, “This suggests…”, “The word … highlights…”',
         'L is for Link: tie back to the question and Orwell’s message. Starter: “Therefore, Orwell warns…”, “In this way, Orwell criticises…”',
         'You can combine E and T in one sentence: “Orwell uses euphemism when Squealer calls a cut in rations a “readjustment”.”',
-        'For an 8-mark answer, write one PETAL paragraph with two pieces of evidence, or two PETAL paragraphs with one main example each.',
+        'For an 7-mark answer, write one PETAL paragraph with two pieces of evidence, or two PETAL paragraphs with one main example each.',
       ] },
       { code: 'W3', name: 'Strong analysis vocabulary', notes: [
         'Avoid repeating “shows”. Use precise verbs: reveals, highlights, emphasises, suggests, conveys, exposes, criticises, warns, mocks, symbolises, foreshadows.',
@@ -877,6 +1061,16 @@ const EN = (() => {
         'Multiple choice: cross out answers you know are wrong, and be careful with “not” and “best”.',
         'Always link back to Orwell’s message: what is he warning us about?',
       ] },
+      { code: 'W8', name: 'Creative journal entry (5 marks)', notes: [
+        'The task: write a short journal entry in the voice of a character from the novel (not Orwell, and not a pig unless the question says so), reflecting on events from the extract.',
+        'Write in the first person (“I”), and keep the date or time of day short at the top, such as “Tuesday evening.”',
+        'Show feelings clearly: pride, frustration, confusion, excitement or unease. Name the feeling through what the character notices, not only through the label.',
+        'Include the character’s thoughts about the pigs or the ruling animals: do they trust them, fear them, admire them or doubt them?',
+        'Use descriptive, expressive language: sights, sounds, touch, strong verbs and a simile or metaphor or two.',
+        'Capture the character’s voice. Boxer is loyal and simple, Clover is gentle and worried, Benjamin is dry and cynical, Muriel is thoughtful and curious.',
+        'Refer to at least one real detail from the extract, so the entry belongs to the story.',
+        'Marking checklist: first person and in character; clear feelings; thoughts about the pigs; descriptive, expressive language; a distinct voice with a detail from the extract. About 100 to 150 words is enough.',
+      ], ex: ['Model opening (Boxer): Evening, after the harvest. My shoulders ache and my hooves feel like stones, but it is a good ache, the kind that means the farm is ours.', 'Feelings: the aching shoulders and the pride show Boxer’s loyalty without naming it.', 'Pigs: “If the pigs do the thinking, I will do the pulling” shows his trust in the ruling animals.'] },
     ],
     cards: [
       ['What does PETAL stand for?', 'Point, Evidence, Technique, Analysis, Link.'],
@@ -890,7 +1084,7 @@ const EN = (() => {
       ['Link sentence starters', '“Therefore, Orwell warns…”, “In this way, Orwell criticises…”'],
       ['What does a 1-mark question need?', 'One clear, correct point, often a single sentence.'],
       ['What does a 2–3 mark question need?', 'A technique, a short quote or specific moment, and its effect.'],
-      ['What does an 8-mark question need?', 'One or two full PETAL paragraphs.'],
+      ['What does an 7-mark question need?', 'One or two full PETAL paragraphs.'],
       ['What does “identify” mean?', 'Name it. A short answer is fine.'],
       ['What does “explain” mean?', 'Say how or why, giving reasons.'],
       ['What does “How does Orwell…” want?', 'A technique and how it creates meaning, not just what happens.'],
@@ -899,6 +1093,8 @@ const EN = (() => {
       ['Do I need to memorise quotes?', 'No. Use quotes from the extract, and describe moments in your own words for the extended response.'],
       ['How long is the exam?', '60 minutes for 20 marks: about three minutes per mark.'],
       ['How should you read an unseen extract?', 'Twice: first for meaning, then with a pen, underlining strong words and techniques.'],
+      ['What does a creative journal entry need?', 'First person, in character; clear feelings; thoughts about the pigs; descriptive, expressive language; a distinct voice with a detail from the extract.'],
+      ['What do the 2 and 3 mark extract questions need?', 'ONE short quote, the technique named, and an explanation of its effect.'],
       ['Biggest mistake in analysis', 'Retelling the plot or just naming a technique without explaining its effect.'],
       ['Feature-spotting', 'Listing techniques with no explanation. It earns very few marks.'],
       ['How do you plan an extended response quickly?', 'Write P, E, T, A, L down the margin and jot a few words next to each.'],
@@ -907,7 +1103,7 @@ const EN = (() => {
       ['In PETAL, what does the A stand for?', ['Answer', 'Analysis', 'Argument', 'Audience'], 1, ''],
       ['Which part of PETAL is most important for high marks?', ['Point', 'Evidence', 'Analysis', 'Link'], 2, 'Analysis is where you explain how meaning is created.'],
       ['A 1-mark question usually needs…', ['A full PETAL paragraph', 'One clear point', 'Three quotes', 'An essay'], 1, ''],
-      ['An 8-mark question needs…', ['One word', 'One or two PETAL paragraphs', 'Only a quote', 'A list of techniques'], 1, ''],
+      ['An 7-mark question needs…', ['One word', 'One or two PETAL paragraphs', 'Only a quote', 'A list of techniques'], 1, ''],
       ['Which is the strongest verb for analysis?', ['shows', 'says', 'highlights', 'has'], 2, ''],
       ['Which is the best Point for “How does Orwell present Squealer?”', ['Squealer is a pig.', 'Orwell presents Squealer as a cunning manipulator who uses language to control the animals.', 'Squealer talks a lot in the book.', 'I like Squealer.'], 1, ''],
       ['What should a Link do?', ['Introduce a new quote', 'Tie back to the question and Orwell’s message', 'Retell the plot', 'List more techniques'], 1, ''],
@@ -929,6 +1125,7 @@ const EN = (() => {
       { q: 'How does Orwell show that the revolution has been betrayed by the end of the novel?', marks: 8, tags: ['W6'], criteria: ['Point: a clear opening sentence that directly answers the question', 'Evidence: the final scene where pigs and men cannot be told apart', 'Evidence: a second example, such as the single commandment, the name Manor Farm, or the windmill grinding corn for profit', 'Technique: names a technique, such as cyclical structure, situational irony, repetition or symbolism', 'Analysis: explains how the evidence shows the pigs have become like the humans', 'Analysis: compares the ending with Old Major’s dream or the original Commandments', 'Link: ties back to Orwell’s warning about revolutions and power', 'Expression: clear, well-structured PETAL paragraph(s) without plot retelling'], model: 'Orwell shows that by the end, the revolution has been completely betrayed, as the pigs become the masters they once overthrew. The Seven Commandments are replaced by a single rule, “All animals are equal but some animals are more equal than others”, a piece of verbal irony that openly contradicts Old Major’s dream of equality. In the final scene, the animals look “from pig to man, and from man to pig” and cannot tell which is which. Orwell uses a cyclical structure: the farm is renamed Manor Farm, and the pigs walk on two legs and carry whips, just as Jones once did. This situational irony emphasises that the animals’ suffering and sacrifice have changed nothing. Therefore, Orwell warns that revolutions can be corrupted by their leaders until one tyranny is simply replaced by another.' },
     ],
   });
+  afwrite.short.push(...paperShorts());
   afwrite.bank = [
     function bestSentence(level) { return ask(WRITE_Q, level); },
     function whatsMissing(level) {
@@ -942,7 +1139,7 @@ const EN = (() => {
         ['F', 'What does PETAL stand for?', 'Point, Evidence, Technique, Analysis, Link', ['Plot, Example, Theme, Answer, List', 'Point, Explain, Tell, Argue, Learn', 'Paragraph, Evidence, Text, Author, Language']],
         ['S', 'A question is worth 3 marks and asks “How does Orwell…?” What should your answer include?', 'A technique, a short quote or moment, and its effect', ['Just the name of a technique', 'A retelling of the chapter', 'Your personal opinion of the characters']],
         ['S', 'The question includes an extract. Where should your evidence come from?', 'The extract', ['Any other chapter', 'The film version', 'Your own experience']],
-        ['C', 'A question is worth 8 marks. What should your answer be?', 'One or two well-developed PETAL paragraphs', ['One sentence', 'A list of techniques', 'A summary of the whole novel']],
+        ['C', 'A question is worth 7 marks. What should your answer be?', 'One or two well-developed PETAL paragraphs', ['One sentence', 'A list of techniques', 'A summary of the whole novel']],
         ['C', 'You have 60 minutes for 20 marks. About how long should you spend on a 4-mark question?', 'About 12 minutes', ['About 1 minute', 'About 30 minutes', 'About 45 minutes']],
       ];
       const m = items.filter(x => x[0] === level), [L, q, right, wrongs] = pick(m.length ? m : items);
@@ -950,6 +1147,6 @@ const EN = (() => {
     },
   ];
 
-  return { DECKS: [afplot, afthemes, aftech, afwrite, tech] };
+  return { DECKS: [afplot, afthemes, aftech, afwrite, tech], buildPaper, PAPER_SETS: { OPEN, MID, CLOSE }, JOURNAL_CRIT };
 })();
 if (typeof module !== 'undefined') module.exports = EN;

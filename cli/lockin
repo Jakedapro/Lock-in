@@ -1,0 +1,236 @@
+#!/bin/bash
+# Lock in command line (macOS).  Usage: lockin [open|update|version|focus [min]|exams|web|banner|uninstall|help]
+# Installed by install.sh into ~/.local/bin. Same commands as the Windows version.
+
+REPO='Jakedapro/Lock-in'
+SITE='https://jakedapro.github.io/Lock-in/'
+APP='/Applications/Lock in.app'
+CACHE_DIR="$HOME/Library/Application Support/lockin-cli"
+mkdir -p "$CACHE_DIR"
+
+ESC=$'\033'; RESET="$ESC[0m"; DIM="$ESC[2m"; BOLD="$ESC[1m"
+FANCY=0; [ -t 1 ] && FANCY=1
+rgb() { printf '%s[38;2;%d;%d;%dm' "$ESC" "$1" "$2" "$3"; }
+
+# teal -> blue -> violet, t from 0 to 100
+gradient() {
+  local t=$1 a b f
+  if [ "$t" -lt 50 ]; then a=(45 212 191); b=(59 130 246); f=$((t * 2)); else a=(59 130 246); b=(167 139 250); f=$(((t - 50) * 2)); fi
+  rgb $((a[0] + (b[0] - a[0]) * f / 100)) $((a[1] + (b[1] - a[1]) * f / 100)) $((a[2] + (b[2] - a[2]) * f / 100))
+}
+
+typed() { # text, colour, ms per character
+  if [ "$FANCY" = 0 ]; then echo "$1"; return; fi
+  printf '%s' "$2"; local s="$1" i; for ((i = 0; i < ${#s}; i++)); do printf '%s' "${s:i:1}"; sleep "0.0$(( ${3:-14} / 10 ))"; done; printf '%s\n' "$RESET"
+}
+
+BANNER=(
+'██╗      ██████╗  ██████╗██╗  ██╗    ██╗███╗   ██╗'
+'██║     ██╔═══██╗██╔════╝██║ ██╔╝    ██║████╗  ██║'
+'██║     ██║   ██║██║     █████╔╝     ██║██╔██╗ ██║'
+'██║     ██║   ██║██║     ██╔═██╗     ██║██║╚██╗██║'
+'███████╗╚██████╔╝╚██████╗██║  ██╗    ██║██║ ╚████║'
+'╚══════╝ ╚═════╝  ╚═════╝╚═╝  ╚═╝    ╚═╝╚═╝  ╚═══╝'
+)
+
+banner_row() { # row, phase 0-100
+  local row="$1" phase=$2 w=${#1} x ch t out='  '
+  for ((x = 0; x < w; x++)); do
+    ch="${row:x:1}"
+    if [ "$ch" = ' ' ]; then out+=' '; continue; fi
+    t=$(((x * 100 / w + phase) % 100)); [ "$t" -gt 50 ] && t=$((100 - t)); t=$((t * 2))
+    out+="$(gradient $t)$ch"
+  done
+  printf '%s%s\n' "$out" "$RESET"
+}
+
+show_banner() {
+  echo
+  if [ "$FANCY" = 0 ]; then for r in "${BANNER[@]}"; do echo "  $r"; done; return; fi
+  printf '%s[?25l' "$ESC"; trap 'printf "%s[?25h" "$ESC"' RETURN
+  for r in "${BANNER[@]}"; do banner_row "$r" 0; sleep 0.045; done
+  local f
+  for f in $(seq 1 24); do printf '%s[6F' "$ESC"; for r in "${BANNER[@]}"; do banner_row "$r" $((f * 100 / 24)); done; sleep 0.028; done
+}
+
+# ---------------------------------------------------------------- app and releases
+installed_version() { [ -d "$APP" ] && defaults read "$APP/Contents/Info" CFBundleShortVersionString 2>/dev/null; }
+json() { /usr/bin/osascript -l JavaScript -e "var o=JSON.parse(\`$1\`);$2" 2>/dev/null; } # json '<text>' 'js expression using o'
+version_gt() { [ "$1" != "$2" ] && [ "$(printf '%s\n%s\n' "$1" "$2" | sort -V | tail -1)" = "$1" ]; }
+
+latest_release() { # prints "version url" for the Mac zip, or nothing
+  local r; r=$(curl -fsS --max-time "${1:-30}" -H 'User-Agent: lockin-cli' "https://api.github.com/repos/$REPO/releases/latest") || return 1
+  json "$(printf '%s' "$r" | sed 's/`/ /g')" 'var a=o.assets.filter(function(x){return /mac.*\.zip$/i.test(x.name)})[0];a?o.tag_name.replace(/^v/,"")+" "+a.browser_download_url:""'
+}
+
+update_cli() {
+  local self; self=$(cd "$(dirname "$0")" && pwd)/$(basename "$0")
+  if curl -fsS --max-time 20 "https://raw.githubusercontent.com/$REPO/main/cli/lockin" -o "$self.new" && head -1 "$self.new" | grep -q '^#!/bin/bash'; then
+    chmod +x "$self.new"; mv -f "$self.new" "$self"
+  else rm -f "$self.new"; echo "Couldn't update the lockin command itself."; fi
+}
+
+update_app() {
+  echo 'Checking for updates...'
+  local rel ver url inst; rel=$(latest_release 30)
+  if [ -z "$rel" ]; then
+    echo "There's no Mac release on GitHub yet, so there's nothing to download."
+    echo "(The Mac app includes the HSC papers, so it's built on your Mac and not published.)"
+    echo "Ask Claude to rebuild it, or run the build in the repo's desktop folder."
+    update_cli; return 0
+  fi
+  ver=${rel%% *}; url=${rel#* }; inst=$(installed_version)
+  if [ -n "$inst" ] && ! version_gt "$ver" "$inst"; then echo "Lock in $inst is already the latest version."
+  else
+    local tmp; tmp=$(mktemp -d)
+    echo "${inst:+Updating Lock in $inst to }${inst:-Installing Lock in }$ver..."
+    curl -fL --progress-bar "$url" -o "$tmp/app.zip" || { echo 'Download failed.'; rm -rf "$tmp"; return 1; }
+    osascript -e 'tell application "Lock in" to quit' >/dev/null 2>&1; sleep 1
+    ditto -x -k "$tmp/app.zip" "$tmp/x" && rm -rf "$APP" && ditto "$tmp/x/Lock in.app" "$APP" && xattr -cr "$APP" && codesign --force --deep --sign - "$APP" >/dev/null 2>&1
+    rm -rf "$tmp"
+    [ -d "$APP" ] || { echo 'The install finished but Lock in.app is missing.'; return 1; }
+    echo "Lock in $(installed_version) is installed. Type 'lockin' to open it."
+  fi
+  update_cli
+}
+
+# ---------------------------------------------------------------- the intro
+show_exams() {
+  local json_text; json_text=$(curl -fsS --max-time 3 "https://raw.githubusercontent.com/$REPO/main/exams.json" 2>/dev/null)
+  if [ -n "$json_text" ]; then printf '%s' "$json_text" > "$CACHE_DIR/exams.json"; elif [ -f "$CACHE_DIR/exams.json" ]; then json_text=$(cat "$CACHE_DIR/exams.json"); else return 0; fi
+  local now; now=$(date +%s)
+  local rows; rows=$(json "$(printf '%s' "$json_text" | sed 's/`/ /g')" 'o.map(function(e){return e.date+"|"+e.name+"|"+e.when}).join("\n")')
+  local up=0 line d name when at span days left c cells filled bar
+  echo
+  while IFS='|' read -r d name when; do
+    [ -z "$d" ] && continue
+    at=$(date -j -f '%Y-%m-%dT%H:%M' "$d" +%s 2>/dev/null) || continue
+    [ "$at" -le "$now" ] && continue
+    if [ "$up" = 0 ]; then typed '  coming up' "$BOLD$(rgb 167 139 250)" 20; up=1; fi
+    span=$((at - now)); days=$((span / 86400))
+    if [ "$days" -ge 1 ]; then left="$days day$([ "$days" -ne 1 ] && echo s)"; else left="$((span / 3600)) hours"; fi
+    if [ "$days" -lt 7 ]; then c=$(rgb 248 113 113); elif [ "$days" -lt 14 ]; then c=$(rgb 251 191 36); else c=$(rgb 52 211 153); fi
+    cells=24; filled=$((cells - days)); [ "$filled" -lt 1 ] && filled=1; [ "$filled" -gt $((cells - 1)) ] && filled=$((cells - 1))
+    bar=$(printf '█%.0s' $(seq 1 $filled))$(printf '░%.0s' $(seq 1 $((cells - filled))))
+    line=$(printf '  %-19s %-21s' "$name" "$when")
+    if [ "$FANCY" = 1 ]; then printf '%s%s%s%s  %s%s%s%s\n' "$line" "$c" "$bar" "$RESET" "$BOLD" "$c" "$left" "$RESET"; sleep 0.07; else echo "$line$bar  $left"; fi
+  done <<< "$rows"
+  [ "$up" = 0 ] && echo '  No exams coming up. Go outside.'
+  return 0
+}
+
+TIPS=(
+'Do the hardest topic first, while your brain is fresh.'
+'Past papers under timed conditions beat rereading notes.'
+'Explain it out loud. If you can teach it, you know it.'
+'Your mistakes list is the fastest way to marks. Clear it.'
+'Phone in another room for the next 50 minutes.'
+"Sleep is when it sticks. Don't trade it for one more hour."
+"Check the reference sheet so you know what you don't need to memorise."
+)
+random_tip() { echo "${TIPS[RANDOM % ${#TIPS[@]}]}"; }
+
+show_intro() { # $1 = launch
+  show_banner
+  typed '  study like it is the night before.' "$DIM" 12
+  show_exams
+  echo
+  typed "  tip  $(random_tip)" "$(rgb 148 163 184)" 6
+  local inst latest rel; inst=$(installed_version); rel=$(latest_release 3)
+  if [ -n "$rel" ] && [ -n "$inst" ] && version_gt "${rel%% *}" "$inst"; then echo; typed "  update available: $inst to ${rel%% *}. run: lockin update" "$(rgb 251 191 36)" 8; fi
+  echo
+  [ -z "$1" ] && return 0
+  [ -d "$APP" ] || { echo "  Lock in isn't installed yet. Run: lockin update"; exit 1; }
+  if [ "$FANCY" = 1 ]; then
+    local n=32 i j s
+    for ((i = 1; i <= n; i++)); do
+      s="\r  ${DIM}launching${RESET}  "
+      for ((j = 0; j < n; j++)); do if [ "$j" -lt "$i" ]; then s+="$(gradient $((j * 100 / n)))█"; else s+="${DIM}░${RESET}"; fi; done
+      printf '%b%s  %d%%' "$s" "$RESET" $((i * 100 / n)); sleep 0.022
+    done; echo
+  fi
+  open "$APP"
+  typed '  locked in. good luck.' "$BOLD$(rgb 45 212 191)" 18
+  echo
+}
+
+# ---------------------------------------------------------------- focus timer
+D0=('█████' '█   █' '█   █' '█   █' '█████'); D1=('  ██ ' ' ███ ' '  ██ ' '  ██ ' '█████'); D2=('█████' '    █' '█████' '█    ' '█████')
+D3=('█████' '    █' ' ████' '    █' '█████'); D4=('█   █' '█   █' '█████' '    █' '    █'); D5=('█████' '█    ' '█████' '    █' '█████')
+D6=('█████' '█    ' '█████' '█   █' '█████'); D7=('█████' '    █' '   █ ' '  █  ' '  █  '); D8=('█████' '█   █' '█████' '█   █' '█████')
+D9=('█████' '█   █' '█████' '    █' '█████'); DC=('   ' ' █ ' '   ' ' █ ' '   ')
+digit_row() { # char, row
+  local name; case "$1" in :) name=DC;; *) name="D$1";; esac
+  eval "echo \"\${$name[$2]}\""
+}
+
+show_focus() {
+  local mins=$1
+  if ! [[ "$mins" =~ ^[0-9]+$ ]] || [ "$mins" -lt 1 ] || [ "$mins" -gt 180 ]; then echo 'Pick between 1 and 180 minutes, e.g. lockin focus 25'; exit 1; fi
+  local total=$((mins * 60)) end=$(($(date +%s) + mins * 60)) paused=0 stopped=0 first=1 tip; tip=$(random_tip)
+  if [ "$FANCY" = 0 ]; then
+    echo "Focus for $mins minutes. Ctrl+C to stop."
+    while [ "$(date +%s)" -lt "$end" ]; do echo "  $(((end - $(date +%s)) / 60)) min left"; sleep 60; done
+    echo 'Done. Take a 5 minute break.'; return
+  fi
+  printf '%s[?25l' "$ESC"; stty -echo -icanon min 0 time 0 2>/dev/null
+  trap 'printf "%s[?25h" "$ESC"; stty sane 2>/dev/null' RETURN
+  echo; typed "  locked in for $mins minute$([ "$mins" -ne 1 ] && echo s). phone in another room." "$BOLD$(rgb 45 212 191)" 10
+  echo "  ${DIM}[space] pause   [q] stop${RESET}"; echo
+  while true; do
+    local now left done_pct t r row x ch out f n=40 bar k
+    now=$(date +%s)
+    if [ "$paused" -gt 0 ]; then left=$((end - paused)); else left=$((end - now)); fi
+    [ "$left" -le 0 ] && break
+    t=$(printf '%02d:%02d' $((left / 60)) $((left % 60))); done_pct=$(((total - left) * 100 / total))
+    [ "$first" = 0 ] && printf '%s[8F' "$ESC"; first=0
+    for r in 0 1 2 3 4; do
+      row=''; for ((k = 0; k < ${#t}; k++)); do row+="$(digit_row "${t:k:1}" $r)  "; done
+      out='    '; for ((x = 0; x < ${#row}; x++)); do ch="${row:x:1}"; if [ "$ch" = ' ' ]; then out+=' '; else out+="$(gradient $((x * 100 / ${#row})))$ch"; fi; done
+      printf '%s%s%s[K\n' "$out" "$RESET" "$ESC"
+    done
+    f=$((done_pct * n / 100)); bar=''
+    for ((k = 0; k < n; k++)); do if [ "$k" -lt "$f" ]; then bar+="$(gradient $((k * 100 / n)))━"; else bar+="${DIM}━${RESET}"; fi; done
+    printf '    %s%s  %d%%%s[K\n%s[K\n' "$bar" "$RESET" "$done_pct" "$ESC" "$ESC"
+    if [ "$paused" -gt 0 ]; then printf '    %s%spaused%s%s[K\n' "$BOLD" "$(rgb 251 191 36)" "$RESET" "$ESC"; else printf '    %s%s%s%s[K\n' "$DIM" "$tip" "$RESET" "$ESC"; fi
+    for _ in 1 2 3 4 5 6 7 8 9 10; do
+      key=$(dd bs=1 count=1 2>/dev/null)
+      case "$key" in q|Q) stopped=1; break;; ' ') if [ "$paused" -gt 0 ]; then end=$((end + $(date +%s) - paused)); paused=0; else paused=$(date +%s); fi;; esac
+      sleep 0.05
+    done
+    [ "$stopped" = 1 ] && break
+  done
+  echo
+  if [ "$stopped" = 1 ]; then local m=$(((total - (end - $(date +%s))) / 60)); echo "  stopped after $m minute$([ "$m" -ne 1 ] && echo s)."; return; fi
+  printf '\a'; sleep 0.2; printf '\a'
+  typed "  $mins minute$([ "$mins" -ne 1 ] && echo s) locked in. take 5: stand up, drink water." "$BOLD$(rgb 52 211 153)" 14; echo
+}
+
+# ---------------------------------------------------------------- commands
+case "$(echo "${1:-start}" | tr '[:upper:]' '[:lower:]')" in
+  start) show_intro launch ;;
+  banner) show_intro ;;
+  focus) show_focus "${2:-25}" ;;
+  exams) show_exams; echo ;;
+  open) [ -d "$APP" ] && open "$APP" || { echo "Lock in isn't installed yet. Run: lockin update"; exit 1; } ;;
+  update) update_app ;;
+  version) v=$(installed_version); [ -n "$v" ] && echo "Lock in $v" || echo "Lock in isn't installed yet. Run: lockin update" ;;
+  web) open "$SITE" ;;
+  uninstall)
+    osascript -e 'tell application "Lock in" to quit' >/dev/null 2>&1; sleep 1
+    rm -rf "$APP"; rm -rf "$CACHE_DIR"
+    echo 'Lock in is uninstalled. Your progress on the website is untouched.'
+    echo "To remove this command too: rm \"$0\"" ;;
+  *) cat <<'EOF'
+lockin             the intro, then open the app
+lockin open        open the app straight away
+lockin update      install or update to the latest version
+lockin version     show the installed version
+lockin focus 25    a focus timer right here in the terminal (any minutes)
+lockin exams       countdown to every exam
+lockin banner      just the intro (no app)
+lockin web         open the website
+lockin uninstall   remove the app and its saved exam dates
+EOF
+  ;;
+esac

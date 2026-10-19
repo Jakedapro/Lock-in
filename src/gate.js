@@ -5,6 +5,7 @@
 const Gate = (() => {
   const SAVED = 'lockin.key', CACHE = 'lockin.keys';
   const RAW = 'https://raw.githubusercontent.com/Jakedapro/Lock-in/main/keys.json';
+  const API = 'https://api.github.com/repos/Jakedapro/Lock-in/contents/keys.json?ref=main'; // never cached, but rate limited: only for unknown keys
   const enabled = typeof BUILD !== 'undefined' && BUILD.gate;
   const get = (k) => { try { return localStorage.getItem(k); } catch (e) { return null; } };
   const set = (k, v) => { try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch (e) { } };
@@ -54,6 +55,7 @@ const Gate = (() => {
       if (!Keys.norm(inp.value)) return wrong('Keys look like LOCK-XXXX-XXXX-XXXX.');
       if (!tryKey(inp.value)) {
         note('Checking…'); await refresh(); // a brand-new key is only in the live keys.json
+        if (!tryKey(inp.value) && Keys.status(Keys.find(inp.value, list)) === 'missing') await refresh(true); // saved seconds ago: the site's copy lags behind GitHub
         if (!tryKey(inp.value)) { if (++fails >= 5) { fails = 0; waitUntil = Date.now() + 30000; } return wrong(whyNot(inp.value)); }
       }
       el.classList.remove('shake'); el.classList.add('opening'); note('You\'re in.');
@@ -65,12 +67,12 @@ const Gate = (() => {
   function wrong(t) { note(t); el.classList.remove('shake'); void el.offsetWidth; el.classList.add('shake'); }
 
   // Fetch the live keys.json. Same site first (GitHub Pages), raw GitHub for the desktop app.
-  async function refresh() {
-    // The desktop app (file:// or localhost) asks the live website; the website asks itself.
-    const urls = location.protocol === 'https:' ? ['keys.json', RAW] : ['https://jakedapro.github.io/Lock-in/keys.json', RAW];
+  async function refresh(direct) {
+    // The desktop app (file:// or localhost) asks the live website; the website asks itself. `direct` asks GitHub itself.
+    const urls = direct ? [API] : location.protocol === 'https:' ? ['keys.json', RAW] : ['https://jakedapro.github.io/Lock-in/keys.json', RAW];
     for (const u of urls) {
       try {
-        const r = await fetch(u + '?t=' + Date.now(), { cache: 'no-store' }); if (!r.ok) continue;
+        const r = await fetch(u + (u.includes('?') ? '&' : '?') + 't=' + Date.now(), { cache: 'no-store', headers: u === API ? { Accept: 'application/vnd.github.raw+json' } : {} }); if (!r.ok) continue;
         const j = await r.json(); if (!j || !Array.isArray(j.keys)) continue;
         list = j; set(CACHE, JSON.stringify(j)); return true;
       } catch (e) { }

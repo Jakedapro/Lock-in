@@ -97,6 +97,19 @@ ipcMain.handle('papers:build', async (e, spec) => {
   return `/mix/${name}`;
 });
 
+// Print: open the paper's PDF (a bundled paper or a built mix) in the system PDF app, where the print dialog is one shortcut away.
+ipcMain.handle('papers:print', async (e, src) => {
+  const u = String(src).split('#')[0].replace(/^\//, '');
+  const f = /^mix\/[a-f0-9]{16}\.pdf$/.test(u) ? path.join(MIX_DIR(), path.basename(u)) : path.normalize(path.join(APP_DIR, u));
+  if (!(f.startsWith(MIX_DIR() + path.sep) || f.startsWith(path.join(APP_DIR, 'papers') + path.sep)) || !f.endsWith('.pdf') || !fs.existsSync(f)) return { ok: false };
+  // Bundled papers sit inside the app package, which other apps can't read, so open a copy from the temp folder.
+  let target = f;
+  if (f.startsWith(path.join(APP_DIR, 'papers') + path.sep)) {
+    try { const d = path.join(app.getPath('temp'), 'lockin-print'); fs.mkdirSync(d, { recursive: true }); target = path.join(d, path.basename(f)); fs.copyFileSync(f, target); } catch (err) { return { ok: false }; }
+  }
+  return { ok: !(await shell.openPath(target)) };
+});
+
 /* ---------------- moving progress from older versions ---------------- */
 // Versions before 1.2 loaded the app from file://, which has its own storage. On first run we read it
 // once in a hidden window and hand it to the new page, which copies across anything it doesn't have.

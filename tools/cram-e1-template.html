@@ -1,0 +1,194 @@
+<title>Ext 1 Cram Sheet</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap">
+<style>
+/* Layout: a sticky header (countdown, search, topic tabs), then one topic at a time as scannable blocks:
+   must-knows in a grid, methods as steps, worked examples that fold open, slip-ups last. */
+:root {
+  --paper: #EEF1F5; --sheet: #FFFFFF; --ink: #17202E; --ink-2: #445063; --ink-3: #6B7686; --rule: #D5DBE3;
+  --pen: #1D4ED8; --pen-soft: #E6EDFD; --warn: #A9341A; --warn-soft: #FBEAE5; --ok: #17703F; --ok-soft: #E3F2E9;
+  --f: "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --paper: #12161C; --sheet: #1B2129; --ink: #E7ECF2; --ink-2: #B4BDC9; --ink-3: #8A95A3; --rule: #343D49;
+  --pen: #86A6FF; --pen-soft: #1E2A46; --warn: #FF9A85; --warn-soft: #3A1F1B; --ok: #6BD49A; --ok-soft: #17301F; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --paper: #12161C; --sheet: #1B2129; --ink: #E7ECF2; --ink-2: #B4BDC9; --ink-3: #8A95A3; --rule: #343D49;
+  --pen: #86A6FF; --pen-soft: #1E2A46; --warn: #FF9A85; --warn-soft: #3A1F1B; --ok: #6BD49A; --ok-soft: #17301F; color-scheme: dark; }
+* { box-sizing: border-box; }
+body { overflow-x: clip; background: var(--paper); color: var(--ink); font-family: var(--f); font-size: 17px; line-height: 1.55; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+button { font: inherit; color: inherit; }
+.head { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; margin-inline: calc(-1 * max(16px, env(safe-area-inset-left, 0px))); padding: 10px max(16px, env(safe-area-inset-right, 0px)) 0 max(16px, env(safe-area-inset-left, 0px)); background: var(--sheet); border-bottom: 1px solid var(--rule); }
+.top { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; max-width: 980px; margin: 0 auto; }
+h1 { font-size: 21px; margin: 0; letter-spacing: -.2px; }
+.clock { margin-left: auto; font-weight: 700; font-variant-numeric: tabular-nums; padding: 4px 11px; border-radius: 8px; background: var(--pen-soft); color: var(--pen); }
+.clock.soon { background: var(--warn-soft); color: var(--warn); }
+.search { flex: 1 1 200px; min-width: 0; font: inherit; padding: 8px 12px; border-radius: 9px; border: 1.5px solid var(--rule); background: var(--paper); color: var(--ink); }
+.search:focus { outline: 3px solid var(--pen-soft); border-color: var(--pen); }
+.tabs { display: flex; gap: 2px; overflow-x: auto; max-width: 980px; margin: 6px auto 0; scrollbar-width: none; }
+.tabs::-webkit-scrollbar { display: none; }
+.tab { flex: none; border: 0; background: none; padding: 10px 14px 9px; font-weight: 700; color: var(--ink-3); border-bottom: 3px solid transparent; cursor: pointer; white-space: nowrap; }
+.tab[aria-selected=true] { color: var(--ink); border-bottom-color: var(--pen); }
+.tab:focus-visible { outline: 3px solid var(--pen); outline-offset: -3px; border-radius: 6px; }
+main { max-width: 980px; margin: 0 auto; padding-block: 22px 70px; display: grid; gap: 30px; }
+.sec h2 { font-size: 19px; margin: 0 0 12px; text-wrap: balance; }
+.sec h2 small { font-weight: 400; color: var(--ink-3); font-size: 15px; margin-left: 6px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 330px), 1fr)); gap: 12px; }
+.card { background: var(--sheet); border: 1px solid var(--rule); border-radius: 10px; padding: 14px 16px; min-width: 0; }
+.card h3 { font-size: 16px; margin: 0 0 6px; color: var(--pen); }
+.card ul { margin: 0; padding-left: 18px; display: grid; gap: 7px; }
+.card li { overflow-wrap: anywhere; }
+.steps { margin: 6px 0 0; padding-left: 22px; display: grid; gap: 5px; }
+.eg { background: var(--sheet); border: 1px solid var(--rule); border-radius: 10px; }
+.eg + .eg, .qa + .qa { margin-top: 10px; }
+.eg summary, .qa summary { cursor: pointer; padding: 12px 16px; font-weight: 700; list-style: none; display: flex; gap: 10px; align-items: baseline; }
+.eg summary::-webkit-details-marker, .qa summary::-webkit-details-marker { display: none; }
+.eg summary::before, .qa summary::before { content: "▸"; color: var(--ink-3); transition: transform .15s; flex: none; }
+.eg[open] summary::before, .qa[open] summary::before { transform: rotate(90deg); }
+.eg summary:focus-visible, .qa summary:focus-visible { outline: 3px solid var(--pen); border-radius: 8px; }
+.body { padding: 0 16px 14px 36px; display: grid; gap: 8px; }
+.ans { background: var(--ok-soft); color: var(--ink); border-radius: 8px; padding: 9px 12px; }
+.ans b { color: var(--ok); }
+.tip { color: var(--ink-2); font-size: 15.5px; }
+.slip { background: var(--warn-soft); border-radius: 10px; padding: 14px 16px 14px 18px; }
+.slip ul { margin: 0; padding-left: 18px; display: grid; gap: 7px; }
+.mk { font-size: 13.5px; font-weight: 700; color: var(--ink-3); border: 1px solid var(--rule); border-radius: 6px; padding: 0 6px; white-space: nowrap; }
+.chips { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+.chip { border: 1.5px solid var(--rule); background: var(--sheet); border-radius: 999px; padding: 4px 13px; font-weight: 700; font-size: 15px; cursor: pointer; }
+.chip[aria-pressed=true] { border-color: var(--pen); color: var(--pen); background: var(--pen-soft); }
+.hint { color: var(--ink-3); font-size: 15px; margin: 0 0 12px; }
+.m svg { max-width: 100%; vertical-align: middle; } mjx-container { max-width: 100%; overflow-x: auto; overflow-y: hidden; }
+b { font-weight: 700; }
+mjx-container { position: relative; } mjx-container mjx-assistive-mml { display: none !important; }
+.steps, .body, .card ul, .slip ul, .flow, .bars, main { grid-template-columns: minmax(0, 1fr); } .steps li, .body > *, .fbox { min-width: 0; overflow-wrap: anywhere; }
+.none { color: var(--ink-3); }
+
+.dg { width: 100%; height: auto; max-height: 260px; display: block; margin: 4px 0 8px; }
+.dg text { font-family: var(--f); }
+.pics { grid-template-columns: repeat(auto-fill, minmax(min(100%, 380px), 1fr)); }
+.pic .tip { margin: 6px 0 0; }
+.tgrid { grid-template-columns: repeat(auto-fill, minmax(min(100%, 420px), 1fr)); }
+.tdg { margin: 0; background: var(--sheet); border: 1px solid var(--rule); border-radius: 10px; overflow: hidden; min-width: 0; }
+.tdg img { display: block; width: 100%; height: auto; background: #fff; cursor: zoom-in; }
+.tdg figcaption { padding: 10px 14px 12px; font-size: 15.5px; color: var(--ink-2); }
+.tdg figcaption b { color: var(--ink); }
+.lb { position: fixed; inset: 0; z-index: 20; background: rgba(8, 10, 14, .92); display: grid; place-items: center; padding: 16px; overflow: auto; cursor: zoom-out; }
+.lb img { max-width: min(100%, 1200px); height: auto; background: #fff; border-radius: 6px; }
+.lb p { position: fixed; left: 0; right: 0; bottom: 0; margin: 0; padding: 10px 16px calc(10px + env(safe-area-inset-bottom, 0px)); color: #E7ECF2; text-align: center; background: rgba(8, 10, 14, .7); font-size: 15px; }
+.hq { display: grid; grid-template-columns: minmax(0, 330px) 1fr; gap: 14px; align-items: start; }
+.hq .dg { margin: 0; }
+.hqq { white-space: pre-wrap; }
+@media (max-width: 720px) { .hq { grid-template-columns: 1fr; } }
+.flow { display: grid; gap: 8px; margin: 6px 0 8px; }
+.fbox { position: relative; background: var(--pen-soft); border-radius: 8px; padding: 9px 12px; }
+.fbox + .fbox::before { content: "↓"; position: absolute; top: -13px; left: 14px; color: var(--ink-3); font-weight: 700; }
+.tbl { overflow-x: auto; margin: 4px 0 8px; }
+.tbl table { border-collapse: collapse; width: 100%; font-size: 15.5px; }
+.tbl th, .tbl td { text-align: left; padding: 7px 9px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+.tbl th { color: var(--ink-3); font-size: 13.5px; }
+.imp { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 6px 0 8px; }
+.ib { border: 1.5px solid var(--rule); border-radius: 8px; padding: 9px 12px; text-align: center; }
+.ib span { font-size: 14px; color: var(--ink-3); }
+.ib.ok { border-color: var(--ok); background: var(--ok-soft); } .ib.bad { border-color: var(--warn); background: var(--warn-soft); }
+.bars { display: grid; gap: 7px; margin-bottom: 14px; }
+.bar { display: grid; grid-template-columns: minmax(110px, 190px) 1fr 40px; gap: 10px; align-items: center; }
+.bar i { display: block; height: 14px; border-radius: 4px; background: var(--pen); }
+.bar b { font-variant-numeric: tabular-nums; text-align: right; }
+.plan { max-width: 520px; }
+@media (max-width: 520px) { .bar { grid-template-columns: 110px 1fr 36px; font-size: 15px; } }
+@media (max-width: 520px) { body { font-size: 16.5px; } .body { padding-left: 16px; } }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="head"><div class="top">
+  <h1>Ext 1 cram sheet</h1>
+  <input class="search" id="q" type="search" placeholder="Search formulas, methods, questions" aria-label="Search">
+  <span class="clock" id="clock" role="timer"></span>
+</div><nav class="tabs" id="tabs" role="tablist" aria-label="Topics"></nav></div>
+<main id="out" aria-live="polite"></main>
+
+<script>window.MathJax = { tex: { inlineMath: [], displayMath: [] }, svg: { fontCache: 'local' }, options: { enableAssistiveMml: false, enableMenu: false }, startup: { typeset: false } };</script>
+<script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg-full.min.js"></script>
+<script>
+const CRAM = /*DATA*/null;
+const EXAM = new Date(/*EXAM*/'2026-10-23T13:50:00+11:00');
+const TOPICS = [['priority', 'Priority'], ['de', 'Rates & DEs'], ['calc', 'Calculus'], ['vec', 'Vectors & projectiles'], ['func', 'Functions & polynomials'], ['trig', 'Trig'], ['stats', 'Binomial & normal'], ['count', 'Counting & induction'], ['qa', 'Questions']];
+const $ = (s, el = document) => el.querySelector(s);
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+// Text -> HTML: $…$ becomes a maths span MathJax draws, **x** bold. Everything else is escaped.
+const MATH = /\$([^$\n]+?)\$/g;
+function fm(s) { // maths is set aside first, so **bold** can safely wrap a formula
+  const maths = [];
+  s = String(s ?? '').replace(MATH, (_, t) => { maths.push(t.trim()); return '\u0001' + (maths.length - 1) + '\u0002'; });
+  s = esc(s).replace(/\*\*(?=\S)([\s\S]*?\S)\*\*/g, '<b>$1</b>');
+  return s.replace(/\u0001(\d+)\u0002/g, (_, i) => `<span class="m" data-tex="${esc(maths[i])}">${esc(maths[i])}</span>`);
+}
+function typeset(root = document) {
+  const MJ = window.MathJax; if (!MJ || !MJ.tex2svg) return false;
+  root.querySelectorAll('.m:not([data-done])').forEach(el => { el.dataset.done = 1; el.setAttribute('role', 'math'); el.setAttribute('aria-label', el.dataset.tex); try { el.replaceChildren(MJ.tex2svg(el.dataset.tex, { display: false })); } catch (e) { } });
+  return true;
+}
+(function wait() { if (!window.MathJax || !MathJax.startup || !MathJax.startup.promise) return setTimeout(wait, 200); MathJax.startup.promise.then(() => { document.head.appendChild(MathJax.svgStylesheet()); typeset(); }); })();
+new MutationObserver(() => typeset()).observe(document.body, { childList: true, subtree: true });
+
+let tab = 'priority', query = '', qaTopic = 'all';
+try { const h = location.hash.slice(1), s = localStorage.getItem('cram.tab'); tab = TOPICS.some(t => t[0] === h) ? h : TOPICS.some(t => t[0] === s) ? s : tab; } catch (e) { }
+const hit = (...parts) => !query || parts.join(' ').toLowerCase().includes(query);
+const list = (a) => (a || []).map(x => `<li>${fm(x)}</li>`).join('');
+
+/*DIAGRAMS*/
+function drawTopic(t) {
+  const d = CRAM.topics[t]; if (!d) return '<p class="none">Nothing here yet.</p>';
+  const ess = d.essentials.filter(e => hit(e.h, ...e.items)), met = d.methods.filter(m => hit(m.h, ...m.steps)), eg = d.examples.filter(e => hit(e.q, ...e.steps, e.answer)), mis = d.mistakes.filter(x => hit(x));
+  const pics = (DIAGRAMS[t] || []).filter(g => hit(g.t, g.cap));
+  const picHtml = pics.length ? `<section class="sec"><h2>Pictures to remember<small>${pics.length}</small></h2><div class="grid pics">${pics.map(g => `<div class="card pic"><h3>${esc(g.t)}</h3>${g.svg ? g.svg() : g.html()}<p class="tip">${fm(g.cap)}</p></div>`).join('')}</div></section>` : '';
+  return `${picHtml}${ess.length ? `<section class="sec"><h2>Must know<small>${ess.reduce((a, e) => a + e.items.length, 0)} points</small></h2><div class="grid">${ess.map(e => `<div class="card"><h3>${fm(e.h)}</h3><ul>${list(e.items)}</ul></div>`).join('')}</div></section>` : ''}
+    ${met.length ? `<section class="sec"><h2>Methods</h2><div class="grid">${met.map(m => `<div class="card"><h3>${fm(m.h)}</h3><ol class="steps">${list(m.steps)}</ol></div>`).join('')}</div></section>` : ''}
+    ${eg.length ? `<section class="sec"><h2>Worked examples<small>${eg.length}</small></h2>${eg.map(e => `<details class="eg"><summary><span>${fm(e.q)}</span></summary><div class="body"><ol class="steps">${list(e.steps)}</ol><div class="ans"><b>Answer</b> ${fm(e.answer)}</div>${e.tip ? `<div class="tip">${fm(e.tip)}</div>` : ''}</div></details>`).join('')}</section>` : ''}
+    ${mis.length ? `<section class="sec"><h2>Slip-ups to avoid</h2><div class="slip"><ul>${list(mis)}</ul></div></section>` : ''}`;
+}
+function drawQa() {
+  const all = CRAM.qa || [], topics = [['all', 'All'], ...TOPICS.slice(1, -1)];
+  const rows = all.filter(x => (qaTopic === 'all' || x.topic === qaTopic) && hit(x.q, ...(x.steps || []), x.answer, x.src));
+  return `<section class="sec"><h2>Exam-style questions<small>${rows.length}</small></h2><p class="hint">Try each one first, then open it to check the working.</p>
+    <div class="chips" role="group" aria-label="Topic">${topics.map(([k, l]) => `<button class="chip" type="button" data-qt="${k}" aria-pressed="${qaTopic === k}">${l}</button>`).join('')}</div>
+    ${rows.map(x => `<details class="qa eg"><summary><span>${fm(x.q)} <span class="mk">${x.marks || '?'} mark${x.marks === 1 ? '' : 's'}</span></span></summary><div class="body"><ol class="steps">${list(x.steps)}</ol><div class="ans"><b>Answer</b> ${fm(x.answer)}</div>${x.tip ? `<div class="tip">${fm(x.tip)}</div>` : ''}<div class="tip">${esc(x.src || '')}</div></div></details>`).join('') || '<p class="none">No questions match.</p>'}</section>`;
+}
+// Marks per 70-mark paper, averaged over the 2020-2025 HSC papers (from the question map: weighted marks per topic code, grouped).
+const WEIGHT = [['Functions & polynomials', 14.0], ['Vectors & projectiles', 13.3], ['Calculus', 12.7], ['Rates & DEs', 10.2], ['Counting & induction', 8.7], ['Binomial & normal', 5.7], ['Trig', 5.5]];
+function drawPriority() {
+  const P = CRAM.priority; if (!P) return '<p class="none">Priority list coming.</p>';
+  const top = Math.max(...WEIGHT.map(w => w[1])), qa = CRAM.qa || [];
+  const areas = P.areas.filter(a => hit(a.title, a.why, ...a.must, ...a.traps, ...a.types.map(t => t.h + ' ' + t.how)));
+  const pri = (P.qa || []).map(src => qa.find(x => x.src === src)).filter(Boolean).filter(x => hit(x.q, x.src));
+  return `<section class="sec"><h2>Where the marks are<small>per 70-mark paper, average of 2020 to 2025</small></h2>
+    <div class="bars">${WEIGHT.map(([n, v]) => `<div class="bar"><span>${n}</span><i style="width:${v / top * 100}%"></i><b>${v.toFixed(1)}</b></div>`).join('')}</div>
+    ${(P.order || []).length ? `<div class="card plan"><h3>Last hour, in this order</h3><ol class="steps">${list(P.order)}</ol></div>` : ''}</section>
+    ${areas.map(a => `<section class="sec"><h2>${esc(a.title)}<small>${fm(a.why)}</small></h2><div class="grid">
+      <div class="card"><h3>Write these from memory</h3><ul>${list(a.must)}</ul></div>
+      <div class="card"><h3>Questions that keep coming up</h3><ul>${a.types.map(t => `<li><b>${fm(t.h)}</b> <span class="mk">${esc(t.freq || '')}</span><br>${fm(t.how)}</li>`).join('')}</ul></div></div>
+      <div class="slip" style="margin-top:12px"><ul>${list(a.traps)}</ul></div></section>`).join('')}
+    ${pri.length ? `<section class="sec"><h2>Do these first<small>${pri.length} questions</small></h2>${pri.map(x => `<details class="qa eg"><summary><span>${fm(x.q)} <span class="mk">${x.marks || '?'} mark${x.marks === 1 ? '' : 's'}</span></span></summary><div class="body"><ol class="steps">${list(x.steps)}</ol><div class="ans"><b>Answer</b> ${fm(x.answer)}</div>${x.tip ? `<div class="tip">${fm(x.tip)}</div>` : ''}<div class="tip">${esc(x.src || '')}</div></div></details>`).join('')}</section>` : ''}`;
+}
+function draw() {
+  const out = $('#out'); out.innerHTML = tab === 'qa' ? drawQa() : tab === 'priority' ? drawPriority() : drawTopic(tab);
+  $('#tabs').innerHTML = TOPICS.map(([k, l]) => `<button class="tab" role="tab" type="button" data-t="${k}" aria-selected="${tab === k}">${l}</button>`).join('');
+  typeset(out);
+}
+$('#tabs').addEventListener('click', e => { const b = e.target.closest('[data-t]'); if (!b) return; tab = b.dataset.t; try { localStorage.setItem('cram.tab', tab); } catch (e) { } history.replaceState(null, '', '#' + tab); draw(); scrollTo(0, 0); });
+$('#out').addEventListener('click', e => { const b = e.target.closest('[data-qt]'); if (b) { qaTopic = b.dataset.qt; draw(); } });
+document.addEventListener('click', e => {
+  const img = e.target.closest('img[data-zoom]');
+  if (img) { const lb = document.createElement('div'); lb.className = 'lb'; lb.setAttribute('role', 'dialog'); lb.setAttribute('aria-label', img.alt); lb.innerHTML = `<img src="${img.src}" alt="${esc(img.alt)}"><p>${esc(img.alt)}. Tap anywhere to close.</p>`; document.body.appendChild(lb); return; }
+  const lb = e.target.closest('.lb'); if (lb) lb.remove();
+});
+addEventListener('keydown', e => { if (e.key === 'Escape') document.querySelector('.lb')?.remove(); });
+$('#q').addEventListener('input', e => { query = e.target.value.trim().toLowerCase(); draw(); });
+function tick() {
+  const ms = EXAM - new Date(), el = $('#clock');
+  if (ms <= 0) { el.textContent = 'Exam time. Good luck'; el.className = 'clock soon'; return; }
+  const h = Math.floor(ms / 36e5), m = Math.floor(ms % 36e5 / 6e4);
+  el.textContent = `Exam in ${h ? h + 'h ' : ''}${m}m`; el.className = 'clock' + (ms < 36e5 ? ' soon' : '');
+}
+tick(); setInterval(tick, 30000); draw();
+</script>

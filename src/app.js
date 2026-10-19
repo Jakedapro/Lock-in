@@ -56,9 +56,8 @@
   const SUBJ = [
     { id: 'geo', name: 'Geography', hue: 'green', exam: examDate('geo'), when: examWhen('geo'), format: '45 minutes. 30 multiple choice (25 on geographical tools & skills, 5 on Water in the World) + 3 short answers.', mock: 'geo' },
     { id: 'maths', name: 'Maths', hue: 'gold', exam: examDate('maths'), when: examWhen('maths'), format: 'The exam covers chapters 8, 9, 10 and 12, with multi-part questions like the Test Yourself pages. Ch 3 and Ch 7 are extra practice.', mock: 'maths' },
-    { id: 'y12', name: 'Maths Extension 2', tab: 'Ext 2', hue: 'lilac', exam: examDate('y12'), when: examWhen('y12'), format: 'HSC paper: 3 hours. Section I is 10 multiple choice; Section II is 90 marks across proof, complex numbers, induction, integration, vectors and mechanics.', mock: 'gen', papers: 'https://www.nsw.gov.au/education-and-training/nesa/curriculum/hsc-exam-papers/mathematics-extension-2' },
     { id: 'e1', name: 'Maths Extension 1', tab: 'Ext 1', hue: 'cyan', exam: examDate('e1'), when: examWhen('e1'), format: 'HSC paper: 2 hours. Section I is 10 multiple choice; Section II is 60 marks of multi-part questions.', mock: 'gen', papers: 'https://www.nsw.gov.au/education-and-training/nesa/curriculum/hsc-exam-papers/mathematics-extension-1' },
-    { id: 'eng', name: 'English', hue: 'pink', exam: examDate('eng'), when: examWhen('eng'), format: 'Task 4: Animal Farm. 60 minutes, 20 marks. Section 1 is multiple choice and short answers on unseen extracts; Section 2 is one extended response in 1–2 PETAL paragraphs. No quotes to memorise. Writing feedback checks your PETAL paragraphs.', mock: 'eng' },
+    { id: 'eng', name: 'English', hue: 'pink', exam: examDate('eng'), when: examWhen('eng'), format: 'Task 4: Animal Farm. 60 minutes, 20 marks, on three extracts from the novel. Extract 1: 3 multiple choice (1 mark each) and a 2 mark emotion question with ONE quote. Extract 2: a 3 mark question (ONE quote, technique and effect) and a 5 mark creative journal entry from another character. Extract 3: a 7 mark extended response in 1–2 PETAL paragraphs on power and corruption. No quotes to memorise. Writing feedback checks your PETAL paragraphs.', mock: 'eng' },
     { id: 'phys', name: 'Physics', hue: 'coral', exam: examDate('phys'), when: examWhen('phys'), format: 'HSC paper: 3 hours. Section I is 20 multiple choice; Section II is 80 marks of short answers and extended responses on modules 5 to 8.', mock: 'gen', papers: 'https://www.nsw.gov.au/education-and-training/nesa/curriculum/hsc-exam-papers/physics' },
   ];
   const BUILTIN = [
@@ -66,7 +65,7 @@
     ...Y8.DECKS,
     ...M.DECKS.map(d => ({ ...d, subject: 'maths', bank: X.BANK[d.id], drills: M.GEN[d.gen] })),
     { ...X.ch12, subject: 'maths', bank: X.BANK.sim },
-    ...E2.DECKS, ...E1.DECKS, ...PH.DECKS, ...EN.DECKS,
+    ...E1.DECKS, ...PH.DECKS, ...EN.DECKS,
   ].map(d => ({ ...d, subject: d.subject || 'maths', bank: typeof d.bank === 'string' ? G.BANK[d.bank] : d.bank }));
   const extraQ = (id) => (S.extra[id] ||= { concepts: [], short: [] });
   const allDecks = () => [...BUILTIN, ...S.custom];
@@ -639,7 +638,7 @@
     const ans = p.type === 'choice' ? p.choices[given] : given;
     const prompt = `You are a friendly, encouraging tutor for ${whoFor(getDeck(q.deckId)?.subject)}. They got an exam question wrong. In under 120 words, explain the most likely mistake in their thinking and how to get the right answer. Use simple language and show the key working. No greeting. Formatting: use **double asterisks** for key words, write all maths in LaTeX between single $ signs (e.g. $\\frac{3}{4}$, $x^2$).
 
-${q.passage ? `Text: """${q.passage}"""\n` : ''}Question: ${q.stem || ''} ${p.q}
+${q.passage || q.extractText ? `Text: """${q.passage || q.extractText}"""\n` : ''}Question: ${q.stem || ''} ${p.q}
 Correct answer: ${p.show}
 Worked solution: ${(p.steps || []).join(' | ')}
 Student's answer: ${ans}`;
@@ -664,7 +663,7 @@ Student's answer: ${ans}`;
     const crit = p.criteria.length ? p.criteria.map((c, i) => `${i + 1}. ${c}`).join('\n') : '(use the model answer)';
     const prompt = `You are a fair but strict NSW teacher marking a short-answer exam question written by ${whoFor(getDeck(q.deckId)?.subject)}.
 
-${q.passage ? `Text the question is about:\n"""${q.passage}"""\n\n` : ''}Question (${p.marks} marks): ${q.stem ? q.stem + ' ' : ''}${p.q}
+${q.passage || q.extractText ? `Text the question is about:\n"""${q.passage || q.extractText}"""\n\n` : ''}Question (${p.marks} marks): ${q.stem ? q.stem + ' ' : ''}${p.q}
 Marking criteria (about one mark each):
 ${crit}
 Model answer: ${p.model || '(none)'}
@@ -882,19 +881,26 @@ Write 8 mcq (answer = index 0-3 of the correct option, vary its position) and 2 
     md.forEach(d => { const c = conceptsOf(d); if (c.length) blocks.push(mcqQ(pick(c), d)); });
     return { sid, title: 'Maths practice exam', minutes: 60, blocks: shuffle(blocks), acc: 'c-gold', intro: 'Two multi-part questions from each chapter (8, 9, 10, 12) plus quick multiple choice. 60 minutes. Calculator allowed.' };
   }
-  // Year 8 English Task 4: Section 1 (multiple choice + short answers on extracts), Section 2 (one 8-mark PETAL response). 20 marks, 60 minutes.
+  // Year 8 English Task 4 (20 marks, 60 minutes): three extracts with their questions grouped underneath.
+  // The extract sets and questions live in english.js (EN.buildPaper); this turns them into exam blocks.
   function buildEngMock() {
-    const af = decksOf('eng').filter(d => /^af/.test(d.id)), all = af.length ? af : decksOf('eng');
-    const shorts = all.flatMap(d => shortOf(d).map(s => [s, d]));
-    const big = shuffle(shorts.filter(([s]) => s.marks >= 6))[0];
-    const blocks = [], marks = (q) => q.parts.reduce((a, p) => a + (p.marks || 1), 0);
-    let total = 0; const add = (q) => { if (q && total + marks(q) <= 12) { blocks.push(q); total += marks(q); } };
-    shuffle(all.flatMap(d => conceptsOf(d).map(c => [c, d]))).slice(0, 4).forEach(([c, d]) => add(mcqQ(c, d)));
-    shuffle(all.filter(d => d.bank)).slice(0, 2).forEach(d => add(bankQ(pick(d.bank), d, 'S')));
-    for (const [s, d] of shuffle(shorts.filter(([s]) => s.marks <= 4 && s.passage))) { if (total >= 12) break; add(shortQ(s, d)); }
-    for (const [s, d] of shuffle(shorts.filter(([s]) => s.marks <= 4))) { if (total >= 12) break; add(shortQ(s, d)); }
-    if (big) blocks.push(shortQ(big[0], big[1]));
-    return { sid: 'eng', title: 'English practice exam: Animal Farm', minutes: 60, blocks, acc: 'c-pink', intro: 'Like Task 4. Section 1: multiple choice and short answers, some on extracts from the novel. Section 2 (the last question): one extended response in 1–2 PETAL paragraphs. 60 minutes. No need to memorise quotes: use the extracts and moments you remember.' };
+    const paper = EN.buildPaper(), blocks = [];
+    const deckFor = { mc: 'afplot', emotion: 'afthemes', technique: 'aftech', creative: 'afwrite', petal: 'afwrite' };
+    paper.groups.forEach(g => {
+      const first = blocks.length + 1, last = first + g.items.length - 1;
+      g.items.forEach((it, i) => {
+        const d = getDeck(deckFor[it.kind]) || { id: 'afwrite', title: 'Animal Farm' };
+        blocks.push({ stem: '', gen: null, level: it.level, tags: it.tags, parts: it.parts, deckId: d.id, deckTitle: d.title, kind: it.kind, extractText: g.text,
+          extract: i === 0 ? { label: g.label, title: g.title, text: g.text, qs: first === last ? `Question ${first}` : `Questions ${first} to ${last}` } : null });
+      });
+    });
+    return { sid: 'eng', title: 'English practice exam: Animal Farm', minutes: paper.minutes, blocks, acc: 'c-pink', intro: 'Modelled on Task 4: three extracts from Animal Farm, with the questions for each underneath. Extract 1: three multiple choice (1 mark each) and a 2 mark emotion question with ONE quote. Extract 2: a 3 mark question (ONE quote, a technique and its effect) and a 5 mark creative journal entry from another character. Extract 3: a 7 mark extended response in 1 or 2 PETAL paragraphs about power, control and corruption. 20 marks, 60 minutes. The extracts change each time.' };
+  }
+  // Heading and text of an extract, shown once above the questions that use it.
+  function extractHead(x) {
+    const h = document.createElement('div'); h.className = 'extract-head';
+    h.innerHTML = `<div class="eyebrow">Read ${esc(x.label.split(':')[0])} and answer ${esc(x.qs)}</div><div class="qstem"><b>${esc(x.label)}</b>: ${esc(x.title)}</div><div class="passage">${String(x.text).split('\n').map(l => fm(l) || '&nbsp;').join('<br>')}</div>`;
+    return h;
   }
   function openMock(sid) {
     const ex = buildMock(sid);
@@ -904,7 +910,7 @@ Write 8 mcq (answer = index 0-3 of the correct option, vary its position) and 2 
     body.innerHTML = `<div class="note" style="margin-bottom:16px;max-width:820px">${esc(ex.intro)} Answers are marked when you finish. <b>${total} marks total.</b></div><div id="paper"></div>
       <div class="qnav"><button class="btn btn-hot" type="button" id="finish">Finish & mark my exam</button></div>`;
     const paper = $('#paper', body);
-    let n = 0; ex.blocks.forEach(q => { n++; paper.appendChild(renderCard(q, { mode: 'exam', num: n })); });
+    let n = 0; ex.blocks.forEach(q => { n++; if (q.extract) paper.appendChild(extractHead(q.extract)); paper.appendChild(renderCard(q, { mode: 'exam', num: n })); });
     $('#finish', body).onclick = () => finishExam(body);
     const tick = () => { const left = Math.max(0, cur.end - Date.now()); const m = Math.floor(left / 6e4), s = Math.floor(left % 6e4 / 1e3); const t = $('#timer'); if (!t) return; t.textContent = `${m}:${pad(s)}`; t.classList.toggle('low', left < 5 * 6e4); if (left <= 0 && !cur.done) { toast('Time\'s up! Marking your exam.'); finishExam(body); } };
     cur.timer = setInterval(tick, 1000); tick();
@@ -1614,13 +1620,14 @@ Aim for 2-5 sections with 3-6 notes each, 10-20 flashcards (key terms, people, d
     const el = document.createElement('div'); el.className = 'pv'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-label', title || 'Paper'); el.tabIndex = -1;
     el.innerHTML = `<header class="pv-head"><button class="back" type="button" aria-label="Close"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg></button>
       <b class="pv-title">${esc(title || 'Paper')}</b><span class="pv-pg" aria-live="polite"></span>
-      <span class="pv-zoom"><button type="button" data-z="-1" aria-label="Zoom out">−</button><button type="button" data-z="1" aria-label="Zoom in">+</button></span>
+      <span class="pv-zoom"><button type="button" data-z="-1" aria-label="Zoom out">−</button><button type="button" data-z="1" aria-label="Zoom in">+</button></span>${window.lockinDesktop?.printPdf ? '<button type="button" class="pv-print" aria-label="Print this paper">Print</button>' : ''}
       <span class="pv-timer"></span></header>
       <div class="pv-body"><div class="pv-pages"><p class="pv-loading">Opening the paper…</p></div><aside class="pv-help" hidden></aside></div>`;
     document.body.appendChild(el); el.focus();
     const pagesEl = $('.pv-pages', el), help = $('.pv-help', el); let zoom = 1, doc = null, obs = null, tick = null;
     const close = () => { clearInterval(tick); obs?.disconnect(); doc?.destroy(); el.remove(); };
     $('.back', el).onclick = close;
+    const pb = $('.pv-print', el); if (pb) pb.onclick = async () => { pb.disabled = true; pb.textContent = 'Opening…'; let r = null; try { r = await window.lockinDesktop.printPdf(file); } catch (e) { } pb.textContent = r && r.ok ? 'Opened: press ⌘P' : 'Couldn\'t open'; setTimeout(() => { pb.textContent = 'Print'; pb.disabled = false; }, 4000); };
     el.addEventListener('keydown', e => { if (e.key === 'Escape') { e.stopPropagation(); if (!help.hidden) help.hidden = true; else close(); } });
     // timer
     const drawTimer = () => {
@@ -2048,7 +2055,7 @@ Aim for 2-5 sections with 3-6 notes each, 10-20 flashcards (key terms, people, d
   async function aiWriting(D, btn, box) {
     btn.disabled = true; box.innerHTML = '<div class="fb info"><b>Marking…</b><div class="note">Claude is reading it like an HSC marker would. This takes up to a minute.</div></div>';
     const outOf = D.kind === 'short' ? D.marks : D.kind === 'petal' ? 8 : 20;
-    const what = { essay: 'an English analytical essay', paragraph: 'one analytical body paragraph', petal: 'an extended response of one or two PETAL paragraphs (Point, Evidence, Technique, Analysis, Link) about George Orwell\'s Animal Farm, worth 8 marks', short: `an English short-answer response worth ${D.marks} marks`, creative: 'a piece of imaginative/creative writing' }[D.kind];
+    const what = { essay: 'an English analytical essay', paragraph: 'one analytical body paragraph', petal: 'an extended response of one or two PETAL paragraphs (Point, Evidence, Technique, Analysis, Link) about George Orwell\'s Animal Farm, worth 7 marks', short: `an English short-answer response worth ${D.marks} marks`, creative: 'a piece of imaginative/creative writing' }[D.kind];
     const crit = D.kind === 'creative'
       ? 'how well it fulfils the prompt; control of voice, perspective and structure; deliberate use of language and literary devices for effect; originality and emotional impact; control of grammar, punctuation and expression'
       : D.kind === 'petal' ? 'a clear Point that answers the question; well-chosen Evidence (a quote or specific moment); the correct Technique named; Analysis that explains how the technique creates meaning and links to Orwell\'s ideas; a Link back to the question; clear, formal expression'
@@ -2163,8 +2170,13 @@ Reply with ONLY this JSON:
   function openAdmin() {
     adm = { ...adm, fresh: false, made: null, err: '' }; cur = { kind: 'admin', tab: null }; ovFrame('Admin', 'c-lilac', null); drawAdmin(); showOv();
     Gate.refresh().then(ok => { adm.fresh = ok; if (cur?.kind === 'admin') drawAdmin(); });
+    ghSave();
   }
-  async function ghSave() {
+  // Unsaved key changes are never left sitting: retry when the app opens and whenever it comes back to the front.
+  const retrySave = () => { if (Gate.isAdmin() && ops().length && kget('lockin.ghToken', '')) ghSave(); };
+  Gate.onOpen(() => setTimeout(retrySave, 1500));
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') retrySave(); });
+  async function ghSave(tries = 3) {
     const tok = kget('lockin.ghToken', ''), pend = ops(); if (!tok || !pend.length || adm.saving) return;
     adm.saving = true; adm.err = ''; if (cur?.kind === 'admin') drawAdmin();
     const url = `https://api.github.com/repos/${REPO}/contents/keys.json`, h = { Authorization: 'Bearer ' + tok, Accept: 'application/vnd.github+json' };
@@ -2177,6 +2189,7 @@ Reply with ONLY this JSON:
       kset('lockin.keyOps', ops().slice(pend.length)); Gate.setList(next); adm.fresh = true;
       toast('Saved. Changes reach everyone in about a minute.');
     } catch (e) {
+      if ((e === 409 || e === 422) && tries > 1) { adm.saving = false; return ghSave(tries - 1); } // someone saved in between: fetch it again and re-apply
       adm.err = e === 401 ? 'GitHub said the token is wrong or has expired. Make a new one below.' : e === 403 || e === 404 ? 'GitHub refused: the token can\'t write to the repo, or the account is still suspended. Your changes are kept on this device.' : e === 409 || e === 422 ? 'keys.json changed while saving. Tap Save again.' : 'Couldn\'t reach GitHub. Your changes are kept on this device and will save when you\'re back online.';
     }
     adm.saving = false; if (cur?.kind === 'admin') drawAdmin();
