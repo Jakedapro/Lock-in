@@ -1,0 +1,16 @@
+# Lock in free-key Worker: the LootLabs link's destination. Hands each visitor a fresh 1-day key.
+name = "lockin-keys"
+main = "src/index.js"
+compatibility_date = "2024-09-23"
+
+# Which keys were handed out today (per device and per network), so refreshing doesn't make new ones.
+# Fill in the id that `npx wrangler kv namespace create ISSUED` prints.
+[[kv_namespaces]]
+binding = "ISSUED"
+id = "REPLACE_WITH_KV_ID"
+
+[vars]
+REPO = "Jakedapro/Lock-in"
+SITE = "https://jakedapro.github.io/Lock-in/"
+# Secret, set with `npx wrangler secret put GH_TOKEN` (never in this file):
+#   GH_TOKEN  fine-grained GitHub token, Contents: read and write on the Lock-in repo only
