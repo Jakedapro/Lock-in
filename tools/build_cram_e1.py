@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """Builds the Ext 1 cram sheet page from the JSON files in a content folder.
-  python3 tools/build_cram_e1.py <folder with de.json, calc.json, vec.json, func.json, trig.json, stats.json, count.json, qa.json, priority.json> <out.html>
+  python3 tools/build_cram_e1.py <folder with de.json, calc.json, vec.json, func.json, trig.json, stats.json, count.json, graph.json, qa.json, priority.json> <out.html>
 The notes content is the student's own and stays out of the repo; only this script and the template are tracked."""
 import json, os, sys
 src, out = sys.argv[1], sys.argv[2]
 root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-FILES = {'de': ['de'], 'calc': ['calc'], 'vec': ['vec'], 'func': ['func'], 'trig': ['trig'], 'stats': ['stats'], 'count': ['count']}
+FILES = {'graph': ['graph'], 'de': ['de'], 'calc': ['calc'], 'vec': ['vec'], 'func': ['func'], 'trig': ['trig'], 'stats': ['stats'], 'count': ['count']}
 topics = {}
 for t, names in FILES.items():
     d = {'essentials': [], 'methods': [], 'examples': [], 'mistakes': []}

@@ -97,3 +97,237 @@ const DIAGRAMS = {
       html: () => table(['Situation', 'Use'], [['order matters, all distinct', '$n!$ or ${}^nP_r$'], ['order does not matter', '$\\dbinom nr$'], ['letters/objects repeated', '$\\dfrac{n!}{a!\\,b!}$'], ['circle', '$(n-1)!$'], ['must be together', 'block, then $\\times$ internal order'], ['not together / at least', 'total $-$ the opposite']]) },
   ],
 };
+
+// ---------- Graphing: a small plotter that samples the real function ----------
+// Curves are never hand-drawn: each one is sampled densely, split at breaks, gaps and non-finite values, and clipped
+// to the box. Point labels are written from the actual coordinates (nice() finds exact forms), and plot() checks that
+// marked points, turning points, zeros and asymptotes really belong to the plotted function (PLOT_WARN lists failures).
+const PLOT_WARN = [];
+function nice(v) {
+  if (!isFinite(v)) return String(v);
+  if (Math.abs(v) < 1e-9) return '0';
+  const near = (a) => Math.abs(v - a) < 1e-7 * Math.max(1, Math.abs(v)), neg = (s) => s.replace(/^-/, '−');
+  for (const q of [1, 2, 3, 4, 5, 6, 8, 9]) { const p = Math.round(v * q); if (near(p / q)) return neg(q === 1 ? String(p) : `${p}/${q}`); }
+  for (const q of [1, 2, 3, 4, 6]) { const p = Math.round(v * q / Math.PI); if (p && near(p * Math.PI / q)) { const a = Math.abs(p); return (p < 0 ? '−' : '') + (a === 1 ? '' : a) + 'π' + (q === 1 ? '' : '/' + q); } }
+  const fr = (r, q) => { const p = Math.round(r * q), g = (m, n) => n ? g(n, m % n) : m, d = g(Math.abs(p), q); return [p / d, q / d]; };
+  for (const q of [1, 2, 3]) for (const n of [2, 3, 5, 6, 7]) for (let bq = -12; bq <= 12; bq++) {
+    if (!bq) continue; const b = bq / q, a = Math.round((v - b * Math.sqrt(n)) * q) / q;
+    if (!near(a + b * Math.sqrt(n))) continue;
+    const [bp, bd] = fr(b, q), ab = Math.abs(bp), rt = (ab === 1 ? '' : ab) + '√' + n + (bd === 1 ? '' : '/' + bd);
+    if (Math.abs(a) < 1e-12) return (bp < 0 ? '−' : '') + rt;
+    return nice(a) + (bp < 0 ? ' − ' : ' + ') + rt;
+  }
+  return '≈' + neg(v.toFixed(2));
+}
+const pair = (x, y) => { const a = nice(x), b = nice(y), ap = a[0] === '≈' || b[0] === '≈'; return (ap ? '≈ ' : '') + `(${a.replace('≈', '')}, ${b.replace('≈', '')})`; };
+function clipSeg(ax, ay, bx, by, X0, X1, Y0, Y1) { // Liang-Barsky
+  let t0 = 0, t1 = 1; const dx = bx - ax, dy = by - ay, p = [-dx, dx, -dy, dy], q = [ax - X0, X1 - ax, ay - Y0, Y1 - ay];
+  for (let i = 0; i < 4; i++) { if (p[i] === 0) { if (q[i] < 0) return null; } else { const r = q[i] / p[i]; if (p[i] < 0) { if (r > t1) return null; if (r > t0) t0 = r; } else { if (r < t0) return null; if (r < t1) t1 = r; } } }
+  return [ax + t0 * dx, ay + t0 * dy, ax + t1 * dx, ay + t1 * dy, t0 > 0, t1 < 1];
+}
+function sampleF(f, a, b, brk, n) { // runs of finite points; refines the edge of each gap by bisection (vertical tangents of sqrt meet the axis)
+  const cuts = [a, ...(brk || []).filter(v => v > a && v < b).sort((p, q) => p - q), b], eps = (b - a) * 1e-7, runs = [];
+  const ok = (x) => isFinite(f(x));
+  for (let i = 0; i < cuts.length - 1; i++) {
+    const lo = cuts[i] + (i ? eps : 0), hi = cuts[i + 1] - (i < cuts.length - 2 ? eps : 0); let run = [], px = null;
+    for (let j = 0; j <= n; j++) {
+      const x = lo + (hi - lo) * j / n, y = f(x), fin = isFinite(y);
+      if (px !== null && fin !== ok(px)) { let u = px, v = x; for (let k = 0; k < 60; k++) { const m = (u + v) / 2; if (ok(m) === ok(px)) u = m; else v = m; } const e = ok(px) ? u : v; if (ok(px)) run.push([e, f(e)]); else run.unshift([e, f(e)]); }
+      if (fin) { run.push([x, y]); } else if (run.length) { runs.push(run); run = []; }
+      if (fin && px !== null && !ok(px) && run.length === 1) { /* edge point was unshifted above */ }
+      px = x;
+    }
+    if (run.length) runs.push(run);
+  }
+  return runs;
+}
+function plot(o) {
+  const W = o.w || 300, H = o.h || 230, ml = o.ml ?? 12, mr = o.mr ?? 12, mt = o.mt ?? 12, mb = o.mb ?? 12;
+  const [x0, x1] = o.x, [y0, y1] = o.y, id = o.id || 'plot', fns = o.fns || [];
+  const mx = (x) => ml + (x - x0) / (x1 - x0) * (W - ml - mr), my = (y) => H - mb - (y - y0) / (y1 - y0) * (H - mt - mb);
+  const warn = (s) => { PLOT_WARN.push(id + ': ' + s); try { console.warn('[plot] ' + id + ': ' + s); } catch (e) { } };
+  const big = 4 * (y1 - y0);
+  const TH = (x, y, s, q = {}) => { const size = q.size || 12.5, est = String(s).length * size * .56; let a = q.a || 'start', xx = x;
+    const left = a === 'start' ? xx : a === 'end' ? xx - est : xx - est / 2; if (left < 2) xx += 2 - left; if (left + est > W - 2) xx -= left + est - (W - 2);
+    return `<text x="${n1(xx)}" y="${n1(y)}" fill="${col(q.c || 'ink')}" font-size="${size}" text-anchor="${a}" stroke="var(--sheet)" stroke-width="3.5" stroke-linejoin="round" paint-order="stroke"${q.b ? ' font-weight="700"' : ''}${q.i ? ' font-style="italic"' : ''}>${esc(s)}</text>`; };
+  const OFF = { n: [0, -9, 'middle'], s: [0, 18, 'middle'], e: [8, 4, 'start'], w: [-8, 4, 'end'], ne: [6, -8, 'start'], nw: [-6, -8, 'end'], se: [6, 16, 'start'], sw: [-6, 16, 'end'] };
+  let g = '', lb = '';
+  const toPolys = (runs) => { const polys = []; for (const run of runs) { let cur = []; for (let i = 0; i < run.length - 1; i++) {
+    const [ax, ay] = run[i], [bx, by] = run[i + 1]; if (Math.abs(by - ay) > big) { if (cur.length > 1) polys.push(cur); cur = []; continue; }
+    const c = clipSeg(ax, ay, bx, by, x0, x1, y0, y1); if (!c) { if (cur.length > 1) polys.push(cur); cur = []; continue; }
+    if (!cur.length || c[4]) { if (cur.length > 1) polys.push(cur); cur = [[mx(c[0]), my(c[1])]]; }
+    cur.push([mx(c[2]), my(c[3])]); if (c[5]) { if (cur.length > 1) polys.push(cur); cur = []; } } if (cur.length > 1) polys.push(cur); } return polys; };
+  const stroke = (polys, c, w, dash, op) => polys.map(p => `<polyline points="${p.map(q => n1(q[0]) + ',' + n1(q[1])).join(' ')}" fill="none" stroke="${col(c)}" stroke-width="${w}" stroke-linejoin="round" stroke-linecap="round"${dash ? ' stroke-dasharray="6 5"' : ''}${op < 1 ? ` stroke-opacity="${op}"` : ''}/>`).join('');
+  // axes
+  const ax = x0 <= 0 && 0 <= x1 ? mx(0) : mx(x0), ay = y0 <= 0 && 0 <= y1 ? my(0) : my(y0);
+  g += A(mx(x0) - 2, ay, W - 3, ay, 'mute', 1.3) + A(ax, H - 3, ax, 3, 'mute', 1.3);
+  lb += TH(W - 4, ay + (o.xlabUp ? -7 : 16), 'x', { c: 'mute', a: 'end', i: 1 }) + TH(ax + 7, 13, 'y', { c: 'mute', i: 1 });
+  for (let t of o.xt || []) { if (typeof t === 'number') t = { v: t }; const X = mx(t.v); g += L(X, ay - 3.5, X, ay + 3.5, 'mute', 1.3); if (t.s !== false) lb += TH(X + (t.dx || 0), ay + (t.up ? -8 : 17), t.s ?? nice(t.v), { a: 'middle', c: 'mute', size: 12 }); }
+  for (let t of o.yt || []) { if (typeof t === 'number') t = { v: t }; const Y = my(t.v); g += L(ax - 3.5, Y, ax + 3.5, Y, 'mute', 1.3); if (t.s !== false) lb += TH(t.r ? ax + 7 : ax - 6, Y + 4 + (t.dy || 0), t.s ?? nice(t.v), { a: t.r ? 'start' : 'end', c: 'mute', size: 12 }); }
+  // asymptotes and reference lines
+  for (const a of o.va || []) { g += L(mx(a.v), my(y1), mx(a.v), my(y0), a.c || 'warn', 1.3, true); if (a.s !== false) lb += TH(mx(a.v) + (a.side === 'l' ? -4 : 4), a.at === 'b' ? H - mb - 4 : mt + 10, a.s ?? `x = ${nice(a.v)}`, { a: a.side === 'l' ? 'end' : 'start', c: a.c || 'warn', size: 12 });
+    if (a.of != null) for (const s of [-1, 1]) { const y = fns[a.of].f(a.v + s * 1e-7); if (isFinite(y) && Math.abs(y) < 1e4) warn(`x=${a.v} is not a vertical asymptote (f=${y})`); } }
+  for (const a of o.ha || []) { g += L(mx(x0), my(a.v), mx(x1), my(a.v), a.c || 'warn', 1.3, true); if (a.s !== false) lb += TH(a.at === 'l' ? mx(x0) + 4 : mx(x1) - 4, my(a.v) + (a.below ? 15 : -5), a.s ?? `y = ${nice(a.v)}`, { a: a.at === 'l' ? 'start' : 'end', c: a.c || 'warn', size: 12 });
+    if (a.of != null) for (const s of a.sides || [-1, 1]) { const y = fns[a.of].f(s * 1e7); if (!(Math.abs(y - a.v) < 1e-4)) warn(`y=${a.v} is not a horizontal asymptote at ${s}∞ (f=${y})`); } }
+  for (const a of o.oa || []) { const c = clipSeg(x0, a.m * x0 + a.c, x1, a.m * x1 + a.c, x0, x1, y0, y1); if (c) g += L(mx(c[0]), my(c[1]), mx(c[2]), my(c[3]), a.col || 'warn', 1.3, true);
+    if (a.s) lb += TH(mx(a.lx) + (a.dx || 0), my(a.m * a.lx + a.c) + (a.dy ?? -6), a.s, { a: a.a || 'start', c: a.col || 'warn', size: 12 });
+    if (a.of != null) for (const s of a.sides || [-1, 1]) { const X = s * 1e6, d = fns[a.of].f(X) - (a.m * X + a.c); if (!(Math.abs(d) < 1e-4)) warn(`oblique asymptote y=${a.m}x+${a.c} fails at ${s}∞ (gap ${d})`); } }
+  // curves: faint ones first
+  const order = fns.map((f, i) => i).sort((i, j) => (fns[j].faint ? 1 : 0) - (fns[i].faint ? 1 : 0));
+  for (const i of order) { const fn = fns[i];
+    let runs; if (fn.p) { const [a, b] = fn.t, n = fn.n || 800, run = []; for (let j = 0; j <= n; j++) { const q = fn.p(a + (b - a) * j / n); if (isFinite(q[0]) && isFinite(q[1])) run.push(q); } runs = [run]; }
+    else { const [a, b] = fn.d || [x0 - (x1 - x0) * .01, x1 + (x1 - x0) * .01]; runs = sampleF(fn.f, a, b, fn.brk, fn.n || 900); }
+    const c = fn.c || (fn.faint ? 'mute' : 'pen'), w = fn.w || (fn.faint ? 1.8 : 2.7);
+    g += stroke(toPolys(runs), c, w, fn.dash, fn.faint ? .85 : 1);
+    for (const t of fn.arrows || []) { const [xa, ya] = fn.p(t), [xb, yb] = fn.p(t + 1e-3), X = mx(xa), Y = my(ya), an = Math.atan2(my(yb) - Y, mx(xb) - X), h = 10, p = 5;
+      g += `<polygon points="${n1(X + h / 2 * Math.cos(an))},${n1(Y + h / 2 * Math.sin(an))} ${n1(X - h / 2 * Math.cos(an) + p * Math.sin(an))},${n1(Y - h / 2 * Math.sin(an) - p * Math.cos(an))} ${n1(X - h / 2 * Math.cos(an) - p * Math.sin(an))},${n1(Y - h / 2 * Math.sin(an) + p * Math.cos(an))}" fill="${col(c)}"/>`; }
+    if (fn.lab) { const L0 = fn.lab, yy = L0.y ?? fn.f(L0.x); lb += TH(mx(L0.x) + (L0.dx || 0), my(yy) + (L0.dy || 0), L0.s, { a: L0.a || 'start', c, b: !fn.faint, size: L0.size || 12.5 }); }
+    if (fn.inv != null) { const F = fns[fn.inv].f; for (let j = 1; j < 20; j++) { const x = fn.d[0] + (fn.d[1] - fn.d[0]) * j / 20, y = fn.f(x); if (isFinite(y) && Math.abs(F(y) - x) > 1e-7) warn(`curve ${i} is not the inverse of curve ${fn.inv} at x=${x}`); } }
+  }
+  // intervals on the x-axis (solution sets)
+  for (const iv of o.xint || []) { const a = Math.max(iv.a, x0), b = Math.min(iv.b, x1), Y = ay;
+    g += `<line x1="${n1(mx(a))}" y1="${n1(Y)}" x2="${n1(mx(b))}" y2="${n1(Y)}" stroke="${col('ok')}" stroke-width="5" stroke-opacity=".75" stroke-linecap="butt"/>`;
+    if (iv.a > x0) g += P(mx(iv.a), Y, 'ok', 4.5, !iv.ca); if (iv.b < x1) g += P(mx(iv.b), Y, 'ok', 4.5, !iv.cb); }
+  if (o.extra) g += o.extra(mx, my);
+  // marked points, checked against the curves
+  for (const p of o.pts || []) {
+    const f = p.of != null ? fns[p.of].f : null; let y = p.y;
+    if (y == null) y = p.hole ? (f(p.x - 1e-6) + f(p.x + 1e-6)) / 2 : f(p.x);
+    if (f && !p.hole && p.y != null && !(Math.abs(f(p.x) - p.y) < 1e-7)) warn(`point (${p.x}, ${p.y}) is not on curve ${p.of} (f=${f(p.x)})`);
+    if (f && p.hole) { if (Math.abs(f(p.x - 1e-6) - y) > 1e-4 || Math.abs(f(p.x + 1e-6) - y) > 1e-4) warn(`hole at x=${p.x}: limit is not ${y}`); }
+    if (p.chk === 'tp' && f) { const h = 1e-5, d = (f(p.x + h) - f(p.x - h)) / (2 * h); if (Math.abs(d) > 1e-4) warn(`(${p.x}, ${y}) is not stationary (f'=${d})`); }
+    if (p.chk === 'zero' && Math.abs(y) > 1e-9) warn(`x=${p.x} is not a zero (y=${y})`);
+    if (p.w != null && !(Math.abs(fns[p.w].f(p.x) - y) < 1e-7)) warn(`(${p.x}, ${y}) is not on curve ${p.w} too (f=${fns[p.w].f(p.x)})`);
+    if (p.test && !p.test(p.x, y)) warn(`custom check failed at (${p.x}, ${y})`);
+    const c = p.c || 'ok'; g += P(mx(p.x), my(y), c, p.r || 4, p.open || p.hole);
+    if (p.s !== false) { const [dx, dy, a] = OFF[p.pos || 'ne'], s = (p.s ?? pair(p.x, y)) + (p.note ? ' ' + p.note : '');
+      lb += TH(mx(p.x) + dx + (p.dx || 0), my(y) + dy + (p.dy || 0), s, { a, c: p.lc || 'ink', size: p.size || 12.5, b: p.b }); }
+  }
+  if (o.leg) { const [lx, ly] = o.legAt || [W - 12, 16], right = !o.legAt || o.legLeft === false; o.leg.forEach(([c, s, faint], k) => { const Y = ly + k * 17, w = s.length * 12.5 * .56;
+    const X = right ? lx - w - 24 : lx; g += L(X, Y - 4, X + 18, Y - 4, c, faint ? 1.8 : 2.7) ; lb += TH(X + 23, Y, s, { c: faint ? 'mute' : c, size: 12.5, b: !faint }); }); }
+  return svg(W, H, g + lb, o.alt || id);
+}
+const HL = (k, a, b) => ({ f: () => k, d: [a, b], c: 'mute', w: 1.4, dash: 1 });
+
+DIAGRAMS.graph = [
+  // 1. Reciprocal
+  { sec: 0, t: 'y = 1/f(x) from a parabola', cap: '$f(x)=x^2-2x-3=(x+1)(x-3)$ (faint). Zeros of $f$ become **vertical asymptotes** $x=-1$, $x=3$. The minimum $(1,-4)$ becomes a **maximum** $(1,-\\frac14)$. Where $f=\\pm1$ (green dots) the graphs meet. As $f\\to\\pm\\infty$, $\\frac1f\\to0$, so $y=0$ is an asymptote.',
+    svg: () => { const f = x => x * x - 2 * x - 3; return plot({ id: 'Reciprocal of x squared minus 2x minus 3', x: [-3, 5], y: [-5, 5], h: 240,
+      fns: [{ f, faint: 1, lab: { x: 2.2, s: 'f', dx: 8 } }, { f: x => 1 / f(x), brk: [-1, 3], lab: { x: 4.2, s: '1/f', dy: -8 } }],
+      va: [{ v: -1, of: 1, side: 'l' }, { v: 3, of: 1 }], xt: [-2, { v: 1, s: false }, 4], yt: [1, -1],
+      pts: [{ x: 1, of: 0, chk: 'tp', pos: 'e' }, { x: 1, of: 1, chk: 'tp', pos: 'se', dy: 2 }, ...[1 - Math.sqrt(5), 1 + Math.sqrt(5), 1 - Math.sqrt(3), 1 + Math.sqrt(3)].map(x => ({ x, of: 0, w: 1, s: false, r: 3.5 }))] }); } },
+  { sec: 0, t: 'No zeros: no vertical asymptotes', cap: '$f(x)=x^2+2$ is never $0$, so $\\frac1{x^2+2}$ is defined everywhere. Minimum $(0,2)$ of $f$ becomes the **maximum** $(0,\\frac12)$ of $\\frac1f$; as $f\\to\\infty$, $\\frac1f\\to0^+$. Range $0<y\\le\\frac12$. Same sign as $f$ everywhere.',
+    svg: () => { const f = x => x * x + 2; return plot({ id: 'Reciprocal of x squared plus 2', x: [-3, 3], y: [-0.8, 5], h: 220,
+      fns: [{ f, faint: 1, lab: { x: 1.6, s: 'f = x² + 2', dx: 8 } }, { f: x => 1 / f(x), lab: { x: 1.9, s: '1/f', dy: -10 } }], xt: [-2, -1, 1, 2],
+      pts: [{ x: 0, of: 0, chk: 'tp', pos: 'w', dx: -2 }, { x: 0, of: 1, chk: 'tp', pos: 'ne', dx: 2 }] }); } },
+  { sec: 0, t: 'Reciprocal of sin x (period kept)', cap: '$y=\\frac1{\\sin x}$ on $[0,2\\pi]$. Zeros of $\\sin x$ at $0,\\pi,2\\pi$ become asymptotes. $(\\frac\\pi2,1)$ and $(\\frac{3\\pi}2,-1)$ are on both graphs and become turning points of opposite type (max of $\\sin$ $\\to$ min of $\\frac1{\\sin}$).',
+    svg: () => plot({ id: 'Reciprocal of sine', x: [-0.5, 6.9], y: [-4, 4], h: 230,
+      fns: [{ f: Math.sin, faint: 1, d: [0, 2 * Math.PI] }, { f: x => 1 / Math.sin(x), d: [0, 2 * Math.PI], brk: [Math.PI] }],
+      va: [{ v: Math.PI, of: 1, s: 'x = π' }, { v: 2 * Math.PI, of: 1, s: 'x = 2π', side: 'l', at: 'b' }], xt: [{ v: Math.PI / 2 }, { v: 3 * Math.PI / 2, up: 1 }], yt: [1, -1],
+      pts: [{ x: Math.PI / 2, of: 1, chk: 'tp', w: 0, pos: 'n', dy: -2 }, { x: 3 * Math.PI / 2, of: 1, chk: 'tp', w: 0, pos: 's' }] }) },
+  // 2. Absolute value
+  { sec: 1, t: 'y = |f(x)|: reflect the negative part up', cap: '$y=|x^2-2x-3|$. The part of $f$ below the $x$-axis ($-1<x<3$) is reflected up, so the minimum $(1,-4)$ becomes a **maximum** $(1,4)$. The zeros become sharp **corners** (not smooth): the graph is never below the axis.',
+    svg: () => { const f = x => x * x - 2 * x - 3; return plot({ id: 'Absolute value of a parabola', x: [-3, 5], y: [-5, 6], h: 240,
+      fns: [{ f, faint: 1, lab: { x: 1.9, s: 'f', dx: 6, dy: 12 } }, { f: x => Math.abs(f(x)), lab: { x: 3.9, s: '|f|', dx: 8 } }], xt: [{ v: -1, dx: -4 }, { v: 3, dx: 4 }], yt: [],
+      pts: [{ x: 1, of: 1, pos: 'n', note: 'max' }, { x: 1, of: 0, pos: 's', lc: 'mute' }, { x: -1, of: 1, chk: 'zero', s: false, c: 'warn' }, { x: 3, of: 1, chk: 'zero', s: false, c: 'warn' }] }); } },
+  { sec: 1, t: 'y = f(|x|): keep the right half, mirror it', cap: '$f(x)=x^2-4x+3=(x-1)(x-3)$. For $y=f(|x|)$ throw away $x<0$, keep $x\\ge0$ and **reflect it in the $y$-axis**. The result is even, has zeros $\\pm1,\\pm3$, minima $(\\pm2,-1)$ and a sharp corner at $(0,3)$.',
+    svg: () => { const f = x => x * x - 4 * x + 3; return plot({ id: 'f of absolute x', x: [-5, 5], y: [-2, 6], h: 220,
+      fns: [{ f, faint: 1, d: [-1.5, 5.2], lab: { x: -0.55, s: 'f', dx: 8, dy: 0 } }, { f: x => f(Math.abs(x)) }], xt: [-3, -1, 1, 3],
+      pts: [{ x: 2, of: 1, chk: 'tp', pos: 's' }, { x: -2, of: 1, chk: 'tp', pos: 's' }, { x: 0, of: 1, pos: 'e', note: 'corner' }] }); } },
+  // 3. y^2 = f(x)
+  { sec: 2, t: 'y² = f(x) from a parabola', cap: '$f(x)=3+2x-x^2$ (faint). Plot $y=\\pm\\sqrt{f(x)}$, only where $f\\ge0$ ($-1\\le x\\le3$). Max $f=4$ gives $y=\\pm2$. **Vertical tangents** at the zeros. Where $0<f<1$, $\\sqrt f>f$; where $f>1$, $\\sqrt f<f$; they meet where $f=1$ (dots). Equal scales: it is the circle $(x-1)^2+y^2=4$.',
+    svg: () => { const f = x => 3 + 2 * x - x * x; return plot({ id: 'y squared equals a parabola', x: [-3.25, 5.75], y: [-2.6, 4.4], h: 240,
+      fns: [{ f, faint: 1, lab: { x: 3.25, s: 'f', dx: 6 } }, { f: x => Math.sqrt(f(x)) }, { f: x => -Math.sqrt(f(x)), lab: { x: 1.3, y: -1.1, s: 'y = ±√f', a: 'middle' } }], xt: [{ v: -1, dx: -6 }, { v: 3, dx: 6 }], yt: [],
+      pts: [{ x: 1, of: 0, chk: 'tp', pos: 'n' }, { x: 1, of: 1, chk: 'tp', pos: 'ne' }, { x: 1, of: 2, chk: 'tp', pos: 's' }, { x: 1 - Math.sqrt(3), of: 1, w: 0, s: false, r: 3.5 }, { x: 1 + Math.sqrt(3), of: 1, w: 0, s: false, r: 3.5 }] }); } },
+  { sec: 2, t: 'y² = f(x) for a cubic: a loop and a branch', cap: '$y^2=4x-x^3=x(2-x)(2+x)$. $f\\ge0$ for $x\\le-2$ and $0\\le x\\le2$, giving an open branch and a closed **loop**. The loop is widest where $f$ is largest: $x=\\frac2{\\sqrt3}$, $y=\\pm\\sqrt{\\frac{16}{3\\sqrt3}}\\approx\\pm1.75$. Vertical tangents at $x=-2,0,2$.',
+    svg: () => { const f = x => 4 * x - x ** 3; return plot({ id: 'y squared equals 4x minus x cubed', x: [-3.2, 3], y: [-4.2, 4.2], h: 240,
+      fns: [{ f, faint: 1, lab: { x: 1.5, s: 'f', dx: 4, dy: -10 } }, { f: x => Math.sqrt(f(x)) }, { f: x => -Math.sqrt(f(x)) }], xt: [{ v: -2, dx: 9 }, { v: 2, dx: 8 }], yt: [],
+      pts: [{ x: 2 / Math.sqrt(3), of: 1, chk: 'tp', pos: 'ne', s: 'max y ≈ 1.75' }, { x: 2 / Math.sqrt(3), of: 2, chk: 'tp', s: false }, { x: -2, of: 1, chk: 'zero', s: false, c: 'warn' }, { x: 0, of: 1, chk: 'zero', s: false, c: 'warn' }, { x: 2, of: 1, chk: 'zero', s: false, c: 'warn' }] }); } },
+  // 4. Sum and product
+  { sec: 3, t: 'Adding ordinates: y = x + 1/x', cap: 'Add the heights of $y=x$ and $y=\\frac1x$ (faint) at each $x$. Near $0$ the $\\frac1x$ part dominates (asymptote $x=0$); for large $|x|$ the $x$ part dominates, so $y=x$ is an **oblique asymptote**. Turning points $(1,2)$ and $(-1,-2)$; range $y\\le-2$ or $y\\ge2$.',
+    svg: () => plot({ id: 'x plus one over x', x: [-4.5, 4.5], y: [-5.5, 5.5], h: 240,
+      fns: [{ f: x => x, faint: 1 }, { f: x => 1 / x, faint: 1, brk: [0], lab: { x: 3.4, s: '1/x', dy: -8 } }, { f: x => x + 1 / x, brk: [0] }],
+      oa: [{ m: 1, c: 0, of: 2, s: 'y = x', lx: 3.6, dx: 6, dy: 14 }], va: [{ v: 0, of: 2, s: false }], xt: [], yt: [],
+      pts: [{ x: 1, of: 2, chk: 'tp', pos: 'e' }, { x: -1, of: 2, chk: 'tp', pos: 'w' }] }) },
+  { sec: 3, t: 'Multiplying ordinates: y = x sin x', cap: 'Multiply $y=x$ by $y=\\sin x$. Zeros of **either** factor are zeros of the product ($0,\\pi,2\\pi,3\\pi$). Because $-1\\le\\sin x\\le1$, the graph is trapped between $y=x$ and $y=-x$ (faint) and **touches** them where $\\sin x=\\pm1$.',
+    svg: () => plot({ id: 'x times sin x', x: [-0.6, 10], y: [-9.5, 9.5], h: 240,
+      fns: [{ f: x => x, faint: 1, d: [0, 10] }, { f: x => -x, faint: 1, d: [0, 10] }, { f: Math.sin, faint: 1, d: [0, 10] }, { f: x => x * Math.sin(x), d: [0, 3 * Math.PI] }],
+      xt: [{ v: Math.PI, dx: -6 }, { v: 2 * Math.PI, up: 1 }, { v: 3 * Math.PI, dx: 4 }], yt: [],
+      pts: [{ x: Math.PI / 2, of: 3, w: 0, pos: 'nw' }, { x: 3 * Math.PI / 2, of: 3, w: 1, pos: 'sw' }, { x: 5 * Math.PI / 2, of: 3, w: 0, pos: 'nw' }] }) },
+  // 5. Polynomials and rational functions
+  { sec: 4, t: 'Multiplicity: (x+1)³(x−2)²', cap: '$P(x)=(x+1)^3(x-2)^2$. Triple root $x=-1$: crosses **with a flat inflection**. Double root $x=2$: **touches** and turns. Degree $5$, leading coefficient $+1$: down on the left, up on the right. $P(0)=4$. Max where $P\'(x)=(x+1)^2(x-2)(5x-4)=0$: $x=\\frac45$.',
+    svg: () => { const P0 = x => (x + 1) ** 3 * (x - 2) ** 2; return plot({ id: 'Quintic with triple and double roots', x: [-2, 3], y: [-4, 11], h: 240,
+      fns: [{ f: P0 }], xt: [{ v: -1, dx: -6 }, { v: 2, s: false }], yt: [],
+      pts: [{ x: -1, of: 0, chk: 'tp', s: 'triple: flat cross', pos: 'nw', c: 'warn' }, { x: 2, of: 0, chk: 'tp', s: 'double: touch', pos: 'n', c: 'warn', dy: -2 }, { x: 0, of: 0, pos: 'w' }, { x: 0.8, of: 0, chk: 'tp', pos: 'n' }] }); } },
+  { sec: 4, t: 'Rational: vertical and horizontal asymptotes', cap: '$y=\\dfrac{x^2-1}{x^2-4}$. Denominator zero: $x=\\pm2$. Same degree top and bottom: $y\\to\\frac11=1$. Zeros $x=\\pm1$; $y$-intercept $\\frac14$ (a local max). Even function, so symmetric about the $y$-axis. Sign changes at $-2,-1,1,2$.',
+    svg: () => { const f = x => (x * x - 1) / (x * x - 4); return plot({ id: 'Rational function with two vertical asymptotes', x: [-5, 5], y: [-4, 5], h: 240,
+      fns: [{ f, brk: [-2, 2] }], va: [{ v: -2, of: 0, side: 'l' }, { v: 2, of: 0 }], ha: [{ v: 1, of: 0, below: 1 }], xt: [{ v: -1, up: 1, s: false }, { v: 1, up: 1, s: false }], yt: [],
+      pts: [{ x: 0, of: 0, chk: 'tp', pos: 'n', dy: -2 }, { x: -1, of: 0, chk: 'zero', s: '−1', pos: 's', dx: -4 }, { x: 1, of: 0, chk: 'zero', s: '1', pos: 's', dx: 4 }] }); } },
+  { sec: 4, t: 'Oblique asymptote: (x² + 1)/(x − 1)', cap: 'Divide: $\\dfrac{x^2+1}{x-1}=x+1+\\dfrac2{x-1}$. So $x=1$ is vertical and $y=x+1$ is an **oblique** asymptote (top degree one more than bottom). Turning points where $(x-1)^2=2$: max $(1-\\sqrt2,\\,2-2\\sqrt2)$, min $(1+\\sqrt2,\\,2+2\\sqrt2)$. $y$-intercept $-1$.',
+    svg: () => { const f = x => (x * x + 1) / (x - 1); return plot({ id: 'Rational function with oblique asymptote', x: [-4, 6], y: [-7, 11], h: 250,
+      fns: [{ f, brk: [1] }], va: [{ v: 1, of: 0 }], oa: [{ m: 1, c: 1, of: 0, s: 'y = x + 1', lx: -3.3, dx: 0, dy: 18 }], xt: [], yt: [],
+      pts: [{ x: 1 - Math.SQRT2, of: 0, chk: 'tp', pos: 'nw', dy: -22 }, { x: 1 + Math.SQRT2, of: 0, chk: 'tp', pos: 'ne', dy: -30 }, { x: 0, of: 0, s: false, r: 3.5 }] }); } },
+  { sec: 4, t: 'A hole, not an asymptote', cap: '$y=\\dfrac{x^2-x-2}{x^2-4}=\\dfrac{(x+1)(x-2)}{(x+2)(x-2)}$. The factor $(x-2)$ **cancels**, leaving $\\frac{x+1}{x+2}$ with a **hole** at $(2,\\frac34)$ (open circle). Only $x=-2$ is an asymptote. Horizontal asymptote $y=1$.',
+    svg: () => { const f = x => (x * x - x - 2) / (x * x - 4); return plot({ id: 'Rational function with a hole', x: [-6, 4], y: [-4, 5], h: 230,
+      fns: [{ f, brk: [-2, 2] }], va: [{ v: -2, of: 0, side: 'l' }], ha: [{ v: 1, of: 0 }], xt: [], yt: [],
+      pts: [{ x: 2, of: 0, hole: 1, pos: 'se', c: 'warn', note: 'hole' }, { x: -1, of: 0, chk: 'zero', pos: 'se', s: '(−1, 0)' }, { x: 0, of: 0, pos: 'nw', dy: -14 }] }); } },
+  // 6. Inverse functions
+  { sec: 5, t: 'Inverse: reflect in y = x', cap: '$f(x)=\\sqrt{x+2}$ and $f^{-1}(x)=x^2-2$, $x\\ge0$. Every point $(a,b)$ goes to $(b,a)$: $(-2,0)\\to(0,-2)$, $(0,\\sqrt2)\\to(\\sqrt2,0)$. Domain and range **swap**. Increasing $f$ meets $f^{-1}$ only on $y=x$: $\\sqrt{x+2}=x$ gives $(2,2)$.',
+    svg: () => { const f = x => Math.sqrt(x + 2), g = x => x * x - 2; return plot({ id: 'Square root function and its inverse', x: [-3, 4], y: [-3, 4], w: 260, h: 260,
+      fns: [{ f: x => x, c: 'mute', w: 1.4, dash: 1 }, { f, d: [-2, 4.1], lab: { x: -1.6, s: 'f', dy: -12 } }, { f: g, d: [0, 2.5], c: 'warn', inv: 1, lab: { x: 2.3, s: 'f⁻¹', dx: 8, dy: 4 } }], xt: [], yt: [],
+      pts: [{ x: 2, of: 1, w: 2, pos: 'nw', c: 'ink', test: (x, y) => Math.abs(x - y) < 1e-12 }, { x: -2, of: 1, pos: 'n' }, { x: 0, of: 2, pos: 'e', c: 'warn' }, { x: 0, of: 1, pos: 'nw', r: 3.5 }, { x: Math.SQRT2, of: 2, pos: 'se', c: 'warn', r: 3.5 }] }); } },
+  { sec: 5, t: 'Trap: a decreasing function can meet its inverse off y = x', cap: '$f(x)=-x^3$ has inverse $f^{-1}(x)=-\\sqrt[3]x$. Solving $f(x)=x$ gives only $(0,0)$, but $f(x)=f^{-1}(x)$ also gives $(1,-1)$ and $(-1,1)$, mirror images across $y=x$. Only for **increasing** $f$ is it safe to solve $f(x)=x$.',
+    svg: () => { const f = x => -(x ** 3), g = x => -Math.cbrt(x); return plot({ id: 'Decreasing cubic and its inverse', x: [-2, 2], y: [-2, 2], w: 260, h: 260,
+      fns: [{ f: x => x, c: 'mute', w: 1.4, dash: 1 }, { f, lab: { x: -1.15, s: 'f', dx: 10 } }, { f: g, c: 'warn', d: [-2.1, 2.1], inv: 1, lab: { x: -1.9, s: 'f⁻¹', dy: -10 } }], xt: [], yt: [],
+      pts: [{ x: 0, of: 1, w: 2, s: false, c: 'ink' }, { x: 1, of: 1, w: 2, pos: 'e', c: 'warn' }, { x: -1, of: 1, w: 2, pos: 'w', c: 'warn' }] }); } },
+  { sec: 5, t: 'Horizontal line test, then restrict', cap: '$y=x^2-2x$ is **not** one-to-one: the line $y=3$ meets it at $x=-1$ and $x=3$. Restrict to $x\\ge1$ (from the vertex $(1,-1)$, bold) to get an inverse function: $f^{-1}(x)=1+\\sqrt{x+1}$, $x\\ge-1$.',
+    svg: () => { const f = x => x * x - 2 * x; return plot({ id: 'Parabola failing the horizontal line test', x: [-2, 4], y: [-2, 5], h: 230,
+      fns: [{ f, faint: 1, d: [-2, 1] }, { f, d: [1, 4.1], lab: { x: 3.3, s: 'x ≥ 1', dx: 8, dy: 8 } }, HL(3, -2, 4)], xt: [], yt: [{ v: 3, s: 'y = 3', r: 1, dy: -10 }],
+      pts: [{ x: -1, of: 0, pos: 'nw', c: 'warn' }, { x: 3, of: 1, pos: 'nw', c: 'warn' }, { x: 1, of: 1, chk: 'tp', pos: 'se' }] }); } },
+  // 7. Inverse trig
+  { sec: 6, t: 'y = 2 sin⁻¹(2x − 1): transform the endpoints', cap: '$-1\\le2x-1\\le1$ gives domain $0\\le x\\le1$ (squashed and shifted). Multiply the range by $2$: $-\\pi\\le y\\le\\pi$. Endpoints $(0,-\\pi)$, $(1,\\pi)$ and centre $(\\frac12,0)$. Faint: $y=\\sin^{-1}x$.',
+    svg: () => { const g = x => 2 * Math.asin(2 * x - 1); return plot({ id: 'Transformed inverse sine', x: [-1.4, 1.6], y: [-3.7, 3.7], h: 240,
+      fns: [{ f: Math.asin, faint: 1, d: [-1, 1], lab: { x: -0.6, s: 'sin⁻¹x', a: 'end', dx: -8, dy: -6 } }, { f: g, d: [0, 1] }], xt: [{ v: -1, s: false }], yt: [{ v: Math.PI / 2, s: false }, { v: -Math.PI / 2, s: false }],
+      pts: [{ x: 0, of: 1, pos: 'e' }, { x: 1, of: 1, pos: 'w' }, { x: 0.5, of: 1, pos: 'e', dy: 8 }, { x: 1, of: 0, pos: 'e', c: 'mute', r: 3 }, { x: -1, of: 0, pos: 'w', c: 'mute', r: 3, dy: -16 }] }); } },
+  { sec: 6, t: 'cos⁻¹(−x) = π − cos⁻¹x', cap: 'The graph of $y=\\cos^{-1}x$ has **point symmetry** about $(0,\\frac\\pi2)$: if $(a,\\theta)$ is on it then so is $(-a,\\pi-\\theta)$. So $\\cos^{-1}(-x)=\\pi-\\cos^{-1}x$ (it is **not** odd). Compare $\\sin^{-1}(-x)=-\\sin^{-1}x$ (odd, symmetric about $O$).',
+    svg: () => { const a = 0.6; return plot({ id: 'Point symmetry of inverse cosine', x: [-1.5, 1.5], y: [-0.5, 3.6], h: 230,
+      fns: [{ f: Math.acos, d: [-1, 1] }], xt: [{ v: -1 }, { v: 1 }], yt: [],
+      extra: (mx, my) => L(mx(a), my(Math.acos(a)), mx(-a), my(Math.acos(-a)), 'mute', 1.3, true) + L(mx(a), my(0), mx(a), my(Math.acos(a)), 'mute', 1, true) + L(mx(-a), my(0), mx(-a), my(Math.acos(-a)), 'mute', 1, true),
+      pts: [{ x: -1, of: 0, pos: 'e' }, { x: 1, of: 0, pos: 'ne', dx: -4, dy: -4, s: '(1, 0)' }, { x: 0, of: 0, pos: 'e', c: 'warn' }, { x: a, of: 0, s: '(a, θ)', pos: 'ne', c: 'pen' }, { x: -a, of: 0, s: '(−a, π − θ)', pos: 'nw', c: 'pen', dy: 4, test: (x, y) => Math.abs(y - (Math.PI - Math.acos(a))) < 1e-12 }] }); } },
+  { sec: 6, t: 'y = sin⁻¹(sin x) is a zigzag', cap: '$\\sin^{-1}(\\sin x)=x$ **only** for $-\\frac\\pi2\\le x\\le\\frac\\pi2$. Elsewhere the output is pulled back into $[-\\frac\\pi2,\\frac\\pi2]$: the graph is a zigzag of slope $\\pm1$ with period $2\\pi$. E.g. for $\\frac\\pi2\\le x\\le\\frac{3\\pi}2$ it is $\\pi-x$. But $\\sin(\\sin^{-1}x)=x$ for all $|x|\\le1$.',
+    svg: () => plot({ id: 'Inverse sine of sine', x: [-7, 7], y: [-2.3, 2.3], h: 200, xlabUp: 1,
+      fns: [{ f: Math.sin, faint: 1 }, { f: x => Math.asin(Math.sin(x)) }], xt: [{ v: -2 * Math.PI, dx: 12 }, { v: -Math.PI, dx: -12 }, { v: Math.PI, dx: -12 }, { v: 2 * Math.PI, dx: 12 }], yt: [],
+      pts: [{ x: Math.PI / 2, of: 1, pos: 'ne', dx: -2 }, { x: 3 * Math.PI / 2, of: 1, pos: 's', dy: 2 }, { x: -Math.PI / 2, of: 1, s: false }, { x: -3 * Math.PI / 2, of: 1, s: false }] }) },
+  // 8. Inequalities and number of solutions
+  { sec: 7, t: '|2x − 3| ≤ x + 1 graphically', cap: 'Draw the V $y=|2x-3|$ (vertex $(\\frac32,0)$) and the line $y=x+1$. The V is **below** the line between the intersections: $-(2x-3)=x+1$ gives $x=\\frac23$, and $2x-3=x+1$ gives $x=4$. Solution (green) $\\frac23\\le x\\le4$.',
+    svg: () => { const v = x => Math.abs(2 * x - 3), l = x => x + 1; return plot({ id: 'Absolute value inequality', x: [-1.5, 5.8], y: [-1.5, 7.5], h: 240,
+      fns: [{ f: v, lab: { x: -0.9, s: '|2x − 3|', dx: 8, dy: 2 } }, { f: l, c: 'warn', lab: { x: 5.75, s: 'x + 1', dy: 18, a: 'end' } }], xt: [], yt: [],
+      xint: [{ a: 2 / 3, b: 4, ca: 1, cb: 1 }], pts: [{ x: 2 / 3, of: 0, w: 1, pos: 'nw' }, { x: 4, of: 0, w: 1, pos: 'nw' }, { x: 1.5, of: 0, s: false, r: 3 }] }); } },
+  { sec: 7, t: 'Number of solutions of x³ − 3x = k', cap: 'Count where the horizontal line $y=k$ meets $y=x^3-3x$. Turning points $(-1,2)$ and $(1,-2)$. **Three** solutions for $-2<k<2$, **two** for $k=\\pm2$ (tangent), **one** for $|k|>2$.',
+    svg: () => { const f = x => x ** 3 - 3 * x; return plot({ id: 'Cubic cut by horizontal lines', x: [-2.6, 2.6], y: [-3, 4], h: 240,
+      fns: [{ f }, HL(1, -2.6, 2.6), HL(2, -2.6, 2.6), HL(3, -2.6, 2.6)], xt: [], yt: [{ v: 1, s: 'k = 1: 3', r: 1, dy: 12 }, { v: 3, s: 'k = 3: 1', r: 1, dy: -10 }],
+      pts: [{ x: -1, of: 0, chk: 'tp', w: 2, pos: 'nw', note: '2 sols' }, { x: 1, of: 0, chk: 'tp', pos: 'e' }] }); } },
+  { sec: 7, t: 'Rational inequality: x/(x − 2) ≥ 3', cap: 'The curve is on or above $y=3$ between the asymptote $x=2$ (excluded) and the intersection $(3,3)$. Algebra agrees: multiply by $(x-2)^2$ to get $(x-2)(x-3)\\le0$, $x\\ne2$, so $2<x\\le3$ (green).',
+    svg: () => { const f = x => x / (x - 2); return plot({ id: 'Rational inequality graph', x: [-2, 7], y: [-3, 7], h: 230,
+      fns: [{ f, brk: [2] }, HL(3, -2, 7)], va: [{ v: 2, of: 0, side: 'l' }], ha: [{ v: 1, of: 0, below: 1 }], xt: [], yt: [{ v: 3, s: 'y = 3', r: 1, dy: -10 }],
+      xint: [{ a: 2, b: 3, ca: 0, cb: 1 }], pts: [{ x: 3, of: 0, w: 1, pos: 'ne' }] }); } },
+  // 9. Parametric
+  { sec: 8, t: 'Circle: x = 1 + 3cos t, y = −2 + 3sin t', cap: 'Isolate $\\cos t$ and $\\sin t$, then use $\\cos^2t+\\sin^2t=1$: $(x-1)^2+(y+2)^2=9$, centre $(1,-2)$, radius $3$. As $t$ increases from $0$ the point moves **anticlockwise** from $(4,-2)$. A restricted $t$ gives only an arc.',
+    svg: () => plot({ id: 'Parametric circle', x: [-3, 5], y: [-6, 2], w: 260, h: 260,
+      fns: [{ p: t => [1 + 3 * Math.cos(t), -2 + 3 * Math.sin(t)], t: [0, 2 * Math.PI], arrows: [Math.PI / 4, 5 * Math.PI / 4] }], xt: [], yt: [],
+      pts: [{ x: 1, y: -2, pos: 'n', c: 'ink', r: 3, note: 'centre' }, { x: 4, y: -2, pos: 'sw', note: 't = 0', test: (x, y) => Math.abs((x - 1) ** 2 + (y + 2) ** 2 - 9) < 1e-12 }] }) },
+  { sec: 8, t: 'Parabola: x = 2t, y = t²', cap: '$t=\\frac x2$, so $y=\\frac{x^2}4$, i.e. $x^2=4y$. Points marked with their $t$ values: the arrow shows the direction of increasing $t$ (left to right). Any $t\\in\\mathbb R$ gives the whole parabola.',
+    svg: () => plot({ id: 'Parametric parabola', x: [-5, 5], y: [-1.2, 6], h: 230,
+      fns: [{ p: t => [2 * t, t * t], t: [-2.6, 2.6], arrows: [-1.5, 1.5] }], xt: [], yt: [],
+      pts: [-2, -1, 0, 1, 2].map(t => ({ x: 2 * t, y: t * t, pos: t < 0 ? 'e' : t > 0 ? 'w' : 'se', s: `t = ${nice(t)}`, r: 3.5, c: 'ink', test: (x, y) => Math.abs(y - x * x / 4) < 1e-12 })) }) },
+  // 10. Transformations
+  { sec: 9, t: 'y = 2√(½(x + 3)) − 1 from y = √x', cap: 'Write as $y=af(b(x-c))+d$ with $a=2,b=\\frac12,c=-3,d=-1$. Each point $(X,Y)$ of $\\sqrt x$ goes to $\\left(\\frac Xb+c,\\ aY+d\\right)$: $(0,0)\\to(-3,-1)$, $(4,2)\\to(5,3)$. Horizontal: dilate by $\\frac1b=2$ **then** shift. Vertical: dilate by $a$ **then** shift.',
+    svg: () => { const g = x => 2 * Math.sqrt((x + 3) / 2) - 1; return plot({ id: 'Transformed square root', x: [-4, 8], y: [-2, 5], h: 220,
+      fns: [{ f: Math.sqrt, faint: 1, d: [0, 8], lab: { x: 6.5, s: '√x', dx: 2, dy: 18 } }, { f: g, d: [-3, 8] }], xt: [], yt: [],
+      extra: (mx, my) => A(mx(0), my(0), mx(-3) + 5, my(-1) - 2, 'mute', 1.2) + A(mx(4), my(2), mx(5) - 3, my(3) + 5, 'mute', 1.2),
+      pts: [{ x: 0, of: 0, s: false, c: 'mute', r: 3 }, { x: 4, of: 0, pos: 'se', c: 'mute', r: 3 }, { x: -3, of: 1, pos: 'se' }, { x: 5, of: 1, pos: 'nw' }] }); } },
+  { sec: 9, t: 'y = 2 sin(2(x − π/4)) + 1 from y = sin x', cap: 'Period $\\frac{2\\pi}2=\\pi$, amplitude $2$, centre line $y=1$ (dashed), shifted $\\frac\\pi4$ right. Max $3$, min $-1$. Max at $2(x-\\frac\\pi4)=\\frac\\pi2$, i.e. $x=\\frac\\pi2$. Faint: $y=\\sin x$.',
+    svg: () => { const g = x => 2 * Math.sin(2 * (x - Math.PI / 4)) + 1; return plot({ id: 'Transformed sine', x: [-0.4, 6.8], y: [-1.7, 3.7], h: 220,
+      fns: [{ f: Math.sin, faint: 1, d: [0, 2 * Math.PI] }, { f: g, d: [0, 2 * Math.PI] }], ha: [{ v: 1, c: 'mute', s: 'y = 1', at: 'r' }], xt: [{ v: Math.PI, up: 1 }, { v: 2 * Math.PI, up: 1 }], yt: [],
+      pts: [{ x: Math.PI / 2, of: 1, chk: 'tp', pos: 'ne' }, { x: Math.PI, of: 1, chk: 'tp', pos: 's' }, { x: 3 * Math.PI / 2, of: 1, chk: 'tp', pos: 'nw' }, { x: Math.PI / 4, of: 1, pos: 'nw', r: 3 }] }); } },
+];
