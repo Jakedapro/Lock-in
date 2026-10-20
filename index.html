@@ -724,6 +724,9 @@ html.locked body { overflow: hidden; }
 .gate-msg { min-height: 1.4em; margin: 2px 0 0; font-weight: 700; color: #FF8A7D; }
 .gate.opening .gate-msg { color: #6BD49A; }
 .gate-foot { color: #8A95A3; font-size: 14px; margin: 18px 0 0; }
+.gate-free { display: inline-block; margin: 14px 0 0; padding: 11px 18px; border-radius: 10px; border: 1px solid #3A4352; color: #8FD3FE; font: 700 15px var(--f); text-decoration: none; }
+.gate-free:hover { background: #1A2130; }
+.gate-free:focus-visible { outline: 3px solid #7FA2FF; outline-offset: 2px; }
 .gate.shake .gate-form { animation: gshake .4s; }
 @keyframes gshake { 20%, 60% { transform: translateX(-8px); } 40%, 80% { transform: translateX(8px); } }
 @media (max-width: 420px) { .gate-form { flex-direction: column; } .gate-go { padding: 14px; } }
@@ -815,7 +818,7 @@ html.locked body { overflow: hidden; }
 <script src="https://cdn.jsdelivr.net/npm/firebase@10.14.1/firebase-firestore-compat.js" integrity="sha384-Ke0FJhH7LyRqDxZ0wt+/OXV38yfQVu7g9VPEEGjYmB4RVOY/ta04uecRhsMwT7V3" crossorigin="anonymous"></script>
 <script>
 const EXAMS = [{"id": "e1", "name": "Maths Extension 1", "date": "2026-10-23T13:50", "when": "Fri 23 Oct, 1:50 pm"}, {"id": "geo", "name": "Geography", "date": "2026-10-26T09:00", "when": "Mon 26 Oct, P1–2"}, {"id": "sci", "name": "Science", "date": "2026-10-26T11:00", "when": "Mon 26 Oct, P3–4"}, {"id": "eng", "name": "English", "date": "2026-10-28T13:40", "when": "Wed 28 Oct, P5–6"}, {"id": "maths", "name": "Maths", "date": "2026-10-29T11:00", "when": "Thu 29 Oct, P3–4"}, {"id": "phys", "name": "Physics", "date": "2026-11-05T09:25", "when": "Thu 5 Nov, 9:25 am"}];
-const KEYS = {"v": 1, "keys": [{"id": "k01", "hash": "217fb2c886771854199f02e9f346a1573630e78f342697ba8941d106b506ee03", "label": "Admin", "admin": true}, {"id": "k02", "hash": "16e356518eeb2d3d067453613d6bfbce045dd8204bab439dfc94f9a086745f0c", "label": "Friend", "exp": 1792532378203}, {"id": "k17", "hash": "00fbe6311a865d28ab87cd4ea37b600319b3ff10890a38c0aad48d9979fbe67d", "label": "Friend 16", "exp": 1792532879854}]};
+const KEYS = {"v": 1, "keys": [{"id": "k01", "hash": "217fb2c886771854199f02e9f346a1573630e78f342697ba8941d106b506ee03", "label": "Admin", "admin": true}, {"id": "k02", "hash": "8cefb3f285a3d62aaff2601fdf8afb141f00db3ebcbdb00c71903422928e8f6f", "label": "Friend", "exp": 1792621528097}, {"id": "k03", "hash": "54587ee43e335c95b1d8a5cd4d17cc804ba10dd7eae98b9d5917ddb4d6a7c477", "label": "Free", "free": true, "exp": 1792623341230}]};
 const BUILD = {"gate": true};
 </script>
 <script>
@@ -1209,6 +1212,7 @@ if (typeof module !== 'undefined') module.exports = Keys;
 const Gate = (() => {
   const SAVED = 'lockin.key', CACHE = 'lockin.keys';
   const RAW = 'https://raw.githubusercontent.com/Jakedapro/Lock-in/main/keys.json';
+  const FREE = 'https://lootdest.org/s?GI9AuceG'; // LootLabs link: a few ads, then a free 1-day key (worker/)
   const API = 'https://api.github.com/repos/Jakedapro/Lock-in/contents/keys.json?ref=main'; // never cached, but rate limited: only for unknown keys
   const enabled = typeof BUILD !== 'undefined' && BUILD.gate;
   const get = (k) => { try { return localStorage.getItem(k); } catch (e) { return null; } };
@@ -1245,6 +1249,7 @@ const Gate = (() => {
       <p class="gate-sub">Invite only. Enter the key a mate sent you.</p>
       <form class="gate-form" novalidate><input class="gate-key" id="gateKey" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="LOCK-XXXX-XXXX-XXXX" aria-label="Invite key"><button class="gate-go" type="submit">Unlock</button></form>
       <p class="gate-msg" id="gateMsg" role="status" aria-live="polite"></p>
+      <a class="gate-free" href="${FREE}" target="_blank" rel="noopener">No key? Get a free 1-day key</a>
       <p class="gate-foot">Got an invite link? Just open it and you're in.</p></div>`;
     document.body.appendChild(el);
     const inp = el.querySelector('#gateKey');

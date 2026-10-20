@@ -5,6 +5,7 @@
 const Gate = (() => {
   const SAVED = 'lockin.key', CACHE = 'lockin.keys';
   const RAW = 'https://raw.githubusercontent.com/Jakedapro/Lock-in/main/keys.json';
+  const FREE = 'https://lootdest.org/s?GI9AuceG'; // LootLabs link: a few ads, then a free 1-day key (worker/)
   const API = 'https://api.github.com/repos/Jakedapro/Lock-in/contents/keys.json?ref=main'; // never cached, but rate limited: only for unknown keys
   const enabled = typeof BUILD !== 'undefined' && BUILD.gate;
   const get = (k) => { try { return localStorage.getItem(k); } catch (e) { return null; } };
@@ -41,6 +42,7 @@ const Gate = (() => {
       <p class="gate-sub">Invite only. Enter the key a mate sent you.</p>
       <form class="gate-form" novalidate><input class="gate-key" id="gateKey" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="LOCK-XXXX-XXXX-XXXX" aria-label="Invite key"><button class="gate-go" type="submit">Unlock</button></form>
       <p class="gate-msg" id="gateMsg" role="status" aria-live="polite"></p>
+      <a class="gate-free" href="${FREE}" target="_blank" rel="noopener">No key? Get a free 1-day key</a>
       <p class="gate-foot">Got an invite link? Just open it and you're in.</p></div>`;
     document.body.appendChild(el);
     const inp = el.querySelector('#gateKey');

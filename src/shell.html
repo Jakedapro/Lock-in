@@ -722,6 +722,9 @@ html.locked body { overflow: hidden; }
 .gate-msg { min-height: 1.4em; margin: 2px 0 0; font-weight: 700; color: #FF8A7D; }
 .gate.opening .gate-msg { color: #6BD49A; }
 .gate-foot { color: #8A95A3; font-size: 14px; margin: 18px 0 0; }
+.gate-free { display: inline-block; margin: 14px 0 0; padding: 11px 18px; border-radius: 10px; border: 1px solid #3A4352; color: #8FD3FE; font: 700 15px var(--f); text-decoration: none; }
+.gate-free:hover { background: #1A2130; }
+.gate-free:focus-visible { outline: 3px solid #7FA2FF; outline-offset: 2px; }
 .gate.shake .gate-form { animation: gshake .4s; }
 @keyframes gshake { 20%, 60% { transform: translateX(-8px); } 40%, 80% { transform: translateX(8px); } }
 @media (max-width: 420px) { .gate-form { flex-direction: column; } .gate-go { padding: 14px; } }
