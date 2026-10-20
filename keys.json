@@ -2,7 +2,6 @@
   "v": 1,
   "keys": [
     {"id":"k01","hash":"217fb2c886771854199f02e9f346a1573630e78f342697ba8941d106b506ee03","label":"Admin","admin":true},
-    {"id":"k17","hash":"00fbe6311a865d28ab87cd4ea37b600319b3ff10890a38c0aad48d9979fbe67d","label":"Friend 16","exp":1792532879854},
-    {"id":"k02","hash":"16e356518eeb2d3d067453613d6bfbce045dd8204bab439dfc94f9a086745f0c","label":"Friend","exp":1793139668061}
+    {"id":"k17","hash":"00fbe6311a865d28ab87cd4ea37b600319b3ff10890a38c0aad48d9979fbe67d","label":"Friend 16","exp":1792532879854}
   ]
 }
