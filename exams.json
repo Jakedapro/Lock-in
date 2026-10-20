@@ -1,6 +1,7 @@
 [
   {"id": "e1", "name": "Maths Extension 1", "date": "2026-10-23T13:50", "when": "Fri 23 Oct, 1:50 pm"},
   {"id": "geo", "name": "Geography", "date": "2026-10-26T09:00", "when": "Mon 26 Oct, P1–2"},
+  {"id": "sci", "name": "Science", "date": "2026-10-26T11:00", "when": "Mon 26 Oct, P3–4"},
   {"id": "eng", "name": "English", "date": "2026-10-28T13:40", "when": "Wed 28 Oct, P5–6"},
   {"id": "maths", "name": "Maths", "date": "2026-10-29T11:00", "when": "Thu 29 Oct, P3–4"},
   {"id": "phys", "name": "Physics", "date": "2026-11-05T09:25", "when": "Thu 5 Nov, 9:25 am"}

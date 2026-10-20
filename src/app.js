@@ -55,6 +55,7 @@
   const examWhen = (id) => examOf(id)?.when || '';
   const SUBJ = [
     { id: 'geo', name: 'Geography', hue: 'green', exam: examDate('geo'), when: examWhen('geo'), format: '45 minutes. 30 multiple choice (25 on geographical tools & skills, 5 on Water in the World) + 3 short answers.', mock: 'geo' },
+    { id: 'sci', name: 'Science', hue: 'cyan', exam: examDate('sci'), when: examWhen('sci'), format: 'Yearly Examination: 5 minutes reading + 60 minutes working, in the Hall. Multiple choice and written responses on Change (energy transfers, chemical change, geological change, rocks and fossils) and Data Science (working scientifically: variables, fair tests, tables, graphs, trends and conclusions).', mock: 'sci' },
     { id: 'maths', name: 'Maths', hue: 'gold', exam: examDate('maths'), when: examWhen('maths'), format: 'The exam covers chapters 8, 9, 10 and 12, with multi-part questions like the Test Yourself pages. Ch 3 and Ch 7 are extra practice.', mock: 'maths' },
     { id: 'y12', name: 'Maths Extension 2', tab: 'Ext 2', hue: 'lilac', exam: examDate('y12'), when: examWhen('y12'), format: 'HSC paper: 3 hours. Section I is 10 multiple choice; Section II is 90 marks across proof, complex numbers, induction, integration, vectors and mechanics.', mock: 'gen', papers: 'https://www.nsw.gov.au/education-and-training/nesa/curriculum/hsc-exam-papers/mathematics-extension-2' },
     { id: 'e1', name: 'Maths Extension 1', tab: 'Ext 1', hue: 'cyan', exam: examDate('e1'), when: examWhen('e1'), format: 'HSC paper: 2 hours. Section I is 10 multiple choice; Section II is 60 marks of multi-part questions.', mock: 'gen', papers: 'https://www.nsw.gov.au/education-and-training/nesa/curriculum/hsc-exam-papers/mathematics-extension-1' },
@@ -66,7 +67,7 @@
     ...Y8.DECKS,
     ...M.DECKS.map(d => ({ ...d, subject: 'maths', bank: X.BANK[d.id], drills: M.GEN[d.gen] })),
     { ...X.ch12, subject: 'maths', bank: X.BANK.sim },
-    ...E2.DECKS, ...E1.DECKS, ...PH.DECKS, ...EN.DECKS,
+    ...E2.DECKS, ...E1.DECKS, ...PH.DECKS, ...EN.DECKS, ...SC.DECKS,
   ].map(d => ({ ...d, subject: d.subject || 'maths', bank: typeof d.bank === 'string' ? G.BANK[d.bank] : d.bank }));
   // Ext 1, Ext 2 and Physics are only for the admin key. Everyone else gets the app without them (subjects, decks,
   // papers, plans and search all read SUBJ and BUILTIN, so trimming those two lists hides them everywhere).
@@ -233,7 +234,7 @@
       ${w ? `<div class="weak"><p>${w.acc == null ? 'Not started yet:' : `Weakest topic, ${Math.round(w.acc * 100)}% right:`} <b>${esc(w.sec.code)} ${fm(w.sec.name)}</b></p><button class="btn btn-sm" type="button" data-act="weak" data-d="${esc(w.d.id)}" data-t="${esc(w.sec.code)}">Practise it</button></div>` : ''}`;
   }
   const WEEK = [
-    ['Monday', 26, [['P1–2', 'Geography', 'geo'], ['P3–4', 'Science'], ['P5–6', 'D&T / Visual Arts']]],
+    ['Monday', 26, [['P1–2', 'Geography', 'geo'], ['P3–4', 'Science', 'sci'], ['P5–6', 'D&T / Visual Arts']]],
     ['Tuesday', 27, [['P1–2', 'Supervised study'], ['P3–4', 'Languages'], ['P5–6', 'Sport']]],
     ['Wednesday', 28, [['9:15', 'Late start'], ['P3', 'SAGE prep meeting'], ['P5–6', 'English', 'eng']]],
     ['Thursday', 29, [['P1–2', 'Chinese / Spanish'], ['P3–4', 'Mathematics', 'maths'], ['P5–6', 'Science activity']]],
@@ -530,7 +531,7 @@
 
   /* ---------------- questions: building ---------------- */
   const mcqQ = (c, d) => { const idx = shuffle(c.options.map((_, i) => i)); const ch = idx.map(i => c.options[i]); return { stem: '', level: 'F', gen: null, tags: c.tags || [], deckId: d.id, deckTitle: d.title, parts: [{ label: '', q: c.q, type: 'choice', choices: ch, value: idx.indexOf(c.answer), show: c.options[c.answer], steps: c.why ? [c.why] : [], marks: 1 }] }; };
-  const shortQ = (s, d) => ({ stem: '', passage: s.passage || '', level: 'C', gen: null, tags: s.tags || [], deckId: d.id, deckTitle: d.title, parts: [{ label: '', q: s.q, type: 'short', marks: s.marks || 3, criteria: s.criteria || [], model: s.model || '', steps: [] }] });
+  const shortQ = (s, d) => ({ stem: '', passage: s.passage || '', visual: s.visual || null, level: 'C', gen: null, tags: s.tags || [], deckId: d.id, deckTitle: d.title, parts: [{ label: '', q: s.q, type: 'short', marks: s.marks || 3, criteria: s.criteria || [], model: s.model || '', steps: [] }] });
   const bankQ = (fn, d, level) => ({ ...fn(level), deckId: d.id, deckTitle: d.title, gen: fn.name });
   // What each bank generator can make: levels and topic tags (sampled once per generator).
   const genInfo = new Map();
@@ -862,6 +863,7 @@ Write 8 mcq (answer = index 0-3 of the correct option, vary its position) and 2 
   /* ---------------- practice exams ---------------- */
   function buildMock(sid) {
     if (sid === 'eng') return buildEngMock();
+    if (sid === 'sci') return buildSciMock();
     const blocks = [];
     if (sid !== 'geo' && sid !== 'maths') { // any other subject: two bank questions per deck plus a quick multiple choice
       const s = getSubj(sid);
@@ -891,6 +893,20 @@ Write 8 mcq (answer = index 0-3 of the correct option, vary its position) and 2 
     });
     md.forEach(d => { const c = conceptsOf(d); if (c.length) blocks.push(mcqQ(pick(c), d)); });
     return { sid, title: 'Maths practice exam', minutes: 60, blocks: shuffle(blocks), acc: 'c-gold', intro: 'Two multi-part questions from each chapter (8, 9, 10, 12) plus quick multiple choice. 60 minutes. Calculator allowed.' };
+  }
+  // Year 8 Science Yearly Examination (5 min reading + 60 min): Section I multiple choice, Section II written
+  // responses. The paper plan lives in science.js (SC.buildPaper); this turns its items into exam blocks.
+  function buildSciMock() {
+    const paper = SC.buildPaper(), blocks = [];
+    paper.items.forEach(it => {
+      const d = getDeck(it.deckId); if (!d) return;
+      if (it.kind === 'mc') blocks.push(mcqQ(it.mc, d));
+      else if (it.kind === 'bank') blocks.push(bankQ(it.fn, d, 'F'));
+      else if (it.kind === 'short') blocks.push(shortQ(it.short, d));
+      else if (it.kind === 'data') blocks.push({ ...it.block, gen: null, deckId: d.id, deckTitle: d.title });
+    });
+    const mc = paper.items.filter(i => i.section === 'I').length;
+    return { sid: 'sci', title: 'Science practice exam', minutes: paper.minutes, blocks, acc: 'c-cyan', intro: `Modelled on the Year 8 Science Yearly Examination (5 minutes reading + 60 minutes working). Section I: ${mc} multiple choice questions across energy, chemical change, geological change, rocks and fossils, and working scientifically. Section II: written responses: a data analysis task, an investigation design, and short answers on each Change topic. 60 minutes.` };
   }
   // Year 8 English Task 4 (20 marks, 60 minutes): three extracts with their questions grouped underneath.
   // The extract sets and questions live in english.js (EN.buildPaper); this turns them into exam blocks.

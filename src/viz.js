@@ -26,8 +26,8 @@ const V = (() => {
       <text x="238" y="108" fill="${ink}" font-size="22" font-weight="700" text-anchor="middle" ${F}>${b}</text>
       <text x="22" y="176" fill="${ink}" font-size="18" font-weight="700" ${F}>${n}</text></svg>`, 360);
   }
-  function table({ head, rows }) {
-    return `<div class="viz"><div class="tbl"><table><thead><tr>${head.map(h => `<th>${esc(h)}</th>`).join('')}</tr></thead><tbody>${rows.map(r => `<tr>${r.map((c, i) => i ? `<td>${esc(c)}</td>` : `<th>${esc(c)}</th>`).join('')}</tr>`).join('')}</tbody></table></div></div>`;
+  function table({ head, rows, cap }) {
+    return `<div class="viz"><div class="tbl"><table><thead><tr>${head.map(h => `<th>${esc(h)}</th>`).join('')}</tr></thead><tbody>${rows.map(r => `<tr>${r.map((c, i) => i ? `<td>${esc(c)}</td>` : `<th>${esc(c)}</th>`).join('')}</tr>`).join('')}</tbody></table></div>${cap ? `<div class="viz-cap">${esc(cap)}</div>` : ''}</div>`;
   }
   function diceGrid() {
     let h = '<tr><th>+</th>' + [1, 2, 3, 4, 5, 6].map(i => `<th>${i}</th>`).join('') + '</tr>';
@@ -172,6 +172,51 @@ const V = (() => {
     return wrap(`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Dot plot">${s}</svg><div class="viz-cap">${esc(label || '')}</div>`, 440);
   }
 
-  const R = { dotplot, spinner, venn, table, diceGrid, travel, rects, sim, box, tri, cyl, climate, pie, topo };
+
+  /* ---------- science graphs: x–y line/scatter graph and Sankey (energy flow) diagram ---------- */
+  const niceMax = (v) => { if (v <= 0) return 1; const e = 10 ** Math.floor(Math.log10(v)); for (const m of [1, 1.2, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10]) if (m * e >= v) return m * e; return 10 * e; };
+  const tickStep = (max) => { const raw = max / 5, e = 10 ** Math.floor(Math.log10(raw)); return [1, 2, 2.5, 5, 10].map(m => m * e).find(s => s >= raw); };
+  // pts: [[x, y], …]; join: dot-to-dot line (changes over time); fit: [[x0, y0], [x1, y1]] line of best fit.
+  function xy({ pts, xl, yl, title, join, fit, xmax, ymax, cap }) {
+    const W = 470, H = 290, L = 58, R = 16, T = title ? 30 : 14, B = 46;
+    const xm = xmax || niceMax(Math.max(...pts.map(p => p[0]))), ym = ymax || niceMax(Math.max(...pts.map(p => p[1])) * 1.1);
+    const X = (x) => L + x / xm * (W - L - R), Y = (y) => H - B - y / ym * (H - B - T);
+    let g = title ? `<text x="${(W + L) / 2}" y="18" fill="${ink}" font-size="13" font-weight="700" text-anchor="middle" ${F}>${esc(title)}</text>` : '';
+    const xs = tickStep(xm), ys = tickStep(ym), r = (v) => Math.round(v * 1000) / 1000;
+    for (let x = 0; x <= xm + 1e-9; x += xs) g += `<line x1="${X(x)}" y1="${T}" x2="${X(x)}" y2="${H - B}" stroke="${line}"/><text x="${X(x)}" y="${H - B + 16}" fill="${mute}" font-size="11" text-anchor="middle" ${F}>${r(x)}</text>`;
+    for (let y = 0; y <= ym + 1e-9; y += ys) g += `<line x1="${L}" y1="${Y(y)}" x2="${W - R}" y2="${Y(y)}" stroke="${line}"/><text x="${L - 6}" y="${Y(y) + 4}" fill="${mute}" font-size="11" text-anchor="end" ${F}>${r(y)}</text>`;
+    g += `<line x1="${L}" y1="${H - B}" x2="${W - R}" y2="${H - B}" stroke="${ink}" stroke-width="1.5"/><line x1="${L}" y1="${T}" x2="${L}" y2="${H - B}" stroke="${ink}" stroke-width="1.5"/>`;
+    if (join) g += `<polyline points="${pts.map(p => `${X(p[0])},${Y(p[1])}`).join(' ')}" fill="none" stroke="var(--cyan)" stroke-width="2.5"/>`;
+    if (fit) g += `<line x1="${X(fit[0][0])}" y1="${Y(fit[0][1])}" x2="${X(fit[1][0])}" y2="${Y(fit[1][1])}" stroke="var(--cyan)" stroke-width="2" stroke-dasharray="6 4"/>`;
+    g += pts.map(p => `<path d="M${X(p[0]) - 5},${Y(p[1]) - 5} l10,10 M${X(p[0]) + 5},${Y(p[1]) - 5} l-10,10" stroke="${ink}" stroke-width="2"/>`).join('');
+    g += `<text x="${(W + L) / 2}" y="${H - 8}" fill="${ink}" font-size="12" text-anchor="middle" ${F}>${esc(xl)}</text>`;
+    g += `<text x="14" y="${(H - B + T) / 2}" fill="${ink}" font-size="12" text-anchor="middle" transform="rotate(-90 14 ${(H - B + T) / 2})" ${F}>${esc(yl)}</text>`;
+    return wrap(`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(title || `Graph of ${yl} against ${xl}`)}">${g}</svg>${cap ? `<div class="viz-cap">${esc(cap)}</div>` : ''}`, 500);
+  }
+  // input: [label, value]; out: [[label, value, useful?], …]. Band widths are proportional to energy.
+  function sankey({ input, out, unit = 'J' }) {
+    const total = input[1], k = 110 / total, x0 = 150, xs = 250, top = 40, W = 520;
+    const useful = out.filter(o => o[2]), waste = out.filter(o => !o[2]), sum = (a) => a.reduce((t, o) => t + o[1], 0);
+    const txt = (x, y, t, a, c) => `<text x="${x}" y="${y}" fill="${c}" font-size="12" font-weight="700" text-anchor="${a}" ${F}>${esc(t)}</text>`;
+    let g = `<rect x="${x0}" y="${top}" width="${xs - x0}" height="${total * k}" fill="var(--gold)" opacity=".55"/>` + txt(x0 - 6, top + total * k / 2 + 4, `${input[0]} ${input[1]} ${unit}`, 'end', ink);
+    let y = top;
+    useful.forEach(([lab, v]) => {
+      const h = v * k;
+      g += `<path d="M${xs},${y} H${W - 40} V${y - 5} L${W - 22},${y + h / 2} L${W - 40},${y + h + 5} V${y + h} H${xs} Z" fill="var(--green)" opacity=".7"/>` + txt(W - 40, y - 9, `${lab} ${v} ${unit}`, 'end', 'var(--green)');
+      y += h;
+    });
+    // Wasted bands sit under the useful ones and turn downwards; the lowest band turns first so none cross.
+    const bottom = top + total * k + 34; let cx = xs + 12;
+    for (let j = waste.length - 1; j >= 0; j--) {
+      const [lab, v] = waste[j], h = v * k, yb = top + (sum(useful) + sum(waste.slice(0, j))) * k;
+      g += `<path d="M${xs},${yb} H${cx + h} V${bottom} H${cx + h + 5} L${cx + h / 2},${bottom + 14} L${cx - 5},${bottom} H${cx} V${yb + h} H${xs} Z" fill="var(--coral)" opacity=".65"/>`;
+      g += txt(cx + h / 2, bottom + 30, `${lab} ${v} ${unit}`, 'middle', 'var(--coral)');
+      cx += h + 110;
+    }
+    const Wf = Math.max(W, cx), Hh = bottom + 42;
+    return wrap(`<svg viewBox="0 0 ${Wf} ${Hh}" role="img" aria-label="Sankey diagram: ${esc(input[0])} ${input[1]} ${unit} in; ${out.map(o => `${esc(o[0])} ${o[1]} ${unit}`).join(', ')}">${g}</svg><div class="viz-cap"><span style="color:var(--green)">■ useful energy</span> &nbsp; <span style="color:var(--coral)">■ wasted energy</span></div>`, 540);
+  }
+
+  const R = { xy, sankey, dotplot, spinner, venn, table, diceGrid, travel, rects, sim, box, tri, cyl, climate, pie, topo };
   return { render: (v) => (v && R[v.type] ? R[v.type](v) : '') };
 })();
